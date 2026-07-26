@@ -1,0 +1,163 @@
+:root {
+  /* Brand colors */
+  --color-brand-primary: #0b4f8a;
+  --color-brand-primary-dark: #073e70;
+  --color-brand-primary-deep: #052f57;
+  --color-brand-blue: #1479c9;
+  --color-brand-sky: #19aee5;
+  --color-brand-sky-light: #55c8ef;
+  --color-brand-highlight: #85d9ef;
+  --color-brand-aqua: #7fffe0;
+  --color-brand-aqua-light: #bfffff;
+
+ /* Complementary colors */
+--color-accent-teal: #268588;
+--color-accent-orange: #ff8c1a;
+--color-accent-green: #1f6b35;
+--color-status-gold: #d9a321;
+
+  /* Primary scale */
+  --color-primary-50: #eef7ff;
+  --color-primary-100: #dceffd;
+  --color-primary-200: #b9dffb;
+  --color-primary-300: #7fc7f5;
+  --color-primary-400: #49aee8;
+  --color-primary-500: #1479c9;
+  --color-primary-600: #0f69ad;
+  --color-primary-700: #0b4f8a;
+  --color-primary-800: #083b66;
+  --color-primary-900: #062b49;
+
+  /* Neutral scale */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #f8fafc;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-200: #e2e8f0;
+  --color-neutral-300: #cbd5e1;
+  --color-neutral-400: #94a3b8;
+  --color-neutral-500: #64748b;
+  --color-neutral-600: #475569;
+  --color-neutral-700: #334155;
+  --color-neutral-800: #1e293b;
+  --color-neutral-900: #0f172a;
+  --color-neutral-950: #020617;
+
+  /* Semantic colors */
+--color-success: #1f8a4c;
+--color-success-soft: #eaf8f0;
+--color-success-dark: #176b3b;
+--color-success-border: #8ed0ad;
+
+--color-warning: #d97706;
+--color-warning-soft: #fff7e6;
+--color-warning-dark: #92400e;
+--color-warning-border: #f2bf7a;
+
+--color-danger: #dc2626;
+--color-danger-soft: #fef2f2;
+--color-danger-dark: #991b1b;
+--color-danger-border: #f5aaaa;
+
+--color-info: #1479c9;
+--color-info-soft: #eef7ff;
+--color-info-dark: #0b4f8a;
+--color-info-border: #9cc8ee;
+
+  /* Interface colors */
+  --color-background: #f8fafc;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f1f5f9;
+  --color-surface-hover: #eef7ff;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #334155;
+  --color-text-muted: #64748b;
+  --color-text-disabled: #94a3b8;
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+  --color-focus-ring: #55c8ef;
+  --color-overlay: rgba(2, 6, 23, 0.4);
+
+  --color-sidebar-background: linear-gradient(180deg, #052f57 0%, #0b4f8a 100%);
+  --color-sidebar-background-end: #052f57;
+  --color-sidebar-text: #f8fafc;
+  --color-sidebar-text-muted: #b9dffb;
+  --color-sidebar-active: rgba(255, 255, 255, 0.16);
+  --color-sidebar-hover: rgba(255, 255, 255, 0.1);
+  --color-topbar-background: #ffffff;
+
+  /* Typography */
+  --font-family-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: clamp(1.5rem, 1.2rem + 0.8vw, 2rem);
+  --font-size-3xl: clamp(2rem, 1.5rem + 1.3vw, 2.75rem);
+  --font-size-4xl: clamp(2.5rem, 2rem + 1.6vw, 3.5rem);
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* Spacing */
+  --space-0: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+
+  /* Radius */
+  --radius-none: 0;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.12);
+  --shadow-xl: 0 24px 60px rgba(15, 23, 42, 0.16);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 350ms ease;
+  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Layout */
+  --sidebar-width: 19rem;
+  --sidebar-collapsed-width: 5rem;
+  --topbar-height: 5rem;
+  --footer-height: 4rem;
+  --content-max-width: 100rem;
+
+  /* Layers */
+  --z-base: 1;
+  --z-dropdown: 10;
+  --z-sticky: 20;
+  --z-overlay: 30;
+  --z-modal: 40;
+  --z-toast: 50;
+
+  /* Breakpoints */
+  /* móvil: 480px */
+  /* tableta: 768px */
+  /* escritorio: 1024px */
+  /* escritorio amplio: 1280px */
+  /* pantalla amplia: 1440px */
+}
