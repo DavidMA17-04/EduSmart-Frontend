@@ -1,0 +1,17 @@
+.sectionGroupsAccordion { display: grid; gap: 8px; }
+.header { margin-bottom: 4px; }
+.header h3 { font-size: 15px; }
+.header p { margin-top: 3px; color: var(--admin-muted); font-size: 13px; }
+.item { border: 1px solid var(--admin-border); border-radius: 7px; background: #fff; overflow: hidden; }
+.trigger { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 11px 12px; border: 0; background: transparent; color: var(--admin-text); cursor: pointer; font-size: 14px; text-align: left; }
+.trigger:hover { background: #f7faff; }
+.triggerLeft { display: flex; align-items: center; gap: 8px; }
+.badge { padding: 2px 8px; border-radius: 999px; background: #eef3ff; color: var(--admin-primary); font-size: 12px; font-weight: 600; }
+.chevron { color: var(--admin-muted); transition: transform 0.15s ease; }
+.expanded { transform: rotate(180deg); }
+.content { padding: 0 12px 12px; }
+.groupList { display: grid; gap: 6px; }
+.groupItem { display: flex; justify-content: space-between; gap: 10px; padding: 8px 10px; border: 1px solid var(--admin-border); border-radius: 6px; background: #fafbfd; font-size: 13px; }
+.groupItem strong { color: var(--admin-primary); }
+.groupMeta { color: var(--admin-muted); }
+.empty { padding: 8px 0; color: var(--admin-muted); font-size: 13px; }

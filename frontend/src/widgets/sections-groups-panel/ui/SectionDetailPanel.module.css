@@ -1,0 +1,90 @@
+.detailPanel {
+  display: grid;
+  gap: 20px;
+  align-content: start;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+
+.groupsCard {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  background: var(--admin-surface);
+}
+
+.groupsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.groupsHeader h3 {
+  font-size: 14px;
+}
+
+.groupsHeader p {
+  margin-top: 2px;
+  color: var(--admin-muted);
+  font-size: 12px;
+}
+
+.embeddedForm > aside {
+  position: static;
+  padding: 14px;
+  border-radius: 8px;
+  background: #fafbfd;
+  border-style: dashed;
+}
+
+.embeddedForm > aside h2 {
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.alertLink {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--admin-primary);
+  cursor: pointer;
+  font: inherit;
+  text-decoration: underline;
+}
+
+.rowActions {
+  display: flex;
+  gap: 6px;
+}
+
+.rowActions button {
+  min-height: 32px;
+  padding-inline: 10px;
+}
+
+.empty {
+  color: var(--admin-muted);
+  text-align: center;
+  font-size: 14px;
+}
+
+.placeholder {
+  padding: 20px;
+  border: 1px dashed var(--admin-border);
+  border-radius: 8px;
+  color: var(--admin-muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+.groupsCard :global(th) {
+  white-space: nowrap;
+}
+
+.groupsHeader button {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
