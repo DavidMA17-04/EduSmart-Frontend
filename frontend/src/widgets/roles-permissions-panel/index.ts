@@ -1,0 +1,1 @@
+export { RolesPermissionsPanel } from './ui/RolesPermissionsPanel';

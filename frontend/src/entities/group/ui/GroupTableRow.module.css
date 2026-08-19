@@ -1,0 +1,1 @@
+.row { cursor: pointer; color: var(--admin-text); }.row:hover { background: #f7faff; }.selected { background: #f2f7ff; }.row td { vertical-align: middle; }.row td strong { color: var(--admin-primary); font-size: 13px; }

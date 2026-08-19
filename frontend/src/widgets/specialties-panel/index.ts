@@ -1,0 +1,1 @@
+export { SpecialtiesPanel } from './ui/SpecialtiesPanel';
