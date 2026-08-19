@@ -1,10 +1,12 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { UserPlus, FileSpreadsheet, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useUserImport } from '@/hooks/useUserImport';
 import styles from './MethodSelector.module.css';
 
 export const MethodSelector: React.FC = () => {
   const setMethod = useUserImport((state) => state.setMethod);
+  const navigate = useNavigate();
 
   return (
     <div className={styles.container}>
@@ -17,7 +19,7 @@ export const MethodSelector: React.FC = () => {
 
       <div className={styles.grid}>
         {/* Card 1: Registro Manual */}
-        <div className={`glass-panel ${styles.card}`} onClick={() => alert('Flujo manual habilitado en Sprint 2')}>
+        <div className={`glass-panel ${styles.card}`} onClick={() => navigate('/administrative/users/new')}>
           <div className={styles.iconWrapper}>
             <UserPlus size={28} />
           </div>

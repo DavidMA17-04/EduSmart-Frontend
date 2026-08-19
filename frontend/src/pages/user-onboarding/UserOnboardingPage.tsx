@@ -1,15 +1,15 @@
 import React from 'react';
-import { ShieldCheck } from 'lucide-react';
 import { useUserImport } from '@/hooks/useUserImport';
 import {
   MethodSelector,
   FileDropzone,
-  ImportPreviewTable
+  ImportPreviewTable,
+  ImportResultPanel,
 } from '@/components/user-onboarding';
 import styles from './UserOnboardingPage.module.css';
 
 export const UserOnboardingPage: React.FC = () => {
-  const { currentStep, resetStore } = useUserImport();
+  const { currentStep, resetStore, importResult } = useUserImport();
 
   return (
     <div className={styles.container}>
@@ -43,27 +43,22 @@ export const UserOnboardingPage: React.FC = () => {
             <span className={styles.stepNumber}>3</span>
             <span>Vista Previa (WF-15)</span>
           </div>
+
+          <span style={{ color: 'var(--text-muted)' }}>—</span>
+
+          <div className={`${styles.stepItem} ${currentStep === 'COMPLETE' ? styles.stepActive : ''}`}>
+            <span className={styles.stepNumber}>4</span>
+            <span>Resultado (WF-16)</span>
+          </div>
         </div>
       </header>
 
-      {/* Main View Router according to currentStep */}
       <main className={styles.mainContent}>
         {currentStep === 'SELECT_METHOD' && <MethodSelector />}
         {currentStep === 'UPLOAD_FILE' && <FileDropzone />}
         {currentStep === 'PREVIEW_DATA' && <ImportPreviewTable />}
-        {currentStep === 'COMPLETE' && (
-          <div className={`glass-panel ${styles.successCard}`}>
-            <div className={styles.successIcon}>
-              <ShieldCheck size={40} />
-            </div>
-            <h2>¡Importación Masiva Completada!</h2>
-            <p style={{ color: 'var(--text-secondary)' }}>
-              Los registros han sido procesados y guardados exitosamente en la base de datos del CTP de Hojancha.
-            </p>
-            <button type="button" className={styles.primaryBtn} onClick={resetStore}>
-              Volver al Inicio de Incorporación
-            </button>
-          </div>
+        {currentStep === 'COMPLETE' && importResult && (
+          <ImportResultPanel result={importResult} onReset={resetStore} />
         )}
       </main>
     </div>
