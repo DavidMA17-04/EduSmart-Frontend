@@ -1,0 +1,143 @@
+.panel {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 1.25rem 1.5rem;
+  align-items: center;
+}
+
+.fileInfo {
+  display: flex;
+  gap: 0.85rem;
+  align-items: center;
+}
+
+.fileIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+}
+
+.header h2 {
+  font-size: 1.15rem;
+}
+
+.header p {
+  margin-top: 0.25rem;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  max-width: 36rem;
+}
+
+.metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.metric {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.success {
+  color: #34d399;
+}
+
+.danger {
+  color: #f87171;
+}
+
+.section {
+  padding: 1.25rem 1.5rem;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.section h3 {
+  font-size: 1rem;
+}
+
+.empty {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+}
+
+.primaryBtn {
+  padding: 0.75rem 1.75rem;
+  border-radius: var(--radius-md);
+  background: var(--primary-600);
+  color: white;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.tableWrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.tableWrap th,
+.tableWrap td {
+  text-align: left;
+  padding: 0.7rem 0.6rem;
+  border-top: 1px solid var(--surface-card-border, #e4e9f2);
+}
+
+.tableWrap th {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #66738a);
+}
+
+.okChip,
+.errorChip {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.okChip {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+.errorChip {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+
+@media (max-width: 720px) {
+  .header,
+  .fileInfo {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
