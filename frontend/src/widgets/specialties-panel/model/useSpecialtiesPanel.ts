@@ -13,7 +13,7 @@ export function useSpecialtiesPanel() {
   const selectedSpecialty = useMemo(() => specialties.allSpecialties.find((specialty) => specialty.id === selectedSpecialtyId), [selectedSpecialtyId, specialties.allSpecialties]);
   const formSpecialty = formMode === 'edit' ? selectedSpecialty : undefined;
   const { values, setField, toPayload } = useSpecialtyForm(formSpecialty);
-  const { create, update, deactivate, error: mutationError, isSubmitting } = useManageSpecialty(() => { void specialties.reload(); });
+  const { create, update, deactivate, error: mutationError, isSubmitting } = useManageSpecialty(() => { void specialties.reload(true); });
   const areaOptions = useMemo(() => [...new Set([...DEFAULT_AREAS, ...specialties.areas])].sort(), [specialties.areas]);
 
   const selectSpecialty = useCallback((id: string) => {
@@ -45,8 +45,17 @@ export function useSpecialtiesPanel() {
 
   const deactivateSpecialty = useCallback(async (specialty: Specialty) => {
     if (!window.confirm(`¿Inactivar la especialidad ${specialty.name}?`)) return;
-    try { await deactivate(specialty.id); } catch { /* El error se expone desde el hook. */ }
-  }, [deactivate]);
+    try {
+      await deactivate(specialty.id);
+      specialties.removeSpecialty(specialty.id);
+      if (selectedSpecialtyId === specialty.id) {
+        setSelectedSpecialtyId(null);
+        setFormMode('create');
+      }
+    } catch {
+      // El error se expone desde el hook.
+    }
+  }, [deactivate, selectedSpecialtyId, specialties]);
 
   return { ...specialties, selectedSpecialty, selectedSpecialtyId, selectSpecialty, createSpecialty, formMode, specialtyForm: { values, setField, submit }, areaOptions, mutationError, isSubmitting, deactivateSpecialty };
 }

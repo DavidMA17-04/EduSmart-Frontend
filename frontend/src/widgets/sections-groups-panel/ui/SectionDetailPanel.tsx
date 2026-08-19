@@ -13,11 +13,11 @@ interface SectionDetailPanelProps {
 
 export const SectionDetailPanel = ({ model, onGoToTeachersTab }: SectionDetailPanelProps) => {
   const sectionTitle = model.sectionFormMode === 'create' ? 'Nuevo nivel' : 'Información del nivel';
-  const groupTitle = model.groupFormMode === 'create' ? 'Nuevo grupo' : 'Editar grupo';
+  const groupTitle = model.groupFormMode === 'create' ? 'Nueva sección' : 'Editar sección';
   const showSectionForm = model.sectionFormMode === 'create' || Boolean(model.selectedSection);
 
   if (!showSectionForm) {
-    return <div className={styles.placeholder}>Seleccione un nivel para ver su información y grupos.</div>;
+    return <div className={styles.placeholder}>Seleccione un nivel para ver su información y secciones.</div>;
   }
 
   return (
@@ -35,14 +35,14 @@ export const SectionDetailPanel = ({ model, onGoToTeachersTab }: SectionDetailPa
         <section className={styles.groupsCard}>
           <div className={styles.groupsHeader}>
             <div>
-              <h3>Grupos del nivel</h3>
-              <p>Administre los grupos asociados al nivel seleccionado.</p>
+              <h3>Secciones del nivel</h3>
+              <p>Administre las secciones asociadas al nivel seleccionado.</p>
             </div>
             <Button
               onClick={() => model.createGroupMode(model.selectedSectionId ?? undefined)}
               type="button"
             >
-              <Plus size={14} /> Agregar grupo
+              <Plus size={14} /> Agregar sección
             </Button>
           </div>
 
@@ -64,7 +64,7 @@ export const SectionDetailPanel = ({ model, onGoToTeachersTab }: SectionDetailPa
           <Table>
             <thead>
               <tr>
-                <th>Grupo</th>
+                <th>Sección</th>
                 <th>Cantidad de estudiantes</th>
                 <th>Docente guía</th>
                 <th>Acciones</th>
@@ -102,7 +102,7 @@ export const SectionDetailPanel = ({ model, onGoToTeachersTab }: SectionDetailPa
               {model.groupsForSelectedSection.length === 0 && (
                 <tr>
                   <td className={styles.empty} colSpan={4}>
-                    Este nivel no tiene grupos registrados.
+                    Este nivel no tiene secciones registradas.
                   </td>
                 </tr>
               )}
