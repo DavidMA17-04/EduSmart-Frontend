@@ -1,0 +1,17 @@
+.admin-shell {
+  --admin-primary: #0b5eea;
+  --admin-primary-hover: #084fc5;
+  --admin-sidebar: #062a61;
+  --admin-sidebar-hover: #0b438d;
+  --admin-background: #f6f8fc;
+  --admin-surface: #ffffff;
+  --admin-border: #e4e9f2;
+  --admin-text: #17233c;
+  --admin-muted: #66738a;
+  --admin-success: #168750;
+  --admin-warning: #b86800;
+  --admin-danger: #d32f2f;
+  min-height: 100vh;
+  color: var(--admin-text);
+  background: var(--admin-background);
+}

@@ -1,0 +1,81 @@
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 360px);
+  gap: 24px;
+  align-items: start;
+}
+
+.mainColumn {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+
+.tableCard {
+  display: grid;
+  gap: 18px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.toolbar > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.toolbarActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.rowActions {
+  display: flex;
+  gap: 6px;
+}
+
+.rowActions button {
+  min-height: 32px;
+  padding-inline: 10px;
+}
+
+.muted {
+  color: var(--admin-muted);
+  font-size: 14px;
+}
+
+.empty {
+  color: var(--admin-muted);
+  text-align: center;
+}
+
+.tableCard :global(th) {
+  white-space: nowrap;
+}
+
+.sidePanel {
+  position: sticky;
+  top: 16px;
+  align-self: start;
+}
+
+@media (max-width: 1000px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidePanel {
+    position: static;
+  }
+}
+
+.toolbarActions button {
+  white-space: nowrap;
+}

@@ -1,9 +1,12 @@
-import React from 'react';
-import { UserOnboardingPage } from '@/pages/user-onboarding';
+import { BrowserRouter } from 'react-router-dom';
+import { AppRouter } from '@/app/router/AppRouter';
 import '@/shared/styles/index.css';
+import '@/app/styles/admin-theme.css';
 
-export const App: React.FC = () => {
-  return <UserOnboardingPage />;
-};
+export const App = () => (
+  <BrowserRouter>
+    <AppRouter />
+  </BrowserRouter>
+);
 
 export default App;
