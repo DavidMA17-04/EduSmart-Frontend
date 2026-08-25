@@ -4,7 +4,7 @@ import { roleApi } from '../api/roleApi';
 
 type RoleMutation = <T>(operation: () => Promise<T>) => Promise<T>;
 
-export function useManageRole(onSuccess?: () => void) {
+export function useManageRole(onSuccess?: () => void | Promise<void>) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -13,7 +13,7 @@ export function useManageRole(onSuccess?: () => void) {
     setError(null);
     try {
       const result = await operation();
-      onSuccess?.();
+      await onSuccess?.();
       return result;
     } catch (reason) {
       const message = reason instanceof Error ? reason.message : 'No se pudo completar la operación.';

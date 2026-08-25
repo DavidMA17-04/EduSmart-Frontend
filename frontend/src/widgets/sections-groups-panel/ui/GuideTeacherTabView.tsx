@@ -16,7 +16,7 @@ export const GuideTeacherTabView = ({ model }: GuideTeacherTabViewProps) => (
           onChange={(event) => model.setTeacherFilter(event.target.value)}
           value={model.teacherFilter}
         >
-          <option value="all">Todos los grupos</option>
+          <option value="all">Todas las secciones</option>
           <option value="unassigned">Sin docente asignado</option>
           {model.sections.map((section) => (
             <option key={section.id} value={section.id}>
@@ -30,13 +30,14 @@ export const GuideTeacherTabView = ({ model }: GuideTeacherTabViewProps) => (
     {model.groupMutationError && <Alert>{model.groupMutationError}</Alert>}
 
     {model.isLoading ? (
-      <p className={styles.muted}>Cargando grupos…</p>
+      <p className={styles.muted}>Cargando secciones…</p>
     ) : (
       <Table>
         <thead>
           <tr>
+            <th>Código</th>
+            <th>Sección</th>
             <th>Nivel</th>
-            <th>Grupo</th>
             <th>Estudiantes</th>
             <th>Docente guía</th>
             <th>Acción</th>
@@ -52,8 +53,9 @@ export const GuideTeacherTabView = ({ model }: GuideTeacherTabViewProps) => (
 
             return (
               <tr className={isUnassigned ? styles.unassigned : undefined} key={group.id}>
-                <td>{model.getSectionLabel(group.sectionId)}</td>
+                <td><strong>{model.getSectionCode(group.sectionId)}</strong></td>
                 <td><strong>{group.name}</strong></td>
+                <td>{model.getSectionName(group.sectionId)}</td>
                 <td>{formatStudentCount(group.studentCount)}</td>
                 <td>
                   <Select
@@ -83,8 +85,8 @@ export const GuideTeacherTabView = ({ model }: GuideTeacherTabViewProps) => (
           })}
           {model.assignmentGroups.length === 0 && (
             <tr>
-              <td className={styles.empty} colSpan={5}>
-                No hay grupos que coincidan con el filtro seleccionado.
+              <td className={styles.empty} colSpan={6}>
+                No hay secciones que coincidan con el filtro seleccionado.
               </td>
             </tr>
           )}
