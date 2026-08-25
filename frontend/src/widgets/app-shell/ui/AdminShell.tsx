@@ -7,7 +7,7 @@ const navigationItems = [
   { label: 'Usuarios', icon: Users, to: '/onboarding' },
   { label: 'Roles y permisos', icon: ShieldCheck, to: '/administrative/roles-permissions' },
   { label: 'Estructura académica', icon: GraduationCap, to: '/administrative/specialties' },
-  { label: 'Secciones y grupos', icon: Layers, to: '/administrative/sections-groups' },
+  { label: 'Niveles y secciones', icon: Layers, to: '/administrative/sections-groups' },
   { label: 'Configuración', icon: Settings, to: '/administrative/settings' },
 ];
 

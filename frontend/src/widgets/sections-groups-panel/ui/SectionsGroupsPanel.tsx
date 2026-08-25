@@ -16,7 +16,7 @@ export const SectionsGroupsPanel = () => {
       <Tabs
         items={[
           { id: 'niveles', label: 'Niveles' },
-          { id: 'grupos', label: 'Grupos' },
+          { id: 'grupos', label: 'Secciones' },
           { id: 'docentes', label: 'Asignación de docentes guía' },
         ]}
         onChange={model.setActiveTab}
@@ -33,7 +33,7 @@ export const SectionsGroupsPanel = () => {
             <Card className={styles.heading}>
               <div>
                 <h2>Niveles académicos</h2>
-                <p>Administre los niveles o secciones de la institución.</p>
+                <p>Administre los niveles académicos de la institución.</p>
               </div>
               <Button onClick={model.createSectionMode} type="button">
                 <Plus size={15} /> Nuevo nivel
@@ -50,7 +50,7 @@ export const SectionsGroupsPanel = () => {
                       <th>Código</th>
                       <th>Nivel</th>
                       <th>Descripción</th>
-                      <th>Cantidad de grupos</th>
+                      <th>Cantidad de secciones</th>
                       <th>Estado</th>
                       <th>Acciones</th>
                     </tr>

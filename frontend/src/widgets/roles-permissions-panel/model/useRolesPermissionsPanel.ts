@@ -5,28 +5,30 @@ import { roleApi, useManageRole, useRoleForm } from '@/features/manage-role';
 import { usePermissions, useRolePermissions } from '@/features/manage-role-permissions';
 
 type DialogMode = 'create' | 'edit' | 'duplicate' | null;
-type PermissionTab = 'module' | 'general';
 
 export function useRolesPermissionsPanel() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [dialogMode, setDialogMode] = useState<DialogMode>(null);
-  const [activeTab, setActiveTab] = useState<PermissionTab>('module');
   const [isLoadingRoles, setIsLoadingRoles] = useState(true);
   const [rolesError, setRolesError] = useState<string | null>(null);
 
-  const refreshRoles = useCallback(async () => {
-    setIsLoadingRoles(true);
+  const refreshRoles = useCallback(async (silent = false) => {
+    if (!silent) setIsLoadingRoles(true);
     setRolesError(null);
     try {
       const nextRoles = await roleApi.list();
       setRoles(nextRoles);
-      setSelectedRoleId((current) => nextRoles.some((role) => role.id === current) ? current : (nextRoles[0]?.id ?? null));
+      setSelectedRoleId((current) => {
+        const activeRoles = nextRoles.filter((role) => role.status === 'ACTIVE');
+        if (current && activeRoles.some((role) => role.id === current)) return current;
+        return activeRoles[0]?.id ?? null;
+      });
     } catch (reason) {
       setRolesError(reason instanceof Error ? reason.message : 'No se pudieron cargar los roles.');
     } finally {
-      setIsLoadingRoles(false);
+      if (!silent) setIsLoadingRoles(false);
     }
   }, []);
 
@@ -37,13 +39,18 @@ export function useRolesPermissionsPanel() {
     ? { ...selectedRole, name: `${selectedRole.name} (copia)` }
     : selectedRole, [dialogMode, selectedRole]);
   const { values, setField, toPayload } = useRoleForm(dialogMode === 'create' ? undefined : formRole);
-  const { create, update, deactivate, duplicate, error: mutationError, isSubmitting } = useManageRole(() => { void refreshRoles(); });
+  const { create, update, deactivate, duplicate, error: mutationError, isSubmitting } = useManageRole(() => refreshRoles(true));
   const { permissions, isLoading: isLoadingPermissions, error: permissionsError, reload: reloadPermissions } = usePermissions();
-  const { selectedPermissionIds, togglePermission, save: savePermissions, isSaving: isSavingPermissions, error: permissionMutationError } = useRolePermissions(selectedRole, () => { void refreshRoles(); });
+  const rolePermissions = useRolePermissions(selectedRole, (updatedRole) => {
+    setRoles((current) => current.map((item) => item.id === updatedRole.id ? updatedRole : item));
+  });
 
   const filteredRoles = useMemo(() => {
+    const activeRoles = roles.filter((role) => role.status === 'ACTIVE');
     const normalizedSearch = search.trim().toLocaleLowerCase();
-    return normalizedSearch ? roles.filter((role) => role.name.toLocaleLowerCase().includes(normalizedSearch)) : roles;
+    return normalizedSearch
+      ? activeRoles.filter((role) => role.name.toLocaleLowerCase().includes(normalizedSearch))
+      : activeRoles;
   }, [roles, search]);
 
   const submitRole = useCallback(async (event: FormEvent<HTMLFormElement>) => {
@@ -62,7 +69,22 @@ export function useRolesPermissionsPanel() {
 
   const deactivateSelectedRole = useCallback(async () => {
     if (!selectedRole || !window.confirm(`¿Inactivar el rol ${selectedRole.name}?`)) return;
-    try { await deactivate(selectedRole.id); } catch { /* El error se expone desde el hook. */ }
+    const deactivatedRoleId = selectedRole.id;
+    try {
+      await deactivate(deactivatedRoleId);
+      setRoles((current) => {
+        const next = current.map((role) => (
+          role.id === deactivatedRoleId ? { ...role, status: 'INACTIVE' as const } : role
+        ));
+        setSelectedRoleId((selectedId) => {
+          if (selectedId !== deactivatedRoleId) return selectedId;
+          return next.find((role) => role.status === 'ACTIVE')?.id ?? null;
+        });
+        return next;
+      });
+    } catch {
+      // El error se expone desde el hook.
+    }
   }, [deactivate, selectedRole]);
 
   return {
@@ -75,8 +97,6 @@ export function useRolesPermissionsPanel() {
     dialogMode,
     openDialog: setDialogMode,
     closeDialog: () => setDialogMode(null),
-    activeTab,
-    setActiveTab,
     roleForm: { values, setField, submit: submitRole },
     mutationError,
     isSubmitting,
@@ -85,11 +105,7 @@ export function useRolesPermissionsPanel() {
     isLoadingPermissions,
     permissionsError,
     reloadPermissions,
-    selectedPermissionIds,
-    togglePermission,
-    savePermissions,
-    isSavingPermissions,
-    permissionMutationError,
+    ...rolePermissions,
     isLoadingRoles,
     rolesError,
     reloadRoles: refreshRoles,

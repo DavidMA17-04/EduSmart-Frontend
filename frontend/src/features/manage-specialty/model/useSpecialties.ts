@@ -13,15 +13,33 @@ export function useSpecialties() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    setIsLoading(true);
+  const load = useCallback(async (silent = false) => {
+    if (!silent) setIsLoading(true);
     setError(null);
-    try { setSpecialties(await specialtyApi.list()); }
-    catch (reason) { setError(reason instanceof Error ? reason.message : 'No se pudieron cargar las especialidades.'); }
-    finally { setIsLoading(false); }
+    try {
+      setSpecialties(await specialtyApi.list());
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'No se pudieron cargar las especialidades.');
+    } finally {
+      if (!silent) setIsLoading(false);
+    }
   }, []);
 
   useEffect(() => { void load(); }, [load]);
+
+  const removeSpecialty = useCallback((id: string) => {
+    setSpecialties((current) => current.filter((specialty) => specialty.id !== id));
+  }, []);
+
+  const upsertSpecialty = useCallback((specialty: Specialty) => {
+    setSpecialties((current) => {
+      const index = current.findIndex((item) => item.id === specialty.id);
+      if (index === -1) return [...current, specialty];
+      const next = [...current];
+      next[index] = specialty;
+      return next;
+    });
+  }, []);
 
   const areas = useMemo(() => [...new Set(specialties.map((specialty) => specialty.area))].sort(), [specialties]);
   const filteredSpecialties = useMemo(() => {
@@ -40,5 +58,23 @@ export function useSpecialties() {
   useEffect(() => { setCurrentPage(1); }, [area, search, status]);
   useEffect(() => { if (currentPage > totalPages) setCurrentPage(totalPages); }, [currentPage, totalPages]);
 
-  return { specialties: paginatedSpecialties, allSpecialties: specialties, areas, search, setSearch, status, setStatus, area, setArea, currentPage, setCurrentPage, totalPages, isLoading, error, reload: load };
+  return {
+    specialties: paginatedSpecialties,
+    allSpecialties: specialties,
+    areas,
+    search,
+    setSearch,
+    status,
+    setStatus,
+    area,
+    setArea,
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    isLoading,
+    error,
+    reload: load,
+    removeSpecialty,
+    upsertSpecialty,
+  };
 }

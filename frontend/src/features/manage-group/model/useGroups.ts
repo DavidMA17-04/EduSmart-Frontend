@@ -13,7 +13,7 @@ export function useGroups() {
     try {
       setGroups(await groupApi.list());
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'No se pudieron cargar los grupos.');
+      setError(reason instanceof Error ? reason.message : 'No se pudieron cargar las secciones.');
     } finally {
       if (!silent) setIsLoading(false);
     }
@@ -33,5 +33,9 @@ export function useGroups() {
     });
   }, []);
 
-  return { groups, isLoading, error, reload: load, upsertGroup };
+  const removeGroup = useCallback((id: string) => {
+    setGroups((current) => current.filter((group) => group.id !== id));
+  }, []);
+
+  return { groups, isLoading, error, reload: load, upsertGroup, removeGroup };
 }

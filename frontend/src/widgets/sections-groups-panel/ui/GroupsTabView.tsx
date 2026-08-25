@@ -11,7 +11,7 @@ interface GroupsTabViewProps {
 }
 
 export const GroupsTabView = ({ model }: GroupsTabViewProps) => {
-  const groupTitle = model.groupFormMode === 'create' ? 'Nuevo grupo' : 'Editar grupo';
+  const groupTitle = model.groupFormMode === 'create' ? 'Nueva sección' : 'Editar sección';
 
   return (
     <div className={styles.groupsLayout}>
@@ -33,7 +33,7 @@ export const GroupsTabView = ({ model }: GroupsTabViewProps) => {
               </Select>
             </label>
             <Button onClick={() => model.createGroupMode(model.groupSectionFilter || undefined)} type="button">
-              <Plus size={15} /> Nuevo grupo
+              <Plus size={15} /> Nueva sección
             </Button>
           </div>
 
@@ -41,12 +41,13 @@ export const GroupsTabView = ({ model }: GroupsTabViewProps) => {
           {model.groupMutationError && <Alert>{model.groupMutationError}</Alert>}
 
           {model.isLoading ? (
-            <p className={styles.muted}>Cargando grupos…</p>
+            <p className={styles.muted}>Cargando secciones…</p>
           ) : (
             <Table>
               <thead>
                 <tr>
-                  <th>Grupo</th>
+                  <th>Código</th>
+                  <th>Sección</th>
                   <th>Nivel</th>
                   <th>Cantidad de estudiantes</th>
                   <th>Docente guía</th>
@@ -60,8 +61,9 @@ export const GroupsTabView = ({ model }: GroupsTabViewProps) => {
                     key={group.id}
                     onClick={() => model.selectGroup(group.id)}
                   >
+                    <td><strong>{model.getSectionCode(group.sectionId)}</strong></td>
                     <td><strong>{group.name}</strong></td>
-                    <td>{model.getSectionLabel(group.sectionId)}</td>
+                    <td>{model.getSectionName(group.sectionId)}</td>
                     <td>{formatStudentCount(group.studentCount)}</td>
                     <td>{group.guideTeacher?.name || 'Sin asignar'}</td>
                     <td onClick={(event) => event.stopPropagation()}>
@@ -88,8 +90,8 @@ export const GroupsTabView = ({ model }: GroupsTabViewProps) => {
                 ))}
                 {model.filteredGroups.length === 0 && (
                   <tr>
-                    <td className={styles.empty} colSpan={5}>
-                      No se encontraron grupos.
+                    <td className={styles.empty} colSpan={6}>
+                      No se encontraron secciones.
                     </td>
                   </tr>
                 )}
@@ -112,7 +114,7 @@ export const GroupsTabView = ({ model }: GroupsTabViewProps) => {
         />
       ) : (
         <Card>
-          <Alert>Seleccione un grupo de la tabla o cree uno nuevo para editarlo.</Alert>
+          <Alert>Seleccione una sección de la tabla o cree una nueva para editarla.</Alert>
         </Card>
       )}
     </div>

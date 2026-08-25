@@ -10,15 +10,26 @@ type FormMode = 'create' | 'edit';
 type TeacherFilter = 'all' | 'unassigned' | string;
 
 export function useSectionsGroupsPanel() {
-  const sectionsState = useSections();
-  const groupsState = useGroups();
+  const {
+    sections,
+    reload: reloadSections,
+    removeSection,
+    isLoading: isLoadingSections,
+    error: sectionsError,
+  } = useSections();
+  const {
+    groups,
+    reload: reloadGroups,
+    removeGroup: removeGroupFromState,
+    upsertGroup,
+    isLoading: isLoadingGroups,
+    error: groupsError,
+  } = useGroups();
+
   const guideTeachersState = useGuideTeachers();
 
-  const reloadSections = sectionsState.reload;
-  const reloadGroups = groupsState.reload;
-
   const reloadAll = useCallback(async () => {
-    await Promise.all([reloadSections(), reloadGroups()]);
+    await Promise.all([reloadSections(true), reloadGroups(true)]);
   }, [reloadGroups, reloadSections]);
 
   const refreshGroups = useCallback(async () => {
@@ -55,7 +66,7 @@ export function useSectionsGroupsPanel() {
 
   const groupsBySection = useMemo(() => {
     const map = new Map<string, AcademicGroup[]>();
-    for (const group of groupsState.groups) {
+    for (const group of groups) {
       const list = map.get(group.sectionId) ?? [];
       list.push(group);
       map.set(group.sectionId, list);
@@ -64,15 +75,15 @@ export function useSectionsGroupsPanel() {
       list.sort((a, b) => a.name.localeCompare(b.name));
     }
     return map;
-  }, [groupsState.groups]);
+  }, [groups]);
 
   const sectionsWithGroups = useMemo(
     () =>
-      sectionsState.sections.map((section) => ({
+      sections.map((section) => ({
         ...section,
         groups: groupsBySection.get(section.id) ?? section.groups ?? [],
       })),
-    [groupsBySection, sectionsState.sections],
+    [groupsBySection, sections],
   );
 
   const selectedSection = useMemo(
@@ -81,8 +92,8 @@ export function useSectionsGroupsPanel() {
   );
 
   const selectedGroup = useMemo(
-    () => groupsState.groups.find((group) => group.id === selectedGroupId),
-    [groupsState.groups, selectedGroupId],
+    () => groups.find((group) => group.id === selectedGroupId),
+    [groups, selectedGroupId],
   );
 
   const groupsForSelectedSection = useMemo(
@@ -99,31 +110,49 @@ export function useSectionsGroupsPanel() {
     }
   }, [activeTab, groupForm, groupFormMode, selectedSectionId]);
 
+  const getSectionInfo = useCallback(
+    (sectionId: string) => {
+      const section = sections.find((item) => item.id === sectionId);
+      if (section) return { code: section.code, name: section.name };
+      const group = groups.find((item) => item.sectionId === sectionId);
+      if (group?.section) return { code: group.section.code, name: group.section.name };
+      return { code: sectionId, name: '—' };
+    },
+    [groups, sections],
+  );
+
+  const getSectionCode = useCallback(
+    (sectionId: string) => getSectionInfo(sectionId).code,
+    [getSectionInfo],
+  );
+
+  const getSectionName = useCallback(
+    (sectionId: string) => getSectionInfo(sectionId).name,
+    [getSectionInfo],
+  );
+
   const getSectionLabel = useCallback(
     (sectionId: string) => {
-      const section = sectionsState.sections.find((item) => item.id === sectionId);
-      if (section) return `${section.code} - ${section.name}`;
-      const group = groupsState.groups.find((item) => item.sectionId === sectionId);
-      if (group?.section) return `${group.section.code} - ${group.section.name}`;
-      return sectionId;
+      const { code, name } = getSectionInfo(sectionId);
+      return `${code} - ${name}`;
     },
-    [groupsState.groups, sectionsState.sections],
+    [getSectionInfo],
   );
 
   const filteredGroups = useMemo(() => {
-    if (!groupSectionFilter) return groupsState.groups;
-    return groupsState.groups.filter((group) => group.sectionId === groupSectionFilter);
-  }, [groupSectionFilter, groupsState.groups]);
+    if (!groupSectionFilter) return groups;
+    return groups.filter((group) => group.sectionId === groupSectionFilter);
+  }, [groupSectionFilter, groups]);
 
   const assignmentGroups = useMemo(() => {
-    let list = groupsState.groups;
+    let list = groups;
     if (teacherFilter === 'unassigned') {
       list = list.filter((group) => !group.guideTeacherId);
     } else if (teacherFilter !== 'all') {
       list = list.filter((group) => group.sectionId === teacherFilter);
     }
     return list;
-  }, [groupsState.groups, teacherFilter]);
+  }, [groups, teacherFilter]);
 
   const selectSection = useCallback((id: string) => {
     setSelectedSectionId(id);
@@ -151,9 +180,9 @@ export function useSectionsGroupsPanel() {
   const selectGroup = useCallback((id: string) => {
     setSelectedGroupId(id);
     setGroupFormMode('edit');
-    const group = groupsState.groups.find((item) => item.id === id);
+    const group = groups.find((item) => item.id === id);
     if (group) setSelectedSectionId(group.sectionId);
-  }, [groupsState.groups]);
+  }, [groups]);
 
   const toggleSectionExpanded = useCallback((id: string) => {
     setExpandedSectionIds((current) => {
@@ -211,6 +240,7 @@ export function useSectionsGroupsPanel() {
       if (!window.confirm(`¿Inactivar el nivel ${section.name}?`)) return;
       try {
         await deactivateSection(section.id);
+        removeSection(section.id);
         if (selectedSectionId === section.id) {
           setSelectedSectionId(null);
           setSectionFormMode('create');
@@ -219,14 +249,15 @@ export function useSectionsGroupsPanel() {
         // El error se expone desde el hook.
       }
     },
-    [deactivateSection, selectedSectionId],
+    [deactivateSection, removeSection, selectedSectionId],
   );
 
   const removeSelectedGroup = useCallback(
     async (group: AcademicGroup) => {
-      if (!window.confirm(`¿Eliminar el grupo ${group.name}?`)) return;
+      if (!window.confirm(`¿Eliminar la sección ${group.name}?`)) return;
       try {
         await removeGroup(group.id);
+        removeGroupFromState(group.id);
         if (selectedGroupId === group.id) {
           setSelectedGroupId(null);
           setGroupFormMode(null);
@@ -235,7 +266,7 @@ export function useSectionsGroupsPanel() {
         // El error se expone desde el hook.
       }
     },
-    [removeGroup, selectedGroupId],
+    [removeGroup, removeGroupFromState, selectedGroupId],
   );
 
   const setPendingTeacher = useCallback((groupId: string, teacherId: string) => {
@@ -244,7 +275,7 @@ export function useSectionsGroupsPanel() {
 
   const submitGuideTeacher = useCallback(
     async (groupId: string) => {
-      const group = groupsState.groups.find((item) => item.id === groupId);
+      const group = groups.find((item) => item.id === groupId);
       if (!group) return;
 
       const currentTeacherId = group.guideTeacherId ?? '';
@@ -254,7 +285,7 @@ export function useSectionsGroupsPanel() {
       setSavingGroupId(groupId);
       try {
         const updated = await assignGuideTeacher(groupId, { guideTeacherId: teacherId || null });
-        groupsState.upsertGroup(updated);
+        upsertGroup(updated);
         setPendingTeachers((current) => {
           const next = { ...current };
           delete next[groupId];
@@ -266,7 +297,7 @@ export function useSectionsGroupsPanel() {
         setSavingGroupId(null);
       }
     },
-    [assignGuideTeacher, groupsState, pendingTeachers],
+    [assignGuideTeacher, groups, pendingTeachers, upsertGroup],
   );
 
   const handlePrimaryAction = useCallback(() => {
@@ -287,14 +318,14 @@ export function useSectionsGroupsPanel() {
     setSelectedGroupId(null);
   }, []);
 
-  const isLoading = sectionsState.isLoading || groupsState.isLoading || guideTeachersState.isLoading;
-  const loadError = sectionsState.error ?? groupsState.error ?? guideTeachersState.error;
+  const isLoading = isLoadingSections || isLoadingGroups || guideTeachersState.isLoading;
+  const loadError = sectionsError ?? groupsError ?? guideTeachersState.error;
 
   return {
     activeTab,
     setActiveTab,
     sections: sectionsWithGroups,
-    groups: groupsState.groups,
+    groups,
     filteredGroups,
     assignmentGroups,
     groupsForSelectedSection,
@@ -328,6 +359,8 @@ export function useSectionsGroupsPanel() {
     handlePrimaryAction,
     cancelGroupForm,
     cancelSectionForm: createSectionMode,
+    getSectionCode,
+    getSectionName,
     getSectionLabel,
     isLoading,
     loadError,
