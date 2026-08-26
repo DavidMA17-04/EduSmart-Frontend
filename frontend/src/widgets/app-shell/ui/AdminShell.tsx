@@ -3,12 +3,12 @@ import { NavLink, Outlet } from 'react-router-dom';
 import styles from './AdminShell.module.css';
 
 const navigationItems = [
-  { label: 'Dashboard', icon: LayoutDashboard, to: '/administrative' },
-  { label: 'Usuarios', icon: Users, to: '/onboarding' },
-  { label: 'Roles y permisos', icon: ShieldCheck, to: '/administrative/roles-permissions' },
-  { label: 'Estructura académica', icon: GraduationCap, to: '/administrative/specialties' },
-  { label: 'Niveles y secciones', icon: Layers, to: '/administrative/sections-groups' },
-  { label: 'Configuración', icon: Settings, to: '/administrative/settings' },
+  { label: 'Dashboard', icon: LayoutDashboard, to: '/admin' },
+  { label: 'Usuarios', icon: Users, to: '/admin/users' },
+  { label: 'Roles y permisos', icon: ShieldCheck, to: '/admin/roles-permissions' },
+  { label: 'Estructura académica', icon: GraduationCap, to: '/admin/specialties' },
+  { label: 'Niveles y secciones', icon: Layers, to: '/admin/sections-groups' },
+  { label: 'Configuración', icon: Settings, to: '/admin/settings' },
 ];
 
 export const AdminShell = () => (
