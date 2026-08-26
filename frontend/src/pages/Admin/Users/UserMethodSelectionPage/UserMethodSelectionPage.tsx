@@ -13,8 +13,45 @@ import {
 } from 'lucide-react';
 import styles from './UserMethodSelection.module.css';
 
+interface RecentImportItem {
+  id: string;
+  name: string;
+  date: string;
+  status: string;
+}
+
+const DEFAULT_RECENT_IMPORTS: RecentImportItem[] = [
+  {
+    id: 'default-1',
+    name: 'Estudiantes_Seccion_10-B.xlsx',
+    date: 'Hace 2 días • 32 registros',
+    status: 'Completado',
+  },
+  {
+    id: 'default-2',
+    name: 'Docentes_Especialidades_2026.csv',
+    date: '15 de Feb, 2026 • 45 registros',
+    status: 'Completado',
+  },
+];
+
 export const UserMethodSelectionPage: React.FC = () => {
   const navigate = useNavigate();
+
+  const [recentImports] = React.useState<RecentImportItem[]>(() => {
+    try {
+      const stored = localStorage.getItem('edusmart_recent_imports');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch {
+      // Fallback
+    }
+    return DEFAULT_RECENT_IMPORTS;
+  });
 
   const handleDownloadTemplate = () => {
     const headers = 'identificacion,nombres,apellidos,correo,rol,seccion,telefono,estado\n';
@@ -157,20 +194,15 @@ export const UserMethodSelectionPage: React.FC = () => {
             <History size={20} color="var(--color-primary-blue)" />
             Importaciones recientes
           </h3>
-          <div className={styles.recentImportItem}>
-            <div className={styles.recentImportInfo}>
-              <span className={styles.recentImportName}>Estudiantes_Seccion_10-B.xlsx</span>
-              <span className={styles.recentImportDate}>Hace 2 días • 32 registros</span>
+          {recentImports.map((item) => (
+            <div key={item.id} className={styles.recentImportItem}>
+              <div className={styles.recentImportInfo}>
+                <span className={styles.recentImportName}>{item.name}</span>
+                <span className={styles.recentImportDate}>{item.date}</span>
+              </div>
+              <span className={styles.statusSuccessBadge}>{item.status}</span>
             </div>
-            <span className={styles.statusSuccessBadge}>Completado</span>
-          </div>
-          <div className={styles.recentImportItem}>
-            <div className={styles.recentImportInfo}>
-              <span className={styles.recentImportName}>Docentes_Especialidades_2026.csv</span>
-              <span className={styles.recentImportDate}>15 de Feb, 2026 • 45 registros</span>
-            </div>
-            <span className={styles.statusSuccessBadge}>Completado</span>
-          </div>
+          ))}
         </div>
       </section>
     </div>

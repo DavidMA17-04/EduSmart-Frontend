@@ -9,7 +9,10 @@ import {
   AlertCircle,
   FileCheck,
   Play,
+  Loader2,
+  AlertTriangle,
 } from 'lucide-react';
+import { userImportApi } from '@/features/manage-user-import';
 import styles from './UserBulkImport.module.css';
 
 export const UserBulkImportPage: React.FC = () => {
@@ -17,6 +20,8 @@ export const UserBulkImportPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleDownloadTemplate = () => {
     const headers = 'identificacion,nombres,apellidos,correo,rol,seccion,telefono,estado\n';
@@ -42,20 +47,40 @@ export const UserBulkImportPage: React.FC = () => {
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
+    setErrorMessage(null);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       setSelectedFile(e.dataTransfer.files[0]);
     }
   };
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setErrorMessage(null);
     if (e.target.files && e.target.files[0]) {
       setSelectedFile(e.target.files[0]);
     }
   };
 
-  const handleValidateFile = () => {
-    // Navega a la vista previa de inspección WF-15
-    navigate('/admin/users/import/preview');
+  const handleValidateFile = async () => {
+    if (!selectedFile) {
+      setErrorMessage('Por favor seleccione o arrastre un archivo Excel (.xlsx, .xls) o CSV antes de continuar.');
+      return;
+    }
+
+    setErrorMessage(null);
+    setIsLoading(true);
+
+    try {
+      const response = await userImportApi.validateFile(selectedFile);
+      navigate('/admin/users/import/preview', {
+        state: { importData: response, fileName: selectedFile.name },
+      });
+    } catch (err: any) {
+      setErrorMessage(
+        err.message || 'No se pudo validar el archivo con el servidor. Verifique que el backend esté activo.',
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -66,6 +91,7 @@ export const UserBulkImportPage: React.FC = () => {
           type="button"
           className={styles.backBtn}
           onClick={() => navigate('/admin/users')}
+          disabled={isLoading}
         >
           <ArrowLeft size={18} /> Volver a selección de método
         </button>
@@ -77,6 +103,27 @@ export const UserBulkImportPage: React.FC = () => {
           Cargue su archivo Excel (.xlsx, .xls) o CSV con el formato estandarizado para registrar usuarios masivamente.
         </p>
       </header>
+
+      {errorMessage && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            padding: '1rem 1.25rem',
+            background: 'var(--status-error-bg)',
+            border: '1px solid var(--status-error-border)',
+            borderRadius: '12px',
+            color: 'var(--status-error-text)',
+            marginBottom: '1.5rem',
+            fontSize: '0.9rem',
+            fontWeight: 500,
+          }}
+        >
+          <AlertTriangle size={20} />
+          <span>{errorMessage}</span>
+        </div>
+      )}
 
       {/* Grid Principal: Dropzone (Izq) y Checklist/Validación (Der) */}
       <div className={styles.gridContent}>
@@ -100,6 +147,7 @@ export const UserBulkImportPage: React.FC = () => {
               accept=".csv, .xlsx, .xls"
               style={{ display: 'none' }}
               onChange={onFileChange}
+              disabled={isLoading}
             />
 
             <div className={styles.dropzoneIconCircle}>
@@ -113,7 +161,7 @@ export const UserBulkImportPage: React.FC = () => {
               Formatos soportados: Excel (.xlsx, .xls) o CSV (.csv) hasta 10 MB
             </div>
 
-            <button type="button" className={styles.browseBtn}>
+            <button type="button" className={styles.browseBtn} disabled={isLoading}>
               <UploadCloud size={16} />
               Seleccionar desde mi equipo
             </button>
@@ -149,6 +197,7 @@ export const UserBulkImportPage: React.FC = () => {
               type="button"
               className={styles.downloadBtn}
               onClick={handleDownloadTemplate}
+              disabled={isLoading}
             >
               <Download size={15} />
               Descargar
@@ -187,9 +236,20 @@ export const UserBulkImportPage: React.FC = () => {
               type="button"
               className={styles.validateBtn}
               onClick={handleValidateFile}
+              disabled={isLoading}
+              style={{ opacity: isLoading ? 0.7 : 1, cursor: isLoading ? 'not-allowed' : 'pointer' }}
             >
-              <Play size={18} />
-              Validar y procesar archivo
+              {isLoading ? (
+                <>
+                  <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />
+                  Validando con el servidor...
+                </>
+              ) : (
+                <>
+                  <Play size={18} />
+                  Validar y procesar archivo
+                </>
+              )}
             </button>
           </div>
         </aside>

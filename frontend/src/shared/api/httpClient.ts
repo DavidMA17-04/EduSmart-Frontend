@@ -11,7 +11,8 @@ export class HttpError extends Error {
 
 function buildHeaders(init: RequestInit, token: string | null): Headers {
   const headers = new Headers(init.headers);
-  if (!headers.has('Content-Type')) {
+  const isFormData = typeof FormData !== 'undefined' && init.body instanceof FormData;
+  if (!headers.has('Content-Type') && !isFormData) {
     headers.set('Content-Type', 'application/json; charset=UTF-8');
   }
   if (token) {
