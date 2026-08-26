@@ -12,3 +12,7 @@ export function isValidNationalId(value: string): boolean {
 export function isValidEmail(value: string): boolean {
   return EMAIL_REGEX.test(value.trim());
 }
+
+export function isValidInitialPassword(value: string): boolean {
+  return value.length >= 8 && value.length <= 72;
+}

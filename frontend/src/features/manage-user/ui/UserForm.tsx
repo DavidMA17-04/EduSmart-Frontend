@@ -89,6 +89,20 @@ export const UserForm = ({
         {errors.email && <span className={styles.error}>{errors.email}</span>}
       </label>
       <label>
+        Contraseña inicial (opcional)
+        <Input
+          type="password"
+          autoComplete="new-password"
+          maxLength={72}
+          value={values.password}
+          onChange={(event) => onChange('password', event.target.value)}
+        />
+        <span className={styles.hint}>
+          Si la indica, se crea también la cuenta de acceso (auth). Mínimo 8 caracteres.
+        </span>
+        {errors.password && <span className={styles.error}>{errors.password}</span>}
+      </label>
+      <label>
         Teléfono
         <Input
           maxLength={30}
@@ -109,9 +123,9 @@ export const UserForm = ({
       </label>
       <fieldset className={styles.roles}>
         <legend>Roles institucionales</legend>
-        <p className={styles.hint}>Una persona puede tener más de un rol.</p>
+        <p className={styles.hint}>Obligatorio. Una persona puede tener más de un rol.</p>
         {roles.length === 0 ? (
-          <p className={styles.hint}>No hay roles cargados. Puede guardar el usuario y asignarlos después.</p>
+          <p className={styles.error}>No hay roles disponibles. No se puede registrar el usuario sin roles.</p>
         ) : (
           roles.map((role) => (
             <label key={role.id} className={styles.roleOption}>
@@ -123,6 +137,7 @@ export const UserForm = ({
             </label>
           ))
         )}
+        {errors.roleIds && <span className={styles.error}>{errors.roleIds}</span>}
       </fieldset>
       <div className={styles.actions}>
         {onCancel && <Button onClick={onCancel} type="button" variant="secondary">Cancelar</Button>}

@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import type { CreateUserPayload, UserAccountStatus } from '@/entities/user';
-import { digitsOnly, isValidEmail, isValidNationalId } from './userFormRules';
+import {
+  digitsOnly,
+  isValidEmail,
+  isValidInitialPassword,
+  isValidNationalId,
+} from './userFormRules';
 
 export interface UserFormValues {
   nationalId: string;
@@ -8,6 +13,7 @@ export interface UserFormValues {
   lastName: string;
   email: string;
   phone: string;
+  password: string;
   status: UserAccountStatus;
   roleIds: string[];
 }
@@ -18,6 +24,7 @@ export const emptyUserForm: UserFormValues = {
   lastName: '',
   email: '',
   phone: '',
+  password: '',
   status: 'ACTIVE',
   roleIds: [],
 };
@@ -40,16 +47,26 @@ export function validateUserForm(values: UserFormValues): Partial<Record<keyof U
     errors.email = 'El formato de correo no es válido.';
   }
 
+  if (values.password.trim() && !isValidInitialPassword(values.password)) {
+    errors.password = 'La contraseña inicial debe tener entre 8 y 72 caracteres.';
+  }
+
+  if (values.roleIds.length === 0) {
+    errors.roleIds = 'Debe asignar al menos un rol.';
+  }
+
   return errors;
 }
 
 export function toCreatePayload(values: UserFormValues): CreateUserPayload {
+  const password = values.password.trim();
   return {
     nationalId: digitsOnly(values.nationalId),
     firstName: values.firstName.trim(),
     lastName: values.lastName.trim(),
     email: values.email.trim().toLowerCase(),
     phone: values.phone.trim() || undefined,
+    password: password || undefined,
     status: values.status,
     roleIds: values.roleIds,
   };

@@ -33,6 +33,7 @@ export const UserDetailPage = () => {
           lastName: user.lastName ?? '',
           email: user.email ?? '',
           phone: user.phone ?? '',
+          password: '',
           status: user.status,
           roleIds: user.roles.map((role) => role.id),
         });

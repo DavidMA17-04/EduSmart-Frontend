@@ -21,13 +21,26 @@ function buildHeaders(init: RequestInit, token: string | null): Headers {
 }
 
 async function parseErrorMessage(response: Response): Promise<string> {
-  const payload = await response.json().catch(() => null) as { message?: string } | null;
+  const payload = await response.json().catch(() => null) as {
+    message?: string | string[];
+  } | null;
+
+  const rawMessage = payload?.message;
+  const message = Array.isArray(rawMessage)
+    ? rawMessage.filter(Boolean).join(' ')
+    : rawMessage;
+
   if (response.status === 401) {
-    return payload?.message === 'Invalid credentials'
+    return message === 'Invalid credentials'
       ? 'Credenciales inválidas. Verifique el usuario de desarrollo.'
       : 'No autorizado. El backend requiere inicio de sesión.';
   }
-  return payload?.message ?? 'No se pudo completar la solicitud.';
+
+  if (response.status === 409 && message) {
+    return message;
+  }
+
+  return message ?? 'No se pudo completar la solicitud.';
 }
 
 export async function httpClient<T>(path: string, init: RequestInit = {}): Promise<T> {
