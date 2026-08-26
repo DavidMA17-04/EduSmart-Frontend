@@ -23,10 +23,12 @@ export const SectionDetailPanel = ({ model, onGoToTeachersTab }: SectionDetailPa
   return (
     <div className={styles.detailPanel}>
       <SectionForm
+        academicPeriods={model.academicPeriods}
         isSubmitting={model.isSectionSubmitting}
         onCancel={model.cancelSectionForm}
         onChange={model.sectionForm.setField}
         onSubmit={model.sectionForm.submit}
+        specialties={model.specialties}
         title={sectionTitle}
         values={model.sectionForm.values}
       />
@@ -78,18 +80,20 @@ export const SectionDetailPanel = ({ model, onGoToTeachersTab }: SectionDetailPa
                       <Button
                         aria-label={`Editar ${group.name}`}
                         onClick={() => model.selectGroup(group.id)}
+                        size="icon"
                         type="button"
                         variant="secondary"
                       >
-                        <Edit3 size={14} />
+                        <Edit3 />
                       </Button>
                       <Button
                         aria-label={`Eliminar ${group.name}`}
                         onClick={() => void model.removeSelectedGroup(group)}
+                        size="icon"
                         type="button"
                         variant="danger"
                       >
-                        <Trash2 size={14} />
+                        <Trash2 />
                       </Button>
                     </span>
                   }
@@ -112,10 +116,11 @@ export const SectionDetailPanel = ({ model, onGoToTeachersTab }: SectionDetailPa
       )}
 
       <Alert>
-        Los docentes guía se asignan desde la pestaña{' '}
+        Los docentes guía se crean en la pestaña{' '}
         <button className={styles.alertLink} onClick={onGoToTeachersTab} type="button">
-          Asignación de docentes guía
+          Docentes guía
         </button>
+        {' '}y se asignan al crear o editar una sección.
         .
       </Alert>
     </div>

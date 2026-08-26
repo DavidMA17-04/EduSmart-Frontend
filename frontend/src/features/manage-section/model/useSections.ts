@@ -21,7 +21,7 @@ export function useSections() {
 
   useEffect(() => { void load(); }, [load]);
 
-  const removeSection = useCallback((id: string) => {
+  const removeSection = useCallback((id: number) => {
     setSections((current) => current.filter((section) => section.id !== id));
   }, []);
 

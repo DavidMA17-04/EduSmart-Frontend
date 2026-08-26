@@ -17,7 +17,7 @@ export const SectionsGroupsPanel = () => {
         items={[
           { id: 'niveles', label: 'Niveles' },
           { id: 'grupos', label: 'Secciones' },
-          { id: 'docentes', label: 'Asignación de docentes guía' },
+          { id: 'docentes', label: 'Docentes guía' },
         ]}
         onChange={model.setActiveTab}
         value={model.activeTab}
@@ -36,7 +36,7 @@ export const SectionsGroupsPanel = () => {
                 <p>Administre los niveles académicos de la institución.</p>
               </div>
               <Button onClick={model.createSectionMode} type="button">
-                <Plus size={15} /> Nuevo nivel
+                <Plus size={16} /> Nuevo nivel
               </Button>
             </Card>
 
@@ -47,9 +47,9 @@ export const SectionsGroupsPanel = () => {
                 <Table>
                   <thead>
                     <tr>
-                      <th>Código</th>
+                      <th>Grado</th>
                       <th>Nivel</th>
-                      <th>Descripción</th>
+                      <th>Especialidad</th>
                       <th>Cantidad de secciones</th>
                       <th>Estado</th>
                       <th>Acciones</th>
@@ -63,18 +63,20 @@ export const SectionsGroupsPanel = () => {
                             <Button
                               aria-label={`Editar ${section.name}`}
                               onClick={() => model.selectSection(section.id)}
+                              size="icon"
                               type="button"
                               variant="secondary"
                             >
-                              <Edit3 size={14} />
+                              <Edit3 />
                             </Button>
                             <Button
                               aria-label={`Inactivar ${section.name}`}
                               onClick={() => void model.deactivateSelectedSection(section)}
+                              size="icon"
                               type="button"
                               variant="danger"
                             >
-                              <Trash2 size={14} />
+                              <Trash2 />
                             </Button>
                           </span>
                         }

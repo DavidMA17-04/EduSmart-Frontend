@@ -1,10 +1,10 @@
 import { useCallback, useState } from 'react';
-import type { AssignGuideTeacherPayload, CreateGroupPayload, UpdateGroupPayload } from '@/entities/group';
-import { groupApi } from '../api/groupApi';
+import type { CreateGuideTeacherPayload, UpdateGuideTeacherPayload } from '@/entities/group';
+import { guideTeacherApi } from '../api/guideTeacherApi';
 
 type Mutation = <T>(operation: () => Promise<T>) => Promise<T>;
 
-export function useManageGroup(onSuccess?: () => void | Promise<void>) {
+export function useManageGuideTeacher(onSuccess?: () => void | Promise<void>) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,11 +24,9 @@ export function useManageGroup(onSuccess?: () => void | Promise<void>) {
   }, [onSuccess]);
 
   return {
-    create: (payload: CreateGroupPayload) => execute(() => groupApi.create(payload)),
-    update: (id: number, payload: UpdateGroupPayload) => execute(() => groupApi.update(id, payload)),
-    assignGuideTeacher: (id: number, payload: AssignGuideTeacherPayload) =>
-      execute(() => groupApi.assignGuideTeacher(id, payload)),
-    remove: (id: number) => execute(() => groupApi.remove(id)),
+    create: (payload: CreateGuideTeacherPayload) => execute(() => guideTeacherApi.create(payload)),
+    update: (id: number, payload: UpdateGuideTeacherPayload) => execute(() => guideTeacherApi.update(id, payload)),
+    remove: (id: number) => execute(() => guideTeacherApi.remove(id)),
     isSubmitting,
     error,
   };

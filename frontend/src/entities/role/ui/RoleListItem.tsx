@@ -6,7 +6,7 @@ import styles from './RoleListItem.module.css';
 interface RoleListItemProps {
   role: Role;
   isSelected?: boolean;
-  onSelect?: (roleId: string) => void;
+  onSelect?: (roleId: number) => void;
 }
 
 export const RoleListItem = ({ role, isSelected = false, onSelect }: RoleListItemProps) => (

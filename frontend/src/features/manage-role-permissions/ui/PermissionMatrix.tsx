@@ -11,10 +11,10 @@ import styles from './PermissionMatrix.module.css';
 
 interface PermissionMatrixProps {
   permissions: Permission[];
-  selectedPermissionIds: string[];
+  selectedPermissionIds: number[];
   readOnly?: boolean;
   disabled?: boolean;
-  onToggle: (permissionId: string, checked: boolean) => void;
+  onToggle: (permissionId: number, checked: boolean) => void;
 }
 
 export const PermissionMatrix = ({

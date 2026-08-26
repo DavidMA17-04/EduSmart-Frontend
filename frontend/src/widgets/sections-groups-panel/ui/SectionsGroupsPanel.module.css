@@ -38,12 +38,20 @@
   gap: 18px;
 }
 
+.tableCard h2 {
+  font-size: 16px;
+}
+
 .toolbar {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
   font-size: 13px;
+}
+
+.toolbar h2 {
+  font-size: 16px;
 }
 
 .toolbar label {
@@ -59,11 +67,6 @@
 .rowActions {
   display: flex;
   gap: 6px;
-}
-
-.rowActions button {
-  min-height: 32px;
-  padding-inline: 10px;
 }
 
 .muted {

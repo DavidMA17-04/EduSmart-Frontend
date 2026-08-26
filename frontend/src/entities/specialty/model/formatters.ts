@@ -6,8 +6,8 @@ export const SPECIALTY_STATUS_LABELS: Record<SpecialtyStatus, string> = {
   UNDER_REVIEW: 'En revisión',
 };
 
-export function formatSpecialtyDuration(duration: Specialty['duration']): string {
-  return `${duration} ${duration === 1 ? 'período' : 'períodos'}`;
+export function formatSpecialtyDuration(_duration?: number): string {
+  return '';
 }
 
 export function normalizeSpecialty(specialty: Specialty): Specialty {

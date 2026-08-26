@@ -60,11 +60,6 @@
   gap: 6px;
 }
 
-.rowActions button {
-  min-height: 32px;
-  padding-inline: 10px;
-}
-
 .empty {
   color: var(--admin-muted);
   text-align: center;

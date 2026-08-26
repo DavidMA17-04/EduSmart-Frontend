@@ -20,7 +20,7 @@ export const UserCreatePage = () => {
   useEffect(() => {
     let active = true;
     roleApi.list()
-      .then((items) => { if (active) setRoles(items); })
+      .then((items) => { if (active) setRoles(items.filter((role) => role.status === 'ACTIVE')); })
       .catch(() => { if (active) setRoles([]); });
     return () => { active = false; };
   }, []);
@@ -52,7 +52,7 @@ export const UserCreatePage = () => {
             <Button type="button" variant="secondary" onClick={() => { setCreatedUser(null); form.setValues(emptyUserForm); }}>
               Registrar otro
             </Button>
-            <Button type="button" onClick={() => navigate(`/administrative/users/${createdUser.id}`)}>
+            <Button type="button" onClick={() => navigate(`/admin/users/${createdUser.id}`)}>
               Ver ficha
             </Button>
           </div>
@@ -65,26 +65,49 @@ export const UserCreatePage = () => {
     <section className={styles.page}>
       <p className={styles.breadcrumb}>Administrativo <span>›</span> Usuarios <span>›</span> Registro manual</p>
       <header className={styles.header}>
-        <span className={styles.icon}><UserPlus size={22} /></span>
-        <div>
-          <h1>Registro manual de usuario</h1>
-          <p>Complete los datos institucionales. El sistema valida cédula, correo y duplicados.</p>
+        <div className={styles.headerLead}>
+          <span className={styles.icon}><UserPlus size={22} /></span>
+          <div>
+            <h1>Registro manual de usuario</h1>
+            <p>Complete los datos institucionales. El sistema valida cédula, correo y duplicados.</p>
+          </div>
         </div>
       </header>
-      <Card>
-        <UserForm
-          values={form.values}
-          errors={form.errors}
-          roles={roles}
-          isSubmitting={isSubmitting}
-          submitLabel="Crear usuario"
-          formError={formError}
-          onChange={form.onChange}
-          onSubmit={onSubmit}
-          onCancel={() => navigate('/onboarding')}
-        />
-      </Card>
-      <Link className={styles.backLink} to="/onboarding">Volver a incorporación</Link>
+
+      <div className={styles.layout}>
+        <Card className={styles.formCard} padded={false}>
+          <div className={styles.formTitle}>
+            <h2>Datos del usuario</h2>
+          </div>
+          <div className={styles.formBody}>
+            <UserForm
+              values={form.values}
+              errors={form.errors}
+              roles={roles}
+              isSubmitting={isSubmitting}
+              submitLabel="Crear usuario"
+              formError={formError}
+              onChange={form.onChange}
+              onSubmit={onSubmit}
+              onCancel={() => navigate('/admin/users')}
+            />
+          </div>
+        </Card>
+
+        <aside className={styles.sidebar}>
+          <Card className={styles.infoCard}>
+            <h2>Información</h2>
+            <p>Use este formulario para incorporar un usuario de forma individual.</p>
+            <ul>
+              <li>La cédula y el correo deben ser únicos.</li>
+              <li>Debe asignar al menos un rol institucional.</li>
+              <li>La contraseña es opcional; si la indica, habilita el acceso.</li>
+            </ul>
+          </Card>
+        </aside>
+      </div>
+
+      <Link className={styles.backLink} to="/admin/users">Volver a incorporación</Link>
     </section>
   );
 };

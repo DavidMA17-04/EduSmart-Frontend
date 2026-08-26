@@ -1,7 +1,7 @@
 import type { FormEventHandler } from 'react';
 import type { Role } from '@/entities/role';
 import type { UserAccountStatus } from '@/entities/user';
-import { Alert, Button, Checkbox, Input, Select } from '@/shared/ui';
+import { Alert, Checkbox, FormActions, Input, Select } from '@/shared/ui';
 import type { UserFormValues } from '../model/useUserForm';
 import styles from './UserForm.module.css';
 
@@ -35,7 +35,7 @@ export const UserForm = ({
   onSubmit,
   onCancel,
 }: UserFormProps) => {
-  const toggleRole = (roleId: string) => {
+  const toggleRole = (roleId: number) => {
     const selected = values.roleIds.includes(roleId)
       ? values.roleIds.filter((id) => id !== roleId)
       : [...values.roleIds, roleId];
@@ -45,16 +45,31 @@ export const UserForm = ({
   return (
     <form className={styles.form} onSubmit={onSubmit} noValidate>
       {formError && <Alert>{formError}</Alert>}
-      <label>
-        Cédula
-        <Input
-          required
-          maxLength={12}
-          value={values.nationalId}
-          onChange={(event) => onChange('nationalId', event.target.value)}
-        />
-        {errors.nationalId && <span className={styles.error}>{errors.nationalId}</span>}
-      </label>
+
+      <div className={styles.row}>
+        <label>
+          Cédula
+          <Input
+            required
+            maxLength={12}
+            value={values.nationalId}
+            onChange={(event) => onChange('nationalId', event.target.value)}
+          />
+          {errors.nationalId && <span className={styles.error}>{errors.nationalId}</span>}
+        </label>
+        <label>
+          Estado de la cuenta
+          <Select
+            value={values.status}
+            onChange={(event) => onChange('status', event.target.value as UserAccountStatus)}
+          >
+            {statusOptions.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </Select>
+        </label>
+      </div>
+
       <div className={styles.row}>
         <label>
           Nombre
@@ -77,17 +92,29 @@ export const UserForm = ({
           {errors.lastName && <span className={styles.error}>{errors.lastName}</span>}
         </label>
       </div>
-      <label>
-        Correo institucional
-        <Input
-          required
-          type="email"
-          maxLength={150}
-          value={values.email}
-          onChange={(event) => onChange('email', event.target.value)}
-        />
-        {errors.email && <span className={styles.error}>{errors.email}</span>}
-      </label>
+
+      <div className={styles.row}>
+        <label>
+          Correo institucional
+          <Input
+            required
+            type="email"
+            maxLength={150}
+            value={values.email}
+            onChange={(event) => onChange('email', event.target.value)}
+          />
+          {errors.email && <span className={styles.error}>{errors.email}</span>}
+        </label>
+        <label>
+          Teléfono
+          <Input
+            maxLength={30}
+            value={values.phone}
+            onChange={(event) => onChange('phone', event.target.value)}
+          />
+        </label>
+      </div>
+
       <label>
         Contraseña inicial (opcional)
         <Input
@@ -98,51 +125,33 @@ export const UserForm = ({
           onChange={(event) => onChange('password', event.target.value)}
         />
         <span className={styles.hint}>
-          Si la indica, se crea también la cuenta de acceso (auth). Mínimo 8 caracteres.
+          Si la indica, se crea la cuenta de acceso. Mínimo 8 caracteres.
         </span>
         {errors.password && <span className={styles.error}>{errors.password}</span>}
       </label>
-      <label>
-        Teléfono
-        <Input
-          maxLength={30}
-          value={values.phone}
-          onChange={(event) => onChange('phone', event.target.value)}
-        />
-      </label>
-      <label>
-        Estado de la cuenta
-        <Select
-          value={values.status}
-          onChange={(event) => onChange('status', event.target.value as UserAccountStatus)}
-        >
-          {statusOptions.map((option) => (
-            <option key={option.value} value={option.value}>{option.label}</option>
-          ))}
-        </Select>
-      </label>
+
       <fieldset className={styles.roles}>
         <legend>Roles institucionales</legend>
-        <p className={styles.hint}>Obligatorio. Una persona puede tener más de un rol.</p>
+        <p className={styles.hint}>Obligatorio. Puede seleccionar más de uno.</p>
         {roles.length === 0 ? (
           <p className={styles.error}>No hay roles disponibles. No se puede registrar el usuario sin roles.</p>
         ) : (
-          roles.map((role) => (
-            <label key={role.id} className={styles.roleOption}>
-              <Checkbox
-                checked={values.roleIds.includes(role.id)}
-                onChange={() => toggleRole(role.id)}
-              />
-              {role.name}
-            </label>
-          ))
+          <div className={styles.roleGrid}>
+            {roles.map((role) => (
+              <label key={role.id} className={styles.roleOption}>
+                <Checkbox
+                  checked={values.roleIds.includes(role.id)}
+                  onChange={() => toggleRole(role.id)}
+                />
+                {role.name}
+              </label>
+            ))}
+          </div>
         )}
         {errors.roleIds && <span className={styles.error}>{errors.roleIds}</span>}
       </fieldset>
-      <div className={styles.actions}>
-        {onCancel && <Button onClick={onCancel} type="button" variant="secondary">Cancelar</Button>}
-        <Button disabled={isSubmitting} type="submit">{isSubmitting ? 'Guardando…' : submitLabel}</Button>
-      </div>
+
+      <FormActions isSubmitting={isSubmitting} onCancel={onCancel} submitLabel={submitLabel} />
     </form>
   );
 };

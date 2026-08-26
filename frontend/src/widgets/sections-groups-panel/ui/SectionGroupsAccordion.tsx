@@ -28,7 +28,7 @@ export const SectionGroupsAccordion = ({ model }: SectionGroupsAccordionProps) =
           >
             <span className={styles.triggerLeft}>
               <ChevronDown className={`${styles.chevron} ${isExpanded ? styles.expanded : ''}`} size={16} />
-              <strong>{section.code} - {section.name}</strong>
+              <strong>{section.gradeLevel} - {section.name}</strong>
             </span>
             <span className={styles.badge}>{groups.length} {groups.length === 1 ? 'sección' : 'secciones'}</span>
           </button>

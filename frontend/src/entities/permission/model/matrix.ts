@@ -8,7 +8,7 @@ export function buildPermissionMatrix(permissions: Permission[]): PermissionMatr
   return matrix;
 }
 
-export function getPermissionIds(permissions: Permission[]): string[] {
+export function getPermissionIds(permissions: Permission[]): number[] {
   return permissions.map((permission) => permission.id);
 }
 

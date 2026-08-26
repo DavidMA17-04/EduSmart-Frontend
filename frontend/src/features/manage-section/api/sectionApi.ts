@@ -6,8 +6,8 @@ const request = async <T>(path: string, init?: RequestInit): Promise<T> => (awai
 
 export const sectionApi = {
   list: () => request<Section[]>('/sections'),
-  getById: (id: string) => request<Section>(`/sections/${id}`),
+  getById: (id: number) => request<Section>(`/sections/${id}`),
   create: (payload: CreateSectionPayload) => request<Section>('/sections', { method: 'POST', body: JSON.stringify(payload) }),
-  update: (id: string, payload: UpdateSectionPayload) => request<Section>(`/sections/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
-  deactivate: (id: string) => request<Section>(`/sections/${id}`, { method: 'DELETE' }),
+  update: (id: number, payload: UpdateSectionPayload) => request<Section>(`/sections/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+  deactivate: (id: number) => request<Section>(`/sections/${id}`, { method: 'DELETE' }),
 };

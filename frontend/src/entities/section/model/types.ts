@@ -1,12 +1,25 @@
 import type { AcademicGroup } from '@/entities/group';
+import type { Specialty } from '@/entities/specialty';
 
 export type SectionStatus = 'ACTIVE' | 'INACTIVE';
 
-export interface Section {
-  id: string;
-  code: string;
+export interface AcademicPeriod {
+  id: number;
   name: string;
+  startDate: string;
+  endDate: string;
+  status: 'PLANNED' | 'ACTIVE' | 'CLOSED';
+}
+
+export interface Section {
+  id: number;
+  name: string;
+  gradeLevel: number;
   description: string | null;
+  academicPeriodId: number;
+  specialtyId: number | null;
+  specialty?: Specialty | null;
+  academicPeriod?: AcademicPeriod | null;
   status: SectionStatus;
   groups?: AcademicGroup[];
   createdAt: string;
@@ -14,8 +27,10 @@ export interface Section {
 }
 
 export interface CreateSectionPayload {
-  code: string;
   name: string;
+  gradeLevel: number;
+  academicPeriodId: number;
+  specialtyId?: number | null;
   description?: string;
   status?: SectionStatus;
 }

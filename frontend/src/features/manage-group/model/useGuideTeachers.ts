@@ -11,12 +11,7 @@ export function useGuideTeachers() {
     setIsLoading(true);
     setError(null);
     try {
-      const teachers = await guideTeacherApi.list();
-      setGuideTeachers(
-        teachers
-          .filter((teacher) => teacher.name)
-          .map((teacher) => ({ id: teacher.id, name: teacher.name })),
-      );
+      setGuideTeachers(await guideTeacherApi.list());
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'No se pudieron cargar los docentes guía.');
     } finally {
@@ -28,5 +23,17 @@ export function useGuideTeachers() {
     void load();
   }, [load]);
 
-  return { guideTeachers, isLoading, error, reload: load };
+  const upsert = useCallback((teacher: GuideTeacher) => {
+    setGuideTeachers((current) => {
+      const index = current.findIndex((item) => item.id === teacher.id);
+      const next = index === -1 ? [...current, teacher] : current.map((item) => (item.id === teacher.id ? teacher : item));
+      return next.sort((a, b) => a.lastName.localeCompare(b.lastName, 'es') || a.firstName.localeCompare(b.firstName, 'es'));
+    });
+  }, []);
+
+  const remove = useCallback((id: number) => {
+    setGuideTeachers((current) => current.filter((item) => item.id !== id));
+  }, []);
+
+  return { guideTeachers, isLoading, error, reload: load, upsert, remove };
 }

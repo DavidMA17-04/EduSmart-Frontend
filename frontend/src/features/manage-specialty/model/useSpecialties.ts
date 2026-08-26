@@ -8,7 +8,6 @@ export function useSpecialties() {
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<SpecialtyStatusFilter>('ALL');
-  const [area, setArea] = useState('ALL');
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +26,7 @@ export function useSpecialties() {
 
   useEffect(() => { void load(); }, [load]);
 
-  const removeSpecialty = useCallback((id: string) => {
+  const removeSpecialty = useCallback((id: number) => {
     setSpecialties((current) => current.filter((specialty) => specialty.id !== id));
   }, []);
 
@@ -41,13 +40,11 @@ export function useSpecialties() {
     });
   }, []);
 
-  const areas = useMemo(() => [...new Set(specialties.map((specialty) => specialty.area))].sort(), [specialties]);
   const filteredSpecialties = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
     return specialties.filter((specialty) => (status === 'ALL' || specialty.status === status)
-      && (area === 'ALL' || specialty.area === area)
-      && (!query || [specialty.code, specialty.name, specialty.area].some((value) => value.toLocaleLowerCase().includes(query))));
-  }, [area, search, specialties, status]);
+      && (!query || [specialty.name, specialty.description ?? ''].some((value) => value.toLocaleLowerCase().includes(query))));
+  }, [search, specialties, status]);
   const pageSize = 7;
   const totalPages = Math.max(1, Math.ceil(filteredSpecialties.length / pageSize));
   const paginatedSpecialties = useMemo(
@@ -55,19 +52,16 @@ export function useSpecialties() {
     [currentPage, filteredSpecialties],
   );
 
-  useEffect(() => { setCurrentPage(1); }, [area, search, status]);
+  useEffect(() => { setCurrentPage(1); }, [search, status]);
   useEffect(() => { if (currentPage > totalPages) setCurrentPage(totalPages); }, [currentPage, totalPages]);
 
   return {
     specialties: paginatedSpecialties,
     allSpecialties: specialties,
-    areas,
     search,
     setSearch,
     status,
     setStatus,
-    area,
-    setArea,
     currentPage,
     setCurrentPage,
     totalPages,

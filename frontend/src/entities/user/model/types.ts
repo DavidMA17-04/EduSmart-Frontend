@@ -1,13 +1,13 @@
 export type UserAccountStatus = 'ACTIVE' | 'INACTIVE' | 'BLOCKED' | 'PENDING';
 
 export interface UserRoleRef {
-  id: string;
+  id: number;
   name: string;
   status: 'ACTIVE' | 'INACTIVE';
 }
 
 export interface AdministrativeUser {
-  id: string;
+  id: number;
   name: string | null;
   nationalId: string | null;
   firstName: string | null;
@@ -28,7 +28,7 @@ export interface CreateUserPayload {
   phone?: string;
   password?: string;
   status?: UserAccountStatus;
-  roleIds?: string[];
+  roleIds?: number[];
 }
 
 export type UpdateUserPayload = Partial<CreateUserPayload>;

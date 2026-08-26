@@ -10,9 +10,9 @@ async function requestUser<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const userApi = {
   list: () => requestUser<AdministrativeUser[]>('/users'),
-  getById: (id: string) => requestUser<AdministrativeUser>(`/users/${id}`),
+  getById: (id: number) => requestUser<AdministrativeUser>(`/users/${id}`),
   create: (payload: CreateUserPayload) =>
     requestUser<AdministrativeUser>('/users', { method: 'POST', body: JSON.stringify(payload) }),
-  update: (id: string, payload: UpdateUserPayload) =>
+  update: (id: number, payload: UpdateUserPayload) =>
     requestUser<AdministrativeUser>(`/users/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
 };

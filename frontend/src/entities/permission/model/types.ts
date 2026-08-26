@@ -25,7 +25,7 @@ export const PERMISSION_MODULE_LABELS: Record<PermissionModule, string> = {
 };
 
 export interface Permission {
-  id: string;
+  id: number;
   code: string;
   module: PermissionModule;
   action: PermissionAction;
