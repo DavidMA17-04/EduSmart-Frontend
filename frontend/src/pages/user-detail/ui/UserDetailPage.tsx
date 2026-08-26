@@ -67,46 +67,84 @@ export const UserDetailPage = () => {
     <section className={styles.page}>
       <p className={styles.breadcrumb}>Administrativo <span>›</span> Usuarios <span>›</span> Ficha</p>
       <header className={styles.header}>
-        <span className={styles.icon}><UserRound size={22} /></span>
-        <div>
-          <h1>{displayName || 'Consulta de usuario'}</h1>
-          <p>Consulte o edite los datos institucionales. La edición queda registrada en auditoría.</p>
+        <div className={styles.headerLead}>
+          <span className={styles.icon}><UserRound size={22} /></span>
+          <div>
+            <h1>{displayName || 'Consulta de usuario'}</h1>
+            <p>Consulte o edite los datos institucionales. La edición queda registrada en auditoría.</p>
+          </div>
         </div>
         {mode === 'view' && !isLoading && !loadError && (
-          <Button type="button" onClick={() => setMode('edit')}>Editar</Button>
+          <div className={styles.headerActions}>
+            <Button type="button" onClick={() => setMode('edit')}>Editar</Button>
+          </div>
         )}
       </header>
       {isLoading && <Alert>Cargando usuario…</Alert>}
       {loadError && <Alert>{loadError}</Alert>}
       {!isLoading && !loadError && mode === 'view' && (
-        <Card>
-          <dl className={styles.details}>
-            <div><dt>Cédula</dt><dd>{values.nationalId || '—'}</dd></div>
-            <div><dt>Nombre</dt><dd>{values.firstName || '—'}</dd></div>
-            <div><dt>Apellidos</dt><dd>{values.lastName || '—'}</dd></div>
-            <div><dt>Correo</dt><dd>{values.email || '—'}</dd></div>
-            <div><dt>Teléfono</dt><dd>{values.phone || '—'}</dd></div>
-            <div><dt>Estado</dt><dd><Badge tone={values.status === 'ACTIVE' ? 'success' : values.status === 'BLOCKED' ? 'danger' : 'warning'}>{values.status}</Badge></dd></div>
-            <div><dt>Roles</dt><dd>{values.roleIds.length ? roles.filter((role) => values.roleIds.includes(role.id)).map((role) => role.name).join(', ') || `${values.roleIds.length} asignado(s)` : 'Sin roles'}</dd></div>
-          </dl>
-        </Card>
+        <div className={styles.layout}>
+          <Card className={styles.formCard} padded={false}>
+            <div className={styles.formTitle}>
+              <h2>Ficha del usuario</h2>
+            </div>
+            <div className={styles.formBody}>
+              <dl className={styles.details}>
+                <div><dt>Cédula</dt><dd>{values.nationalId || '—'}</dd></div>
+                <div><dt>Nombre</dt><dd>{values.firstName || '—'}</dd></div>
+                <div><dt>Apellidos</dt><dd>{values.lastName || '—'}</dd></div>
+                <div><dt>Correo</dt><dd>{values.email || '—'}</dd></div>
+                <div><dt>Teléfono</dt><dd>{values.phone || '—'}</dd></div>
+                <div><dt>Estado</dt><dd><Badge tone={values.status === 'ACTIVE' ? 'success' : values.status === 'BLOCKED' ? 'danger' : 'warning'}>{values.status}</Badge></dd></div>
+                <div><dt>Roles</dt><dd>{values.roleIds.length ? roles.filter((role) => values.roleIds.includes(role.id)).map((role) => role.name).join(', ') || `${values.roleIds.length} asignado(s)` : 'Sin roles'}</dd></div>
+              </dl>
+            </div>
+          </Card>
+          <aside className={styles.sidebar}>
+            <Card className={styles.infoCard}>
+              <h2>Información</h2>
+              <p>Consulta de datos institucionales del usuario.</p>
+              <ul>
+                <li>Use Editar para modificar la ficha.</li>
+                <li>Los cambios quedan registrados en auditoría.</li>
+              </ul>
+            </Card>
+          </aside>
+        </div>
       )}
       {!isLoading && !loadError && mode === 'edit' && (
-        <Card>
-          <UserForm
-            values={values}
-            errors={errors}
-            roles={roles}
-            isSubmitting={isSubmitting}
-            submitLabel="Guardar cambios"
-            formError={formError}
-            onChange={onChange}
-            onSubmit={onSubmit}
-            onCancel={() => setMode('view')}
-          />
-        </Card>
+        <div className={styles.layout}>
+          <Card className={styles.formCard} padded={false}>
+            <div className={styles.formTitle}>
+              <h2>Editar usuario</h2>
+            </div>
+            <div className={styles.formBody}>
+              <UserForm
+                values={values}
+                errors={errors}
+                roles={roles}
+                isSubmitting={isSubmitting}
+                submitLabel="Guardar cambios"
+                formError={formError}
+                onChange={onChange}
+                onSubmit={onSubmit}
+                onCancel={() => setMode('view')}
+              />
+            </div>
+          </Card>
+          <aside className={styles.sidebar}>
+            <Card className={styles.infoCard}>
+              <h2>Información</h2>
+              <p>Actualice solo los datos que requieran corrección.</p>
+              <ul>
+                <li>La cédula y el correo deben seguir siendo únicos.</li>
+                <li>Debe mantener al menos un rol asignado.</li>
+              </ul>
+            </Card>
+          </aside>
+        </div>
       )}
-      <Link className={styles.backLink} to="/onboarding">Volver a incorporación</Link>
+      <Link className={styles.backLink} to="/admin/users">Volver a incorporación</Link>
     </section>
   );
 };
