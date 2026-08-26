@@ -1,97 +1,152 @@
-import { Alert, Button, Card, Select, Table } from '@/shared/ui';
+import { Edit3, Plus, Trash2 } from 'lucide-react';
+import { Alert, Button, Card, Table } from '@/shared/ui';
 import { formatStudentCount } from '@/entities/group';
+import { GuideTeacherForm } from '@/features/manage-group';
 import type { SectionsGroupsPanelModel } from '../model/useSectionsGroupsPanel';
+import groupRowStyles from '@/entities/group/ui/GroupTableRow.module.css';
 import styles from './SectionsGroupsPanel.module.css';
 
 interface GuideTeacherTabViewProps {
   model: SectionsGroupsPanelModel;
 }
 
-export const GuideTeacherTabView = ({ model }: GuideTeacherTabViewProps) => (
-  <Card className={styles.tableCard}>
-    <div className={styles.toolbar}>
-      <label>
-        Filtrar
-        <Select
-          onChange={(event) => model.setTeacherFilter(event.target.value)}
-          value={model.teacherFilter}
-        >
-          <option value="all">Todas las secciones</option>
-          <option value="unassigned">Sin docente asignado</option>
-          {model.sections.map((section) => (
-            <option key={section.id} value={section.id}>
-              {section.code} - {section.name}
-            </option>
-          ))}
-        </Select>
-      </label>
-    </div>
+export const GuideTeacherTabView = ({ model }: GuideTeacherTabViewProps) => {
+  const title = model.teacherFormMode === 'edit' ? 'Editar docente guía' : 'Nuevo docente guía';
+  const selectedAssignments = model.selectedTeacher
+    ? model.assignmentsByTeacherId.get(model.selectedTeacher.id) ?? []
+    : [];
 
-    {model.groupMutationError && <Alert>{model.groupMutationError}</Alert>}
+  return (
+    <div className={styles.groupsLayout}>
+      <div className={styles.mainColumn}>
+        <Card className={styles.tableCard}>
+          <div className={styles.toolbar}>
+            <div>
+              <h2>Docentes guía</h2>
+              <p className={styles.muted}>Cree, edite o elimine docentes. Luego asígnelos a una sección.</p>
+            </div>
+            <Button onClick={model.createTeacherMode} type="button">
+              <Plus size={16} /> Nuevo docente
+            </Button>
+          </div>
 
-    {model.isLoading ? (
-      <p className={styles.muted}>Cargando secciones…</p>
-    ) : (
-      <Table>
-        <thead>
-          <tr>
-            <th>Código</th>
-            <th>Sección</th>
-            <th>Nivel</th>
-            <th>Estudiantes</th>
-            <th>Docente guía</th>
-            <th>Acción</th>
-          </tr>
-        </thead>
-        <tbody>
-          {model.assignmentGroups.map((group) => {
-            const currentTeacherId = group.guideTeacherId ?? '';
-            const pendingValue = model.pendingTeachers[group.id] ?? currentTeacherId;
-            const hasChange = pendingValue !== currentTeacherId;
-            const isUnassigned = !group.guideTeacherId;
-            const isSaving = model.savingGroupId === group.id;
+          {model.teacherMutationError && <Alert>{model.teacherMutationError}</Alert>}
 
-            return (
-              <tr className={isUnassigned ? styles.unassigned : undefined} key={group.id}>
-                <td><strong>{model.getSectionCode(group.sectionId)}</strong></td>
-                <td><strong>{group.name}</strong></td>
-                <td>{model.getSectionName(group.sectionId)}</td>
-                <td>{formatStudentCount(group.studentCount)}</td>
-                <td>
-                  <Select
-                    key={`${group.id}-${currentTeacherId || 'none'}`}
-                    className={styles.teacherSelect}
-                    disabled={isSaving}
-                    onChange={(event) => model.setPendingTeacher(group.id, event.target.value)}
-                    value={pendingValue}
-                  >
-                    <option value="">Sin asignar</option>
-                    {model.guideTeachers.map((teacher) => (
-                      <option key={teacher.id} value={teacher.id}>{teacher.name}</option>
-                    ))}
-                  </Select>
-                </td>
-                <td>
-                  <Button
-                    disabled={!hasChange || isSaving}
-                    onClick={() => void model.submitGuideTeacher(group.id)}
-                    type="button"
-                  >
-                    {isSaving ? 'Guardando…' : hasChange ? 'Guardar' : 'Asignado'}
-                  </Button>
-                </td>
-              </tr>
-            );
-          })}
-          {model.assignmentGroups.length === 0 && (
-            <tr>
-              <td className={styles.empty} colSpan={6}>
-                No hay secciones que coincidan con el filtro seleccionado.
-              </td>
-            </tr>
+          {model.isLoading ? (
+            <p className={styles.muted}>Cargando docentes…</p>
+          ) : (
+            <Table>
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Cédula</th>
+                  <th>Sección</th>
+                  <th>Correo</th>
+                  <th>Teléfono</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {model.guideTeachers.map((teacher) => {
+                  const assigned = model.assignmentsByTeacherId.get(teacher.id) ?? [];
+                  return (
+                    <tr
+                      className={`${groupRowStyles.row} ${teacher.id === model.selectedTeacherId ? groupRowStyles.selected : ''}`}
+                      key={teacher.id}
+                      onClick={() => model.selectTeacher(teacher.id)}
+                    >
+                      <td><strong>{teacher.name}</strong></td>
+                      <td>{teacher.nationalId || '—'}</td>
+                      <td>
+                        {assigned.length
+                          ? assigned.map((group) => group.name).join(', ')
+                          : 'Sin asignar'}
+                      </td>
+                      <td>{teacher.email || '—'}</td>
+                      <td>{teacher.phone || '—'}</td>
+                      <td onClick={(event) => event.stopPropagation()}>
+                        <span className={styles.rowActions}>
+                          <Button
+                            aria-label={`Editar ${teacher.name}`}
+                            onClick={() => model.selectTeacher(teacher.id)}
+                            size="icon"
+                            type="button"
+                            variant="secondary"
+                          >
+                            <Edit3 />
+                          </Button>
+                          <Button
+                            aria-label={`Eliminar ${teacher.name}`}
+                            onClick={() => void model.removeSelectedTeacher(teacher)}
+                            size="icon"
+                            type="button"
+                            variant="danger"
+                          >
+                            <Trash2 />
+                          </Button>
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {model.guideTeachers.length === 0 && (
+                  <tr>
+                    <td className={styles.empty} colSpan={6}>
+                      No hay docentes guía. Use el formulario para crear el primero.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </Table>
           )}
-        </tbody>
-      </Table>
-    )}
-  </Card>
-);
+        </Card>
+
+        {model.selectedTeacher && (
+          <Card className={styles.tableCard}>
+            <div>
+              <h2>Secciones asignadas</h2>
+              <p className={styles.muted}>
+                Secciones donde {model.selectedTeacher.name} es docente guía.
+              </p>
+            </div>
+            <Table>
+              <thead>
+                <tr>
+                  <th>Nivel</th>
+                  <th>Sección</th>
+                  <th>Estudiantes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {selectedAssignments.map((group) => (
+                  <tr key={group.id}>
+                    <td>{model.getSectionName(group.sectionId)}</td>
+                    <td><strong>{group.name}</strong></td>
+                    <td>{formatStudentCount(group.studentCount)}</td>
+                  </tr>
+                ))}
+                {selectedAssignments.length === 0 && (
+                  <tr>
+                    <td className={styles.empty} colSpan={3}>
+                      Este docente no tiene secciones asignadas.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </Table>
+          </Card>
+        )}
+      </div>
+
+      <GuideTeacherForm
+        errors={model.teacherForm.errors}
+        isSubmitting={model.isTeacherSubmitting}
+        onCancel={model.cancelTeacherForm}
+        onChange={model.teacherForm.setField}
+        onSubmit={model.teacherForm.submit}
+        title={title}
+        values={model.teacherForm.values}
+      />
+    </div>
+  );
+};

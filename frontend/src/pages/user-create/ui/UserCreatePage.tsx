@@ -20,7 +20,7 @@ export const UserCreatePage = () => {
   useEffect(() => {
     let active = true;
     roleApi.list()
-      .then((items) => { if (active) setRoles(items); })
+      .then((items) => { if (active) setRoles(items.filter((role) => role.status === 'ACTIVE')); })
       .catch(() => { if (active) setRoles([]); });
     return () => { active = false; };
   }, []);
@@ -52,7 +52,7 @@ export const UserCreatePage = () => {
             <Button type="button" variant="secondary" onClick={() => { setCreatedUser(null); form.setValues(emptyUserForm); }}>
               Registrar otro
             </Button>
-            <Button type="button" onClick={() => navigate(`/administrative/users/${createdUser.id}`)}>
+            <Button type="button" onClick={() => navigate(`/admin/users/${createdUser.id}`)}>
               Ver ficha
             </Button>
           </div>
@@ -81,10 +81,10 @@ export const UserCreatePage = () => {
           formError={formError}
           onChange={form.onChange}
           onSubmit={onSubmit}
-          onCancel={() => navigate('/onboarding')}
+          onCancel={() => navigate('/admin/users')}
         />
       </Card>
-      <Link className={styles.backLink} to="/onboarding">Volver a incorporación</Link>
+      <Link className={styles.backLink} to="/admin/users">Volver a incorporación</Link>
     </section>
   );
 };

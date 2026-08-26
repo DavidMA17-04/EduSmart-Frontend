@@ -1,16 +1,33 @@
 export interface GuideTeacher {
-  id: string;
+  id: number;
   name: string;
+  nationalId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string | null;
 }
 
+export interface CreateGuideTeacherPayload {
+  nationalId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+}
+
+export type UpdateGuideTeacherPayload = Partial<CreateGuideTeacherPayload>;
+
 export interface AcademicGroup {
-  id: string;
+  id: number;
   name: string;
   studentCount: number;
-  sectionId: string;
-  guideTeacherId: string | null;
+  sectionId: number;
+  academicPeriodId?: number;
+  status?: 'ACTIVE' | 'INACTIVE';
+  guideTeacherId: number | null;
   guideTeacher?: GuideTeacher | null;
-  section?: { id: string; code: string; name: string };
+  section?: { id: number; name: string; gradeLevel?: number };
   createdAt: string;
   updatedAt: string;
 }
@@ -18,9 +35,10 @@ export interface AcademicGroup {
 export interface CreateGroupPayload {
   name: string;
   studentCount?: number;
-  sectionId: string;
-  guideTeacherId?: string | null;
+  sectionId: number;
+  academicPeriodId?: number;
+  guideTeacherId?: number | null;
 }
 
 export type UpdateGroupPayload = Partial<CreateGroupPayload>;
-export interface AssignGuideTeacherPayload { guideTeacherId: string | null; }
+export interface AssignGuideTeacherPayload { guideTeacherId: number | null; }

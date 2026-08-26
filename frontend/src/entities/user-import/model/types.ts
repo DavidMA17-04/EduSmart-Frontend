@@ -26,7 +26,7 @@ export interface ImportResultSummary {
 }
 
 export interface ImportResult {
-  jobId?: string;
+  jobId?: number | string;
   type?: string;
   successfulRecords: ImportSuccessRecord[];
   errorRecords: ImportErrorRecord[];

@@ -8,7 +8,7 @@ type DialogMode = 'create' | 'edit' | 'duplicate' | null;
 
 export function useRolesPermissionsPanel() {
   const [roles, setRoles] = useState<Role[]>([]);
-  const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
+  const [selectedRoleId, setSelectedRoleId] = useState<number | null>(null);
   const [search, setSearch] = useState('');
   const [dialogMode, setDialogMode] = useState<DialogMode>(null);
   const [isLoadingRoles, setIsLoadingRoles] = useState(true);

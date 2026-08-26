@@ -25,8 +25,8 @@ export function useManageSection(onSuccess?: () => void | Promise<void>) {
 
   return {
     create: (payload: CreateSectionPayload) => execute(() => sectionApi.create(payload)),
-    update: (id: string, payload: UpdateSectionPayload) => execute(() => sectionApi.update(id, payload)),
-    deactivate: (id: string) => execute(() => sectionApi.deactivate(id)),
+    update: (id: number, payload: UpdateSectionPayload) => execute(() => sectionApi.update(id, payload)),
+    deactivate: (id: number) => execute(() => sectionApi.deactivate(id)),
     isSubmitting,
     error,
   };

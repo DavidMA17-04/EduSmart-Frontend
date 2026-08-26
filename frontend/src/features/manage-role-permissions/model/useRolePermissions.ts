@@ -2,13 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Role } from '@/entities/role';
 import { permissionApi } from '../api/permissionApi';
 
-function getPermissionIds(role?: Role): string[] {
+function getPermissionIds(role?: Role): number[] {
   return role?.permissions.map((permission) => permission.id) ?? [];
 }
 
 export function useRolePermissions(role?: Role, onSaved?: (updatedRole: Role) => void) {
-  const [savedPermissionIds, setSavedPermissionIds] = useState<string[]>([]);
-  const [selectedPermissionIds, setSelectedPermissionIds] = useState<string[]>([]);
+  const [savedPermissionIds, setSavedPermissionIds] = useState<number[]>([]);
+  const [selectedPermissionIds, setSelectedPermissionIds] = useState<number[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +31,7 @@ export function useRolePermissions(role?: Role, onSaved?: (updatedRole: Role) =>
 
   const grantedCount = savedPermissionIds.length;
 
-  const togglePermission = useCallback((permissionId: string, checked: boolean) => {
+  const togglePermission = useCallback((permissionId: number, checked: boolean) => {
     setSelectedPermissionIds((current) => checked
       ? [...new Set([...current, permissionId])]
       : current.filter((id) => id !== permissionId));

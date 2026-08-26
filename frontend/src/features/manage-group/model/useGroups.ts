@@ -33,7 +33,7 @@ export function useGroups() {
     });
   }, []);
 
-  const removeGroup = useCallback((id: string) => {
+  const removeGroup = useCallback((id: number) => {
     setGroups((current) => current.filter((group) => group.id !== id));
   }, []);
 

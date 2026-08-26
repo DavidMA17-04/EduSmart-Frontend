@@ -1,6 +1,6 @@
 import { clearAccessToken, ensureAccessToken, loginWithDevCredentials } from '@/shared/auth';
 
-const apiBaseUrl = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api/v1').replace(/\/$/, '');
+const apiBaseUrl = (import.meta.env.VITE_API_URL ?? '/api/v1').replace(/\/$/, '');
 
 export class HttpError extends Error {
   constructor(public readonly status: number, message: string) {

@@ -22,11 +22,11 @@ export const UserDetailPage = () => {
   useEffect(() => {
     let active = true;
     setIsLoading(true);
-    Promise.all([userApi.getById(userId), roleApi.list().catch(() => [] as Role[])])
+    Promise.all([userApi.getById(Number(userId)), roleApi.list().catch(() => [] as Role[])])
       .then(([user, roleItems]) => {
         if (!active) return;
         setRoles(roleItems);
-        setDisplayName(user.name ?? user.email ?? user.id);
+        setDisplayName(user.name ?? user.email ?? String(user.id));
         setValues({
           nationalId: user.nationalId ?? '',
           firstName: user.firstName ?? '',
@@ -53,8 +53,8 @@ export const UserDetailPage = () => {
     if (!validate()) return;
     setIsSubmitting(true);
     try {
-      const updated = await userApi.update(userId, toCreatePayload(values));
-      setDisplayName(updated.name ?? updated.email ?? updated.id);
+      const updated = await userApi.update(Number(userId), toCreatePayload(values));
+      setDisplayName(updated.name ?? updated.email ?? String(updated.id));
       setMode('view');
     } catch (error) {
       setFormError(error instanceof HttpError ? error.message : 'No se pudieron guardar los cambios.');

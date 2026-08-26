@@ -5,9 +5,9 @@ const request = async <T>(path: string, init?: RequestInit): Promise<T> => (awai
 
 export const groupApi = {
   list: () => request<AcademicGroup[]>('/groups'),
-  getById: (id: string) => request<AcademicGroup>(`/groups/${id}`),
+  getById: (id: number) => request<AcademicGroup>(`/groups/${id}`),
   create: (payload: CreateGroupPayload) => request<AcademicGroup>('/groups', { method: 'POST', body: JSON.stringify(payload) }),
-  update: (id: string, payload: UpdateGroupPayload) => request<AcademicGroup>(`/groups/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
-  assignGuideTeacher: (id: string, payload: AssignGuideTeacherPayload) => request<AcademicGroup>(`/groups/${id}/guide-teacher`, { method: 'PUT', body: JSON.stringify(payload) }),
-  remove: (id: string) => request<void>(`/groups/${id}`, { method: 'DELETE' }),
+  update: (id: number, payload: UpdateGroupPayload) => request<AcademicGroup>(`/groups/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+  assignGuideTeacher: (id: number, payload: AssignGuideTeacherPayload) => request<AcademicGroup>(`/groups/${id}/guide-teacher`, { method: 'PUT', body: JSON.stringify(payload) }),
+  remove: (id: number) => request<void>(`/groups/${id}`, { method: 'DELETE' }),
 };

@@ -22,7 +22,7 @@ export const permissionApi = {
     method: 'POST',
     body: JSON.stringify(payload),
   }),
-  assignToRole: (roleId: string, permissionIds: string[]) => request<Role>(`/roles/${roleId}/permissions`, {
+  assignToRole: (roleId: number, permissionIds: number[]) => request<Role>(`/roles/${roleId}/permissions`, {
     method: 'PUT',
     body: JSON.stringify({ permissionIds }),
   }),

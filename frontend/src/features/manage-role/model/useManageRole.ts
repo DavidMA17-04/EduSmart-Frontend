@@ -25,8 +25,8 @@ export function useManageRole(onSuccess?: () => void | Promise<void>) {
   }, [onSuccess]);
 
   const create = useCallback((payload: CreateRolePayload) => execute(() => roleApi.create(payload)), [execute]);
-  const update = useCallback((id: string, payload: UpdateRolePayload) => execute(() => roleApi.update(id, payload)), [execute]);
-  const deactivate = useCallback((id: string) => execute(() => roleApi.deactivate(id)), [execute]);
+  const update = useCallback((id: number, payload: UpdateRolePayload) => execute(() => roleApi.update(id, payload)), [execute]);
+  const deactivate = useCallback((id: number) => execute(() => roleApi.deactivate(id)), [execute]);
   const duplicate = useCallback((role: Role, payload: CreateRolePayload) => execute(() => roleApi.create({
     ...payload,
     permissionIds: role.permissions.map((permission) => permission.id),

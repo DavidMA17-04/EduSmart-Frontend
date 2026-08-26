@@ -1,7 +1,7 @@
 import type { FormEventHandler } from 'react';
 import type { Role } from '@/entities/role';
 import type { UserAccountStatus } from '@/entities/user';
-import { Alert, Button, Checkbox, Input, Select } from '@/shared/ui';
+import { Alert, Checkbox, FormActions, Input, Select } from '@/shared/ui';
 import type { UserFormValues } from '../model/useUserForm';
 import styles from './UserForm.module.css';
 
@@ -35,7 +35,7 @@ export const UserForm = ({
   onSubmit,
   onCancel,
 }: UserFormProps) => {
-  const toggleRole = (roleId: string) => {
+  const toggleRole = (roleId: number) => {
     const selected = values.roleIds.includes(roleId)
       ? values.roleIds.filter((id) => id !== roleId)
       : [...values.roleIds, roleId];
@@ -98,7 +98,7 @@ export const UserForm = ({
           onChange={(event) => onChange('password', event.target.value)}
         />
         <span className={styles.hint}>
-          Si la indica, se crea también la cuenta de acceso (auth). Mínimo 8 caracteres.
+          Si la indica, se crea la cuenta de acceso en users. Mínimo 8 caracteres.
         </span>
         {errors.password && <span className={styles.error}>{errors.password}</span>}
       </label>
@@ -139,10 +139,7 @@ export const UserForm = ({
         )}
         {errors.roleIds && <span className={styles.error}>{errors.roleIds}</span>}
       </fieldset>
-      <div className={styles.actions}>
-        {onCancel && <Button onClick={onCancel} type="button" variant="secondary">Cancelar</Button>}
-        <Button disabled={isSubmitting} type="submit">{isSubmitting ? 'Guardando…' : submitLabel}</Button>
-      </div>
+      <FormActions isSubmitting={isSubmitting} onCancel={onCancel} submitLabel={submitLabel} />
     </form>
   );
 };

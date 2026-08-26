@@ -27,13 +27,13 @@ export const GroupsTabView = ({ model }: GroupsTabViewProps) => {
                 <option value="">Todos los niveles</option>
                 {model.sections.map((section) => (
                   <option key={section.id} value={section.id}>
-                    {section.code} - {section.name}
+                    {section.gradeLevel} - {section.name}
                   </option>
                 ))}
               </Select>
             </label>
             <Button onClick={() => model.createGroupMode(model.groupSectionFilter || undefined)} type="button">
-              <Plus size={15} /> Nueva sección
+              <Plus size={16} /> Nueva sección
             </Button>
           </div>
 
@@ -71,18 +71,20 @@ export const GroupsTabView = ({ model }: GroupsTabViewProps) => {
                         <Button
                           aria-label={`Editar ${group.name}`}
                           onClick={() => model.selectGroup(group.id)}
+                          size="icon"
                           type="button"
                           variant="secondary"
                         >
-                          <Edit3 size={14} />
+                          <Edit3 />
                         </Button>
                         <Button
                           aria-label={`Eliminar ${group.name}`}
                           onClick={() => void model.removeSelectedGroup(group)}
+                          size="icon"
                           type="button"
                           variant="danger"
                         >
-                          <Trash2 size={14} />
+                          <Trash2 />
                         </Button>
                       </span>
                     </td>

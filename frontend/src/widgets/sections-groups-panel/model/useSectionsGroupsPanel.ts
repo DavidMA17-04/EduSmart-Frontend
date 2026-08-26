@@ -1,13 +1,28 @@
 import type { FormEvent } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { AcademicGroup } from '@/entities/group';
-import type { Section } from '@/entities/section';
-import { MOCK_GUIDE_TEACHERS, useGroupForm, useGroups, useGuideTeachers, useManageGroup } from '@/features/manage-group';
-import { useManageSection, useSectionForm, useSections } from '@/features/manage-section';
+import { useSearchParams } from 'react-router-dom';
+import type { AcademicGroup, GuideTeacher } from '@/entities/group';
+import type { AcademicPeriod, Section } from '@/entities/section';
+import type { Specialty } from '@/entities/specialty';
+import {
+  useGroupForm,
+  useGroups,
+  useGuideTeacherForm,
+  useGuideTeachers,
+  useManageGroup,
+  useManageGuideTeacher,
+} from '@/features/manage-group';
+import { academicPeriodApi, useManageSection, useSectionForm, useSections } from '@/features/manage-section';
+import { specialtyApi } from '@/features/manage-specialty';
 
 export type PanelTab = 'niveles' | 'grupos' | 'docentes';
 type FormMode = 'create' | 'edit';
 type TeacherFilter = 'all' | 'unassigned' | string;
+
+function parsePanelTab(value: string | null): PanelTab {
+  if (value === 'grupos' || value === 'docentes' || value === 'niveles') return value;
+  return 'niveles';
+}
 
 export function useSectionsGroupsPanel() {
   const {
@@ -53,19 +68,37 @@ export function useSectionsGroupsPanel() {
     isSubmitting: isGroupSubmitting,
   } = useManageGroup(refreshGroups);
 
-  const [activeTab, setActiveTab] = useState<PanelTab>('niveles');
-  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
-  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const {
+    create: createGuideTeacher,
+    update: updateGuideTeacherRecord,
+    remove: removeGuideTeacherRecord,
+    error: teacherMutationError,
+    isSubmitting: isTeacherSubmitting,
+  } = useManageGuideTeacher();
+
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<PanelTab>(() => parsePanelTab(searchParams.get('tab')));
+  const [selectedSectionId, setSelectedSectionId] = useState<number | null>(null);
+  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
   const [sectionFormMode, setSectionFormMode] = useState<FormMode>('create');
   const [groupFormMode, setGroupFormMode] = useState<FormMode | null>(null);
-  const [expandedSectionIds, setExpandedSectionIds] = useState<Set<string>>(new Set());
+  const [teacherFormMode, setTeacherFormMode] = useState<FormMode>('create');
+  const [selectedTeacherId, setSelectedTeacherId] = useState<number | null>(null);
+  const [expandedSectionIds, setExpandedSectionIds] = useState<Set<number>>(new Set());
   const [groupSectionFilter, setGroupSectionFilter] = useState('');
   const [teacherFilter, setTeacherFilter] = useState<TeacherFilter>('all');
-  const [pendingTeachers, setPendingTeachers] = useState<Record<string, string>>({});
-  const [savingGroupId, setSavingGroupId] = useState<string | null>(null);
+  const [pendingTeachers, setPendingTeachers] = useState<Record<number, string>>({});
+  const [savingGroupId, setSavingGroupId] = useState<number | null>(null);
+  const [specialties, setSpecialties] = useState<Specialty[]>([]);
+  const [academicPeriods, setAcademicPeriods] = useState<AcademicPeriod[]>([]);
+
+  useEffect(() => {
+    void specialtyApi.list().then(setSpecialties).catch(() => setSpecialties([]));
+    void academicPeriodApi.list().then(setAcademicPeriods).catch(() => setAcademicPeriods([]));
+  }, []);
 
   const groupsBySection = useMemo(() => {
-    const map = new Map<string, AcademicGroup[]>();
+    const map = new Map<number, AcademicGroup[]>();
     for (const group of groups) {
       const list = map.get(group.sectionId) ?? [];
       list.push(group);
@@ -96,6 +129,11 @@ export function useSectionsGroupsPanel() {
     [groups, selectedGroupId],
   );
 
+  const selectedTeacher = useMemo(
+    () => guideTeachersState.guideTeachers.find((teacher) => teacher.id === selectedTeacherId),
+    [guideTeachersState.guideTeachers, selectedTeacherId],
+  );
+
   const groupsForSelectedSection = useMemo(
     () => (selectedSectionId ? groupsBySection.get(selectedSectionId) ?? [] : []),
     [groupsBySection, selectedSectionId],
@@ -103,36 +141,37 @@ export function useSectionsGroupsPanel() {
 
   const sectionForm = useSectionForm(sectionFormMode === 'edit' ? selectedSection : undefined);
   const groupForm = useGroupForm(groupFormMode === 'edit' ? selectedGroup : undefined);
+  const teacherForm = useGuideTeacherForm(teacherFormMode === 'edit' ? selectedTeacher : undefined);
 
   useEffect(() => {
     if (groupFormMode === 'create' && selectedSectionId && activeTab === 'niveles') {
-      groupForm.setField('sectionId', selectedSectionId);
+      groupForm.setField('sectionId', String(selectedSectionId));
     }
   }, [activeTab, groupForm, groupFormMode, selectedSectionId]);
 
   const getSectionInfo = useCallback(
-    (sectionId: string) => {
+    (sectionId: number) => {
       const section = sections.find((item) => item.id === sectionId);
-      if (section) return { code: section.code, name: section.name };
+      if (section) return { code: String(section.gradeLevel), name: section.name };
       const group = groups.find((item) => item.sectionId === sectionId);
-      if (group?.section) return { code: group.section.code, name: group.section.name };
-      return { code: sectionId, name: '—' };
+      if (group?.section) return { code: String(group.section.gradeLevel ?? ''), name: group.section.name };
+      return { code: String(sectionId), name: '—' };
     },
     [groups, sections],
   );
 
   const getSectionCode = useCallback(
-    (sectionId: string) => getSectionInfo(sectionId).code,
+    (sectionId: number) => getSectionInfo(sectionId).code,
     [getSectionInfo],
   );
 
   const getSectionName = useCallback(
-    (sectionId: string) => getSectionInfo(sectionId).name,
+    (sectionId: number) => getSectionInfo(sectionId).name,
     [getSectionInfo],
   );
 
   const getSectionLabel = useCallback(
-    (sectionId: string) => {
+    (sectionId: number) => {
       const { code, name } = getSectionInfo(sectionId);
       return `${code} - ${name}`;
     },
@@ -141,7 +180,7 @@ export function useSectionsGroupsPanel() {
 
   const filteredGroups = useMemo(() => {
     if (!groupSectionFilter) return groups;
-    return groups.filter((group) => group.sectionId === groupSectionFilter);
+    return groups.filter((group) => String(group.sectionId) === groupSectionFilter);
   }, [groupSectionFilter, groups]);
 
   const assignmentGroups = useMemo(() => {
@@ -149,12 +188,26 @@ export function useSectionsGroupsPanel() {
     if (teacherFilter === 'unassigned') {
       list = list.filter((group) => !group.guideTeacherId);
     } else if (teacherFilter !== 'all') {
-      list = list.filter((group) => group.sectionId === teacherFilter);
+      list = list.filter((group) => String(group.sectionId) === teacherFilter);
     }
     return list;
   }, [groups, teacherFilter]);
 
-  const selectSection = useCallback((id: string) => {
+  const assignmentsByTeacherId = useMemo(() => {
+    const map = new Map<number, AcademicGroup[]>();
+    for (const group of groups) {
+      if (group.guideTeacherId == null) continue;
+      const list = map.get(group.guideTeacherId) ?? [];
+      list.push(group);
+      map.set(group.guideTeacherId, list);
+    }
+    for (const list of map.values()) {
+      list.sort((a, b) => a.name.localeCompare(b.name, 'es'));
+    }
+    return map;
+  }, [groups]);
+
+  const selectSection = useCallback((id: number) => {
     setSelectedSectionId(id);
     setSectionFormMode('edit');
     setGroupFormMode(null);
@@ -168,23 +221,23 @@ export function useSectionsGroupsPanel() {
     setSelectedGroupId(null);
   }, []);
 
-  const createGroupMode = useCallback((sectionId?: string) => {
+  const createGroupMode = useCallback((sectionId?: number | string) => {
     setSelectedGroupId(null);
     setGroupFormMode('create');
     if (sectionId) {
-      setSelectedSectionId(sectionId);
+      setSelectedSectionId(Number(sectionId));
       setSectionFormMode('edit');
     }
   }, []);
 
-  const selectGroup = useCallback((id: string) => {
+  const selectGroup = useCallback((id: number) => {
     setSelectedGroupId(id);
     setGroupFormMode('edit');
     const group = groups.find((item) => item.id === id);
     if (group) setSelectedSectionId(group.sectionId);
   }, [groups]);
 
-  const toggleSectionExpanded = useCallback((id: string) => {
+  const toggleSectionExpanded = useCallback((id: number) => {
     setExpandedSectionIds((current) => {
       const next = new Set(current);
       if (next.has(id)) next.delete(id);
@@ -197,7 +250,7 @@ export function useSectionsGroupsPanel() {
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
       const payload = sectionForm.toPayload();
-      if (!payload.code || !payload.name) return;
+      if (!payload.name || !payload.academicPeriodId) return;
       try {
         if (sectionFormMode === 'create') {
           const created = await createSection(payload);
@@ -269,22 +322,79 @@ export function useSectionsGroupsPanel() {
     [removeGroup, removeGroupFromState, selectedGroupId],
   );
 
-  const setPendingTeacher = useCallback((groupId: string, teacherId: string) => {
+  const createTeacherMode = useCallback(() => {
+    setSelectedTeacherId(null);
+    setTeacherFormMode('create');
+  }, []);
+
+  const selectTeacher = useCallback((id: number) => {
+    setSelectedTeacherId(id);
+    setTeacherFormMode('edit');
+  }, []);
+
+  const cancelTeacherForm = useCallback(() => {
+    setSelectedTeacherId(null);
+    setTeacherFormMode('create');
+  }, []);
+
+  const submitTeacher = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      if (!teacherForm.validate()) return;
+      const payload = teacherForm.toPayload();
+      try {
+        if (teacherFormMode === 'create') {
+          const created = await createGuideTeacher(payload);
+          guideTeachersState.upsert(created);
+          setSelectedTeacherId(created.id);
+          setTeacherFormMode('edit');
+        } else if (selectedTeacher) {
+          const updated = await updateGuideTeacherRecord(selectedTeacher.id, payload);
+          guideTeachersState.upsert(updated);
+        }
+      } catch {
+        // El hook de mutaciones expone el error para la interfaz.
+      }
+    },
+    [createGuideTeacher, guideTeachersState, selectedTeacher, teacherForm, teacherFormMode, updateGuideTeacherRecord],
+  );
+
+  const removeSelectedTeacher = useCallback(
+    async (teacher: GuideTeacher) => {
+      if (!window.confirm(`¿Eliminar al docente ${teacher.name}? Se inactivará y se quitará de las secciones asignadas.`)) return;
+      try {
+        await removeGuideTeacherRecord(teacher.id);
+        guideTeachersState.remove(teacher.id);
+        await reloadGroups(true);
+        if (selectedTeacherId === teacher.id) {
+          setSelectedTeacherId(null);
+          setTeacherFormMode('create');
+        }
+      } catch {
+        // El error se expone desde el hook.
+      }
+    },
+    [guideTeachersState, reloadGroups, removeGuideTeacherRecord, selectedTeacherId],
+  );
+
+  const setPendingTeacher = useCallback((groupId: number, teacherId: string) => {
     setPendingTeachers((current) => ({ ...current, [groupId]: teacherId }));
   }, []);
 
   const submitGuideTeacher = useCallback(
-    async (groupId: string) => {
+    async (groupId: number) => {
       const group = groups.find((item) => item.id === groupId);
       if (!group) return;
 
-      const currentTeacherId = group.guideTeacherId ?? '';
+      const currentTeacherId = group.guideTeacherId == null ? '' : String(group.guideTeacherId);
       const teacherId = pendingTeachers[groupId] ?? currentTeacherId;
       if (teacherId === currentTeacherId) return;
 
       setSavingGroupId(groupId);
       try {
-        const updated = await assignGuideTeacher(groupId, { guideTeacherId: teacherId || null });
+        const updated = await assignGuideTeacher(groupId, {
+          guideTeacherId: teacherId ? Number(teacherId) : null,
+        });
         upsertGroup(updated);
         setPendingTeachers((current) => {
           const next = { ...current };
@@ -309,9 +419,8 @@ export function useSectionsGroupsPanel() {
       createGroupMode(groupSectionFilter || selectedSectionId || undefined);
       return;
     }
-    setActiveTab('grupos');
-    createGroupMode(undefined);
-  }, [activeTab, createGroupMode, createSectionMode, groupSectionFilter, selectedSectionId]);
+    createTeacherMode();
+  }, [activeTab, createGroupMode, createSectionMode, createTeacherMode, groupSectionFilter, selectedSectionId]);
 
   const cancelGroupForm = useCallback(() => {
     setGroupFormMode(null);
@@ -328,29 +437,36 @@ export function useSectionsGroupsPanel() {
     groups,
     filteredGroups,
     assignmentGroups,
+    assignmentsByTeacherId,
     groupsForSelectedSection,
     selectedSection,
     selectedSectionId,
     selectedGroup,
     selectedGroupId,
+    selectedTeacher,
+    selectedTeacherId,
     sectionFormMode,
     groupFormMode,
+    teacherFormMode,
     expandedSectionIds,
     groupSectionFilter,
     setGroupSectionFilter,
     teacherFilter,
     setTeacherFilter,
     pendingTeachers,
-    guideTeachers: guideTeachersState.guideTeachers.length > 0
-      ? guideTeachersState.guideTeachers
-      : MOCK_GUIDE_TEACHERS,
+    guideTeachers: guideTeachersState.guideTeachers,
     guideTeachersError: guideTeachersState.error,
     sectionForm: { values: sectionForm.values, setField: sectionForm.setField, submit: submitSection },
     groupForm: { values: groupForm.values, setField: groupForm.setField, submit: submitGroup },
+    teacherForm: { values: teacherForm.values, errors: teacherForm.errors, setField: teacherForm.setField, submit: submitTeacher },
     selectSection,
     createSectionMode,
     createGroupMode,
     selectGroup,
+    createTeacherMode,
+    selectTeacher,
+    cancelTeacherForm,
+    removeSelectedTeacher,
     toggleSectionExpanded,
     deactivateSelectedSection,
     removeSelectedGroup,
@@ -368,7 +484,11 @@ export function useSectionsGroupsPanel() {
     groupMutationError,
     isSectionSubmitting,
     isGroupSubmitting,
+    isTeacherSubmitting,
+    teacherMutationError,
     savingGroupId,
+    specialties,
+    academicPeriods,
   };
 }
 

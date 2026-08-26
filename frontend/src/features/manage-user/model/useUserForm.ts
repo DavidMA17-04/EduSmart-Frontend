@@ -15,7 +15,7 @@ export interface UserFormValues {
   phone: string;
   password: string;
   status: UserAccountStatus;
-  roleIds: string[];
+  roleIds: number[];
 }
 
 export const emptyUserForm: UserFormValues = {

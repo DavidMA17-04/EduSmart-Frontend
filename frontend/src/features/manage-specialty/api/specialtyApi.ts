@@ -10,8 +10,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const specialtyApi = {
   list: () => request<Specialty[]>('/specialties'),
-  getById: (id: string) => request<Specialty>(`/specialties/${id}`),
+  getById: (id: number) => request<Specialty>(`/specialties/${id}`),
   create: (payload: CreateSpecialtyPayload) => request<Specialty>('/specialties', { method: 'POST', body: JSON.stringify(payload) }),
-  update: (id: string, payload: UpdateSpecialtyPayload) => request<Specialty>(`/specialties/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
-  deactivate: (id: string) => request<Specialty>(`/specialties/${id}`, { method: 'DELETE' }),
+  update: (id: number, payload: UpdateSpecialtyPayload) => request<Specialty>(`/specialties/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+  deactivate: (id: number) => request<Specialty>(`/specialties/${id}`, { method: 'DELETE' }),
 };

@@ -41,11 +41,6 @@
   gap: 6px;
 }
 
-.rowActions button {
-  min-height: 32px;
-  padding-inline: 10px;
-}
-
 .muted {
   color: var(--admin-muted);
   font-size: 14px;
