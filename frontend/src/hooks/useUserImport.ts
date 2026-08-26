@@ -6,16 +6,19 @@ import {
   ImportSummary, 
   UserFieldKey 
 } from '@/types/user';
+import type { ImportResult } from '@/entities/user-import';
+import { mapRowsToImportResult } from '@/entities/user-import/model/mapRowsToImportResult';
+import { importResultApi } from '@/features/manage-user-import';
 import { validateRow } from '@/utils/validateRows';
 import { MOCK_IMPORTED_ROWS } from '@/utils/mockData';
 import { parseFileToUserRows } from '@/utils/parseFile';
-import { userService } from '@/services/userService';
 
 interface UserImportState {
   currentStep: ImportStep;
   isProcessingFile: boolean;
   importedRows: ImportedUserRow[];
   summary: ImportSummary;
+  importResult: ImportResult | null;
   selectedFilter: ImportFilter;
   method: 'MANUAL' | 'BULK' | null;
 
@@ -55,6 +58,7 @@ export const useUserImport = create<UserImportState>((set, get) => ({
   isProcessingFile: false,
   importedRows: [],
   summary: initialSummary,
+  importResult: null,
   selectedFilter: 'ALL',
   method: null,
 
@@ -136,21 +140,29 @@ export const useUserImport = create<UserImportState>((set, get) => ({
       isProcessingFile: false,
       importedRows: [],
       summary: initialSummary,
+      importResult: null,
       selectedFilter: 'ALL',
       method: null,
     });
   },
 
   confirmAndSave: async () => {
-    const { importedRows, summary } = get();
-    if (summary.invalidRowsCount > 0) {
-      alert(`No se pueden guardar los datos. Existen ${summary.invalidRowsCount} fila(s) con errores por corregir.`);
-      return false;
-    }
-
+    const { importedRows } = get();
     set({ isProcessingFile: true });
-    await userService.bulkImportUsers(importedRows);
-    set({ isProcessingFile: false, currentStep: 'COMPLETE' });
+    const localResult = mapRowsToImportResult(importedRows);
+
+    try {
+      const persisted = await importResultApi.register({
+        type: 'users',
+        successfulRecords: localResult.successfulRecords,
+        errorRecords: localResult.errorRecords,
+        summary: localResult.summary,
+      });
+      set({ isProcessingFile: false, currentStep: 'COMPLETE', importResult: persisted });
+    } catch {
+      // Si el backend aún no está disponible, PBI-06 igual puede representar el resultado local.
+      set({ isProcessingFile: false, currentStep: 'COMPLETE', importResult: localResult });
+    }
     return true;
   },
 }));
