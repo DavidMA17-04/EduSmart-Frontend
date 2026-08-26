@@ -1,0 +1,13 @@
+.form { display: grid; gap: 14px; }
+.form label { display: grid; gap: 6px; color: var(--admin-text); font-size: 12px; font-weight: 600; }
+.row { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+.error { color: var(--admin-danger); font-weight: 500; }
+.roles { border: 1px solid var(--admin-border); border-radius: 8px; padding: 12px; display: grid; gap: 8px; }
+.roles legend { font-size: 12px; font-weight: 600; padding: 0 4px; }
+.hint { color: var(--admin-muted); font-size: 12px; font-weight: 400; }
+.roleOption { display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 14px; }
+.actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+
+@media (max-width: 720px) {
+  .row { grid-template-columns: 1fr; }
+}
