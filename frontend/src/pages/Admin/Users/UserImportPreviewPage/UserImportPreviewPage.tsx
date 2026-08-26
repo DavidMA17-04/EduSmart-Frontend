@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useMemo } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   ArrowLeft,
   CheckCircle2,
@@ -13,9 +13,10 @@ import {
   ShieldCheck,
   HelpCircle,
   Download,
+  Loader2,
 } from 'lucide-react';
+import { userImportApi, ValidateBulkImportResponse } from '@/features/manage-user-import';
 import {
-  IMPORT_KPI_DATA,
   GENERATED_MOCK_USERS,
   ImportedUserRecord,
 } from '../mocks/importedUsersMock';
@@ -23,12 +24,59 @@ import styles from './UserImportPreview.module.css';
 
 export const UserImportPreviewPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [records, setRecords] = useState<ImportedUserRecord[]>(GENERATED_MOCK_USERS);
+  // Obtener datos transferidos desde la carga o usar el mock sintético como fallback
+  const importPayload = (location.state as { importData?: ValidateBulkImportResponse } | null)?.importData;
+
+  const initialRecords = useMemo<ImportedUserRecord[]>(() => {
+    if (importPayload && (importPayload.records || importPayload.rows)) {
+      const sourceList = importPayload.records || importPayload.rows || [];
+      return sourceList.map((r, idx) => ({
+        id: r.tempId || `tmp-row-${idx + 1}`,
+        rowNumber: r.row || r.rowNumber || idx + 1,
+        identification: r.national_id || r.identification || '',
+        names: r.name || r.names || '',
+        firstLastname: r.first_lastname || r.firstLastname || '',
+        secondLastname: r.second_lastname || r.secondLastname || '',
+        email: r.email || '',
+        role: (r.role as ImportedUserRecord['role']) || 'ESTUDIANTE',
+        section: r.section || '',
+        status: r.status || 'VALID',
+        invalidFields: r.invalidFields || [],
+        errorMessages: r.errorMessages || [],
+        warningMessages: r.warningMessages || [],
+      }));
+    }
+    return GENERATED_MOCK_USERS;
+  }, [importPayload]);
+
+  const [records, setRecords] = useState<ImportedUserRecord[]>(initialRecords);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'VALID' | 'WARNING' | 'ERROR'>('ALL');
   const [showErrorsOnly, setShowErrorsOnly] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [importedCount, setImportedCount] = useState<number>(0);
+
+  // Cálculo reactivo de KPIs basado en el estado actual de la tabla
+  const currentKPIs = useMemo(() => {
+    const totalRows = records.length;
+    const validRows = records.filter((r) => r.status === 'VALID').length;
+    const warningRows = records.filter((r) => r.status === 'WARNING').length;
+    const errorRows = records.filter((r) => r.status === 'ERROR').length;
+
+    return {
+      totalRows,
+      validRows,
+      validPercentage: totalRows > 0 ? Number(((validRows / totalRows) * 100).toFixed(1)) : 0,
+      warningRows,
+      warningPercentage: totalRows > 0 ? Number(((warningRows / totalRows) * 100).toFixed(1)) : 0,
+      errorRows,
+      errorPercentage: totalRows > 0 ? Number(((errorRows / totalRows) * 100).toFixed(1)) : 0,
+    };
+  }, [records]);
 
   // Descarga de reporte de validación (CSV)
   const handleDownloadReport = () => {
@@ -36,7 +84,7 @@ export const UserImportPreviewPage: React.FC = () => {
     const rows = filteredRecords
       .map(
         (r) =>
-          `${r.rowNumber},"${r.identification}","${r.names}","${r.firstLastname}","${r.secondLastname}","${r.email}","${r.role}","${r.section || ''}","${r.status}","${(r.errorMessages || []).join('; ')}"`
+          `${r.rowNumber},"${r.identification}","${r.names}","${r.firstLastname}","${r.secondLastname}","${r.email}","${r.role}","${r.section || ''}","${r.status}","${(r.errorMessages || []).join('; ')}"`,
       )
       .join('\n');
     const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' });
@@ -50,7 +98,6 @@ export const UserImportPreviewPage: React.FC = () => {
 
   // Filtrado reactivo en tiempo real
   const filteredRecords = records.filter((row) => {
-    // Filtro por búsqueda
     const matchesSearch =
       searchTerm === '' ||
       row.identification.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -58,12 +105,10 @@ export const UserImportPreviewPage: React.FC = () => {
       row.firstLastname.toLowerCase().includes(searchTerm.toLowerCase()) ||
       row.email.toLowerCase().includes(searchTerm.toLowerCase());
 
-    // Filtro de solo errores (Checkbox)
     if (showErrorsOnly && row.status !== 'ERROR') {
       return false;
     }
 
-    // Filtro por selector
     if (statusFilter !== 'ALL' && row.status !== statusFilter) {
       return false;
     }
@@ -76,19 +121,21 @@ export const UserImportPreviewPage: React.FC = () => {
       prev.map((row) => {
         if (row.id === id) {
           const updated = { ...row, [field]: value };
-          // Si corrige un campo con error, actualiza dinámicamente
-          if (field === 'identification' && value.trim().length === 9) {
+          // Si el usuario corrige la cédula o el correo, actualiza a Válido
+          if (field === 'identification' && value.trim().length >= 7) {
             updated.status = 'VALID';
             updated.errorMessages = [];
+            updated.invalidFields = (updated.invalidFields || []).filter((f) => f !== 'identification');
           }
           if (field === 'email' && value.includes('@')) {
             updated.status = 'VALID';
             updated.errorMessages = [];
+            updated.invalidFields = (updated.invalidFields || []).filter((f) => f !== 'email');
           }
           return updated;
         }
         return row;
-      })
+      }),
     );
   };
 
@@ -96,8 +143,45 @@ export const UserImportPreviewPage: React.FC = () => {
     setRecords((prev) => prev.filter((row) => row.id !== id));
   };
 
-  const handleConfirmImport = () => {
-    setIsSuccessModalOpen(true);
+  const handleConfirmImport = async () => {
+    const validUsers = records.filter((r) => r.status === 'VALID');
+    if (validUsers.length === 0) {
+      setSaveError('No hay usuarios con estado Válido para importar.');
+      return;
+    }
+
+    setSaveError(null);
+    setIsSaving(true);
+
+    try {
+      const result = await userImportApi.confirmImport(validUsers as any);
+      setImportedCount(result.importedCount);
+      setIsSuccessModalOpen(true);
+
+      // Registrar en el historial de importaciones recientes
+      try {
+        const fileName = (location.state as any)?.fileName || 'Importacion_Usuarios_EduSmart.csv';
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const newEntry = {
+          id: Date.now().toString(),
+          name: fileName,
+          date: `Hoy a las ${timeStr} • ${result.importedCount} registros`,
+          status: 'Completado',
+        };
+        const existing = JSON.parse(localStorage.getItem('edusmart_recent_imports') || '[]');
+        const updatedList = [newEntry, ...existing.filter((item: any) => item.id !== newEntry.id)].slice(0, 5);
+        localStorage.setItem('edusmart_recent_imports', JSON.stringify(updatedList));
+      } catch {
+        // Ignorar fallos de localStorage en entornos restringidos
+      }
+    } catch (err: any) {
+      setSaveError(
+        err.message || 'Error al persistir los usuarios en la base de datos MySQL. Verifique la conexión con el servidor.',
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -108,6 +192,7 @@ export const UserImportPreviewPage: React.FC = () => {
           type="button"
           className={styles.backBtn}
           onClick={() => navigate('/admin/users/import/bulk')}
+          disabled={isSaving}
         >
           <ArrowLeft size={18} /> Volver a cargar archivo
         </button>
@@ -120,39 +205,60 @@ export const UserImportPreviewPage: React.FC = () => {
         </p>
       </header>
 
+      {saveError && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            padding: '1rem 1.25rem',
+            background: 'var(--status-error-bg)',
+            border: '1px solid var(--status-error-border)',
+            borderRadius: '12px',
+            color: 'var(--status-error-text)',
+            marginBottom: '1.5rem',
+            fontSize: '0.9rem',
+            fontWeight: 500,
+          }}
+        >
+          <AlertTriangle size={20} />
+          <span>{saveError}</span>
+        </div>
+      )}
+
       {/* 1. 4 Tarjetas de KPIs Superiores (WF-15) */}
       <section className={styles.kpiGrid}>
         {/* Total */}
         <div className={`${styles.kpiCard} ${styles.kpiTotal}`}>
           <span className={styles.kpiLabel}>Total Registros</span>
-          <h3 className={styles.kpiValue}>{IMPORT_KPI_DATA.totalRows}</h3>
-          <span className={styles.kpiSubText}>100% detectados</span>
+          <h3 className={styles.kpiValue}>{currentKPIs.totalRows}</h3>
+          <span className={styles.kpiSubText}>100% procesados</span>
         </div>
 
         {/* Válidos */}
         <div className={`${styles.kpiCard} ${styles.kpiValid}`}>
           <span className={styles.kpiLabel}>Registros Válidos</span>
-          <h3 className={styles.kpiValue}>{IMPORT_KPI_DATA.validRows}</h3>
+          <h3 className={styles.kpiValue}>{currentKPIs.validRows}</h3>
           <span className={`${styles.kpiSubText} ${styles.textGreen}`}>
-            {IMPORT_KPI_DATA.validPercentage}% aptos para importar
+            {currentKPIs.validPercentage}% aptos para importar
           </span>
         </div>
 
         {/* Advertencias */}
         <div className={`${styles.kpiCard} ${styles.kpiWarning}`}>
           <span className={styles.kpiLabel}>Advertencias</span>
-          <h3 className={styles.kpiValue}>{IMPORT_KPI_DATA.warningRows}</h3>
+          <h3 className={styles.kpiValue}>{currentKPIs.warningRows}</h3>
           <span className={`${styles.kpiSubText} ${styles.textAmber}`}>
-            {IMPORT_KPI_DATA.warningPercentage}% requieren atención
+            {currentKPIs.warningPercentage}% requieren atención
           </span>
         </div>
 
         {/* Errores */}
         <div className={`${styles.kpiCard} ${styles.kpiError}`}>
           <span className={styles.kpiLabel}>Con Errores</span>
-          <h3 className={styles.kpiValue}>{IMPORT_KPI_DATA.errorRows}</h3>
+          <h3 className={styles.kpiValue}>{currentKPIs.errorRows}</h3>
           <span className={`${styles.kpiSubText} ${styles.textRed}`}>
-            {IMPORT_KPI_DATA.errorPercentage}% bloquean importación
+            {currentKPIs.errorPercentage}% bloquean importación
           </span>
         </div>
       </section>
@@ -345,28 +451,34 @@ export const UserImportPreviewPage: React.FC = () => {
 
           <ul className={styles.errorBreakdownList}>
             <li className={styles.errorBreakdownItem}>
-              <div className={styles.errorBreakdownName}>Cédulas Duplicadas (4)</div>
+              <div className={styles.errorBreakdownName}>
+                Cédulas Duplicadas ({importPayload?.breakdown?.duplicateNationalId ?? 4})
+              </div>
               <div className={styles.errorBreakdownDesc}>
-                Filas con números de cédula repetidos dentro del archivo.
+                Filas con números de cédula repetidos dentro del archivo o en base de datos.
               </div>
             </li>
             <li className={styles.errorBreakdownItem}>
-              <div className={styles.errorBreakdownName}>Correos Inválidos (5)</div>
+              <div className={styles.errorBreakdownName}>
+                Correos Inválidos ({importPayload?.breakdown?.invalidEmail ?? 5})
+              </div>
               <div className={styles.errorBreakdownDesc}>
-                Estructura no cumple con el dominio institucional @ctphojancha.ed.cr.
+                Estructura no cumple con el formato estándar de correo institucional.
               </div>
             </li>
             <li className={styles.errorBreakdownItem}>
-              <div className={styles.errorBreakdownName}>Campos Vacíos (3)</div>
+              <div className={styles.errorBreakdownName}>
+                Campos Vacíos ({importPayload?.breakdown?.requiredFieldsMissing ?? 3})
+              </div>
               <div className={styles.errorBreakdownDesc}>
-                Faltan datos obligatorios en identificación o apellidos.
+                Faltan datos obligatorios en identificación, nombres o apellidos.
               </div>
             </li>
           </ul>
 
           <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
             <HelpCircle size={15} />
-            Edite las celdas directamente en la tabla para resolver los errores.
+            Edite las celdas directamente en la tabla para resolver los errores antes de confirmar.
           </div>
         </aside>
       </div>
@@ -378,6 +490,7 @@ export const UserImportPreviewPage: React.FC = () => {
             type="button"
             className={styles.btnOutline}
             onClick={() => navigate('/admin/users')}
+            disabled={isSaving}
           >
             <XCircle size={16} /> Cancelar importación
           </button>
@@ -385,6 +498,7 @@ export const UserImportPreviewPage: React.FC = () => {
             type="button"
             className={styles.btnOutline}
             onClick={() => navigate('/admin/users/import/bulk')}
+            disabled={isSaving}
           >
             <RefreshCw size={16} /> Volver a cargar archivo
           </button>
@@ -394,9 +508,20 @@ export const UserImportPreviewPage: React.FC = () => {
           type="button"
           className={styles.btnPrimaryGreen}
           onClick={handleConfirmImport}
+          disabled={isSaving || currentKPIs.validRows === 0}
+          style={{ opacity: isSaving ? 0.7 : 1, cursor: isSaving ? 'not-allowed' : 'pointer' }}
         >
-          <Save size={18} />
-          Continuar e importar {IMPORT_KPI_DATA.validRows} registros válidos
+          {isSaving ? (
+            <>
+              <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />
+              Guardando en base de datos...
+            </>
+          ) : (
+            <>
+              <Save size={18} />
+              Continuar e importar {currentKPIs.validRows} registros válidos
+            </>
+          )}
         </button>
       </footer>
 
@@ -439,10 +564,10 @@ export const UserImportPreviewPage: React.FC = () => {
               <ShieldCheck size={36} />
             </div>
             <h2 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#081e48', margin: '0 0 0.5rem 0' }}>
-              ¡Importación Exitosa!
+              ¡Importación Exitosa en MySQL!
             </h2>
             <p style={{ fontSize: '0.9rem', color: '#64748b', lineHeight: 1.5, margin: '0 0 1.5rem 0' }}>
-              Se han registrado correctamente los {IMPORT_KPI_DATA.validRows} usuarios válidos en la base de datos de EduSmart CTP Hojancha.
+              Se han registrado correctamente los {importedCount || currentKPIs.validRows} usuarios en la base de datos oficial de EduSmart CTP Hojancha.
             </p>
             <button
               type="button"
