@@ -1,5 +1,5 @@
 :root {
-  /* Colores Institucionales EduSmart CTP Hojancha */
+  /* Colores institucionales C.T.P. de Hojancha */
   --color-primary-dark: #081e48;
   --color-primary-blue: #165dfb;
   --color-primary-blue-hover: #124ecf;
@@ -18,8 +18,8 @@
   --color-text-main: #0f172a;
   --color-text-muted: #64748b;
   --color-text-white: #ffffff;
-  --font-family-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-family-heading: 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-family-sans: var(--brand-font-sans);
+  --font-family-heading: var(--brand-font-serif);
 
   /* Estados Semánticos (Chips y Badges) */
   --status-valid-bg: #ecfdf5;

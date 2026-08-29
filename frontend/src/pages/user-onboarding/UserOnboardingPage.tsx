@@ -18,8 +18,8 @@ export const UserOnboardingPage: React.FC = () => {
         <div className={styles.brand}>
           <div className={styles.brandLogo}>E</div>
           <div>
-            <div className={styles.brandText}>EduSmart</div>
-            <div className={styles.brandSub}>CTP Hojancha • Portal Administrativo</div>
+            <div className={styles.brandText}>C.T.P. de Hojancha</div>
+            <div className={styles.brandSub}>Portal administrativo institucional</div>
           </div>
         </div>
 

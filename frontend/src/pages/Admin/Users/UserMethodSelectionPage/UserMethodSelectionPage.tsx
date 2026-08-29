@@ -62,7 +62,7 @@ export const UserMethodSelectionPage: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'Plantilla_Usuarios_EduSmart.csv';
+    link.download = 'Plantilla_Usuarios_CTP_Hojancha.csv';
     link.click();
     URL.revokeObjectURL(url);
   };

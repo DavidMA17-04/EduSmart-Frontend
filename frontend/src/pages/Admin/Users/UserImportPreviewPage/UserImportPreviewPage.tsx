@@ -91,7 +91,7 @@ export const UserImportPreviewPage: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'Reporte_Validacion_Usuarios_EduSmart.csv';
+    link.download = 'Reporte_Validacion_Usuarios_CTP_Hojancha.csv';
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -160,7 +160,7 @@ export const UserImportPreviewPage: React.FC = () => {
 
       // Registrar en el historial de importaciones recientes
       try {
-        const fileName = (location.state as any)?.fileName || 'Importacion_Usuarios_EduSmart.csv';
+        const fileName = (location.state as any)?.fileName || 'Importacion_Usuarios_CTP_Hojancha.csv';
         const now = new Date();
         const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const newEntry = {
@@ -567,7 +567,7 @@ export const UserImportPreviewPage: React.FC = () => {
               ¡Importación Exitosa en MySQL!
             </h2>
             <p style={{ fontSize: '0.9rem', color: '#64748b', lineHeight: 1.5, margin: '0 0 1.5rem 0' }}>
-              Se han registrado correctamente los {importedCount || currentKPIs.validRows} usuarios en la base de datos oficial de EduSmart CTP Hojancha.
+              Se han registrado correctamente los {importedCount || currentKPIs.validRows} usuarios en la base de datos del C.T.P. de Hojancha.
             </p>
             <button
               type="button"

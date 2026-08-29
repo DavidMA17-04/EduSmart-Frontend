@@ -1,0 +1,17 @@
+:root {
+  /* C.T.P. de Hojancha — paleta institucional (manual + escudo) */
+  --brand-navy: #0b2340;
+  --brand-navy-soft: #12345c;
+  --brand-gold: #c5a028;
+  --brand-gold-light: #f5ecd3;
+  --brand-yellow: #f4c430;
+  --brand-yellow-light: #fff8dc;
+  --brand-green: #1e7a3a;
+  --brand-green-hover: #166530;
+  --brand-green-light: #e8f5ec;
+  --brand-orange: #e65100;
+
+  /* Tipografía institucional (serif formal; fallback hasta fuentes oficiales .woff2) */
+  --brand-font-serif: 'Merriweather', 'Georgia', 'Times New Roman', serif;
+  --brand-font-sans: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+}

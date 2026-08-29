@@ -1,7 +1,7 @@
 @import '../../styles/variables.css';
 
 :root {
-  /* Color Palette - EduSmart CTP Hojancha Modern Theme */
+  /* Color Palette - C.T.P. de Hojancha */
   --primary-hue: 222;
   --primary-50: hsl(var(--primary-hue), 100%, 97%);
   --primary-100: hsl(var(--primary-hue), 90%, 93%);
@@ -31,8 +31,8 @@
   --text-inverse: #0f172a;
 
   /* Fonts */
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-heading: 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-sans: var(--brand-font-sans);
+  --font-heading: var(--brand-font-serif);
 
   /* Radius */
   --radius-sm: 8px;

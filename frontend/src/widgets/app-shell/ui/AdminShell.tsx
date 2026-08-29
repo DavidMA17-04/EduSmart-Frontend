@@ -16,11 +16,15 @@ export const AdminShell = () => (
   <div className={`admin-shell ${styles.shell}`}>
     <aside className={styles.sidebar}>
       <div className={styles.brand}>
-        <GraduationCap aria-hidden="true" size={34} strokeWidth={1.8} />
-        <span>EduSmart</span>
-        <small>Gestión Académica Integral</small>
+        <img
+          alt="Escudo C.T.P. de Hojancha"
+          className={styles.brandLogo}
+          src="/brand/ctp-hojancha-logo.jpeg"
+        />
+        <span className={styles.brandTitle}>C.T.P. de Hojancha</span>
+        <small>Colegio Técnico Profesional</small>
+        <small className={styles.brandMotto}>Ciencia · Cultura · 1972</small>
       </div>
-      <p className={styles.institution}>CTP HOJANCHA</p>
       <nav className={styles.navigation} aria-label="Navegación principal">
         {navigationItems.map(({ label, icon: Icon, to }) => (
           <NavLink
@@ -41,7 +45,7 @@ export const AdminShell = () => (
     <section className={styles.main}>
       <header className={styles.header}>
         <button aria-label="Notificaciones" className={styles.iconButton} type="button"><Bell size={20} /></button>
-        <button className={styles.profile} type="button"><span className={styles.headerAvatar}>A</span><span><strong>Administrador</strong><small>Administrador</small></span><ChevronDown size={16} /></button>
+        <button className={styles.profile} type="button"><span className={styles.headerAvatar}>A</span><span><strong>Administrador</strong><small>Portal administrativo</small></span><ChevronDown size={16} /></button>
       </header>
       <main className={styles.content}><Outlet /></main>
     </section>

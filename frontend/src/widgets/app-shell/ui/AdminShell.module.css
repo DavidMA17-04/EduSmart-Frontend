@@ -1,8 +1,10 @@
 .shell { display: flex; }
 .sidebar { width: 224px; min-height: 100vh; display: flex; flex-direction: column; background: var(--admin-sidebar); color: #fff; padding: 20px 12px; }
-.brand { display: grid; justify-items: center; gap: 4px; font: 700 24px var(--font-heading); }
-.brand small, .institution, .account small, .profile small { font: 500 10px var(--font-sans); opacity: .78; }
-.institution { margin: 28px 8px 16px; font-size: 10px; letter-spacing: .04em; }
+.brand { display: grid; justify-items: center; gap: 4px; text-align: center; margin-bottom: 16px; }
+.brandLogo { width: 92px; height: 92px; object-fit: contain; border-radius: 50%; background: #fff; padding: 4px; }
+.brandTitle { font: 700 17px var(--font-heading); line-height: 1.2; margin-top: 4px; }
+.brand small, .account small, .profile small { font: 500 10px var(--font-sans); opacity: .82; }
+.brandMotto { color: #dbe8ff; letter-spacing: .06em; text-transform: uppercase; }
 .navigation { display: grid; gap: 4px; }
 .navItem { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; color: #dbe8ff; font-size: 13px; text-decoration: none; transition: background var(--transition-fast); }
 .navItem:hover, .navItem.active { color: #fff; background: var(--admin-sidebar-hover); }
@@ -15,4 +17,11 @@
 .profile { display: flex; align-items: center; gap: 8px; text-align: left; color: var(--admin-text); }
 .profile strong { font-size: 12px; }.profile small { color: var(--admin-muted); }
 .content { padding: 28px; }
-@media (max-width: 840px) { .sidebar { width: 64px; padding-inline: 8px; }.brand span, .brand small, .institution, .navItem:not(.active)::after, .navItem { font-size: 0; }.navItem { justify-content: center; }.account { display: none; }.content { padding: 18px; } }
+@media (max-width: 840px) {
+  .sidebar { width: 64px; padding-inline: 8px; }
+  .brandTitle, .brand small, .brandMotto, .navItem:not(.active)::after, .navItem { font-size: 0; }
+  .brandLogo { width: 44px; height: 44px; }
+  .navItem { justify-content: center; }
+  .account { display: none; }
+  .content { padding: 18px; }
+}

@@ -11,6 +11,8 @@
   --admin-success: #168750;
   --admin-warning: #b86800;
   --admin-danger: #d32f2f;
+  --font-heading: var(--brand-font-serif);
+  --font-sans: var(--brand-font-sans);
   min-height: 100vh;
   color: var(--admin-text);
   background: var(--admin-background);
