@@ -192,7 +192,7 @@
 
 .savePermissions {
   display: flex;
-  justify-content: end;
+  justify-content: flex-end;
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 16px;

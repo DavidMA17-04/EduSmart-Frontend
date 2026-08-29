@@ -131,14 +131,14 @@ export const RolesPermissionsPanel = () => {
                 )}
                 {model.isEditing && (
                   <div className={styles.savePermissions}>
-                    <Button disabled={model.isSaving || model.isLoadingPermissions} onClick={model.clearAll} type="button" variant="secondary">
-                      Quitar todos
+                    <Button disabled={model.isSaving || model.isLoadingPermissions || !model.hasChanges} onClick={() => void model.save()} type="button">
+                      {model.isSaving ? 'Guardando…' : 'Guardar permisos'}
                     </Button>
                     <Button disabled={model.isSaving || model.isLoadingPermissions} onClick={model.cancelEditing} type="button" variant="secondary">
                       Cancelar
                     </Button>
-                    <Button disabled={model.isSaving || model.isLoadingPermissions || !model.hasChanges} onClick={() => void model.save()} type="button">
-                      {model.isSaving ? 'Guardando…' : 'Guardar permisos'}
+                    <Button disabled={model.isSaving || model.isLoadingPermissions} onClick={model.clearAll} type="button" variant="secondary">
+                      Quitar todos
                     </Button>
                   </div>
                 )}

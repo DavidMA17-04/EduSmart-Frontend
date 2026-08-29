@@ -3,5 +3,6 @@ export type {
   CreateUserPayload,
   UpdateUserPayload,
   UserAccountStatus,
+  UserAuditLog,
   UserRoleRef,
 } from './model/types';

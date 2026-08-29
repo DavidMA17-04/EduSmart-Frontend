@@ -32,3 +32,14 @@ export interface CreateUserPayload {
 }
 
 export type UpdateUserPayload = Partial<CreateUserPayload>;
+
+export interface UserAuditLog {
+  id: number;
+  actorId: number | null;
+  action: string;
+  entity: string;
+  entityId: string;
+  before: Record<string, unknown> | null;
+  after: Record<string, unknown> | null;
+  createdAt: string;
+}

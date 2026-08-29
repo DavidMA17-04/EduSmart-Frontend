@@ -236,21 +236,21 @@ export const ImportPreviewTable: React.FC = () => {
       <div className={styles.actionBar}>
         <button
           type="button"
-          className={styles.filterBtn}
-          style={{ background: 'rgba(255, 255, 255, 0.08)', color: 'var(--text-primary)' }}
-          onClick={resetStore}
-        >
-          <RefreshCw size={16} style={{ display: 'inline', marginRight: 6 }} /> Cargar otro archivo
-        </button>
-
-        <button
-          type="button"
           className={styles.saveBtn}
           disabled={summary.invalidRowsCount > 0 || summary.validRowsCount === 0 || isProcessingFile}
           onClick={confirmAndSave}
         >
           <Save size={18} />
           {isProcessingFile ? 'Guardando...' : `Confirmar e Importar ${summary.validRowsCount} Usuario(s)`}
+        </button>
+
+        <button
+          type="button"
+          className={styles.filterBtn}
+          style={{ background: 'rgba(255, 255, 255, 0.08)', color: 'var(--text-primary)' }}
+          onClick={resetStore}
+        >
+          <RefreshCw size={16} style={{ display: 'inline', marginRight: 6 }} /> Cargar otro archivo
         </button>
       </div>
     </div>

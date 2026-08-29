@@ -9,6 +9,7 @@ import { AcademicPeriodsPage } from '@/pages/academic-periods';
 import { SectionsGroupsPage } from '@/pages/sections-groups';
 import { UserCreatePage } from '@/pages/user-create';
 import { UserDetailPage } from '@/pages/user-detail';
+import { UsersDirectoryPage } from '@/pages/users-directory';
 import { ImportResultPage } from '@/pages/import-result';
 import { AdminShell } from '@/widgets/app-shell';
 
@@ -21,6 +22,7 @@ export const AppRouter = () => (
       <Route path="users" element={<UserMethodSelectionPage />} />
       <Route path="users/import/bulk" element={<UserBulkImportPage />} />
       <Route path="users/import/preview" element={<UserImportPreviewPage />} />
+      <Route path="users/directory" element={<UsersDirectoryPage />} />
       <Route path="users/new" element={<UserCreatePage />} />
       <Route path="users/import-result/:jobId" element={<ImportResultPage />} />
       <Route path="users/:userId" element={<UserDetailPage />} />

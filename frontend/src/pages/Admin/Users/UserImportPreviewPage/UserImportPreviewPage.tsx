@@ -485,25 +485,6 @@ export const UserImportPreviewPage: React.FC = () => {
 
       {/* 4. Barra Inferior de Acciones */}
       <footer className={styles.actionBar}>
-        <div className={styles.actionSecondaryGroup}>
-          <button
-            type="button"
-            className={styles.btnOutline}
-            onClick={() => navigate('/admin/users')}
-            disabled={isSaving}
-          >
-            <XCircle size={16} /> Cancelar importación
-          </button>
-          <button
-            type="button"
-            className={styles.btnOutline}
-            onClick={() => navigate('/admin/users/import/bulk')}
-            disabled={isSaving}
-          >
-            <RefreshCw size={16} /> Volver a cargar archivo
-          </button>
-        </div>
-
         <button
           type="button"
           className={styles.btnPrimaryGreen}
@@ -523,6 +504,25 @@ export const UserImportPreviewPage: React.FC = () => {
             </>
           )}
         </button>
+
+        <div className={styles.actionSecondaryGroup}>
+          <button
+            type="button"
+            className={styles.btnOutline}
+            onClick={() => navigate('/admin/users/import/bulk')}
+            disabled={isSaving}
+          >
+            <RefreshCw size={16} /> Volver a cargar archivo
+          </button>
+          <button
+            type="button"
+            className={styles.btnOutline}
+            onClick={() => navigate('/admin/users')}
+            disabled={isSaving}
+          >
+            <XCircle size={16} /> Cancelar importación
+          </button>
+        </div>
       </footer>
 
       {/* Modal de Éxito al Completar */}

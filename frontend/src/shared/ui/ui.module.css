@@ -22,7 +22,7 @@
 .paginationButton { white-space: nowrap; flex-shrink: 0; min-width: 90px; }
 .paginationInfo { white-space: nowrap; flex-shrink: 0; min-width: 60px; text-align: center; }
 .textarea { width: 100%; min-height: 88px; resize: vertical; border: 1px solid var(--admin-border); border-radius: 8px; padding: 9px 12px; color: var(--admin-text); background: #fff; font: inherit; font-size: 14px; outline: none; }.textarea:focus { border-color: var(--admin-primary); box-shadow: 0 0 0 3px #0b5eea16; }
-.formActions { display: flex; flex-direction: row-reverse; justify-content: flex-start; gap: 10px; margin-top: 8px; }
+.formActions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
 .formHint { color: var(--admin-muted); font-size: 12px; font-weight: 400; }
 
 .modalBackdrop { position: fixed; z-index: 20; inset: 0; display: grid; place-items: center; padding: 20px; background: #13203d80; }.modal { width: min(100%, 520px); border-radius: 8px; background: #fff; box-shadow: 0 16px 55px #12203a40; }.modal > header { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--admin-border); }.modal > header h2 { color: var(--admin-text); font-size: 16px; }.modalContent { padding: 20px; }
