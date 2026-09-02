@@ -1,4 +1,4 @@
-import { Bell, ChevronDown, GraduationCap, Layers, LayoutDashboard, Settings, ShieldCheck, Users } from 'lucide-react';
+import { Bell, CalendarRange, ChevronDown, GraduationCap, Layers, LayoutDashboard, Settings, ShieldCheck, Users } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router-dom';
 import styles from './AdminShell.module.css';
 
@@ -7,6 +7,7 @@ const navigationItems = [
   { label: 'Usuarios', icon: Users, to: '/admin/users' },
   { label: 'Roles y permisos', icon: ShieldCheck, to: '/admin/roles-permissions' },
   { label: 'Estructura académica', icon: GraduationCap, to: '/admin/specialties' },
+  { label: 'Períodos académicos', icon: CalendarRange, to: '/admin/academic-periods' },
   { label: 'Niveles y secciones', icon: Layers, to: '/admin/sections-groups' },
   { label: 'Configuración', icon: Settings, to: '/admin/settings' },
 ];

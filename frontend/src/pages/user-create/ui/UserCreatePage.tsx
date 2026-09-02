@@ -49,11 +49,11 @@ export const UserCreatePage = () => {
           <h1>Usuario registrado</h1>
           <p>El registro de {createdUser.name ?? createdUser.email} se completó correctamente.</p>
           <div className={styles.actions}>
-            <Button type="button" variant="secondary" onClick={() => { setCreatedUser(null); form.setValues(emptyUserForm); }}>
-              Registrar otro
-            </Button>
             <Button type="button" onClick={() => navigate(`/admin/users/${createdUser.id}`)}>
               Ver ficha
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => { setCreatedUser(null); form.setValues(emptyUserForm); }}>
+              Registrar otro
             </Button>
           </div>
         </Card>

@@ -12,6 +12,7 @@ interface UserFormProps {
   isSubmitting?: boolean;
   submitLabel: string;
   formError?: string | null;
+  mode?: 'create' | 'edit';
   onChange: <K extends keyof UserFormValues>(field: K, value: UserFormValues[K]) => void;
   onSubmit: FormEventHandler<HTMLFormElement>;
   onCancel?: () => void;
@@ -31,6 +32,7 @@ export const UserForm = ({
   isSubmitting = false,
   submitLabel,
   formError,
+  mode = 'create',
   onChange,
   onSubmit,
   onCancel,
@@ -116,7 +118,7 @@ export const UserForm = ({
       </div>
 
       <label>
-        Contraseña inicial (opcional)
+        {mode === 'edit' ? 'Nueva contraseña (opcional)' : 'Contraseña inicial (opcional)'}
         <Input
           type="password"
           autoComplete="new-password"
@@ -125,7 +127,9 @@ export const UserForm = ({
           onChange={(event) => onChange('password', event.target.value)}
         />
         <span className={styles.hint}>
-          Si la indica, se crea la cuenta de acceso. Mínimo 8 caracteres.
+          {mode === 'edit'
+            ? 'Si la indica, se actualiza el acceso. Mínimo 8 caracteres.'
+            : 'Si la indica, se crea la cuenta de acceso. Mínimo 8 caracteres.'}
         </span>
         {errors.password && <span className={styles.error}>{errors.password}</span>}
       </label>

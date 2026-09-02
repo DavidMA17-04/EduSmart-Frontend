@@ -1,5 +1,6 @@
-import type { AdministrativeUser, CreateUserPayload, UpdateUserPayload } from '@/entities/user';
+import type { AdministrativeUser, CreateUserPayload, UpdateUserPayload, UserAuditLog } from '@/entities/user';
 import { httpClient } from '@/shared/api';
+import { normalizeUser } from '../model/userMappers';
 
 type ApiEnvelope<T> = { success: boolean; data: T };
 
@@ -9,10 +10,14 @@ async function requestUser<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const userApi = {
-  list: () => requestUser<AdministrativeUser[]>('/users'),
-  getById: (id: number) => requestUser<AdministrativeUser>(`/users/${id}`),
-  create: (payload: CreateUserPayload) =>
-    requestUser<AdministrativeUser>('/users', { method: 'POST', body: JSON.stringify(payload) }),
-  update: (id: number, payload: UpdateUserPayload) =>
-    requestUser<AdministrativeUser>(`/users/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  list: async () => {
+    const items = await requestUser<AdministrativeUser[]>('/users');
+    return items.map((item) => normalizeUser(item));
+  },
+  getById: async (id: number) => normalizeUser(await requestUser<AdministrativeUser>(`/users/${id}`)),
+  create: async (payload: CreateUserPayload) =>
+    normalizeUser(await requestUser<AdministrativeUser>('/users', { method: 'POST', body: JSON.stringify(payload) })),
+  update: async (id: number, payload: UpdateUserPayload) =>
+    normalizeUser(await requestUser<AdministrativeUser>(`/users/${id}`, { method: 'PATCH', body: JSON.stringify(payload) })),
+  getAuditLogs: (id: number) => requestUser<UserAuditLog[]>(`/users/${id}/audit-logs`),
 };

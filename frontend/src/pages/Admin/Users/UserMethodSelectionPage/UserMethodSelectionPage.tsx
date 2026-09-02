@@ -10,6 +10,8 @@ import {
   HelpCircle,
   History,
   FileCheck,
+  Users,
+  Eye,
 } from 'lucide-react';
 import styles from './UserMethodSelection.module.css';
 
@@ -74,7 +76,7 @@ export const UserMethodSelectionPage: React.FC = () => {
         </p>
       </header>
 
-      {/* Grid de 2 tarjetas simétricas (WF-13) */}
+      {/* Grid de tarjetas (WF-13 + WF-18) */}
       <section className={styles.cardsGrid}>
         {/* Tarjeta de Importación Masiva (Verde / Recomendado) */}
         <div className={styles.card}>
@@ -159,6 +161,45 @@ export const UserMethodSelectionPage: React.FC = () => {
             >
               <Plus size={18} />
               Agregar manualmente
+            </button>
+          </div>
+        </div>
+
+        {/* Tarjeta de Consulta y Edición (WF-18) */}
+        <div className={styles.card}>
+          <div className={styles.iconWrapperBlue}>
+            <Users size={30} />
+          </div>
+          <h2 className={styles.cardTitle}>
+            Consultar y Editar Usuarios
+          </h2>
+          <p className={styles.cardDesc}>
+            Acceda al directorio institucional, consulte la ficha de cada usuario y actualice sus datos con registro de auditoría.
+          </p>
+
+          <ul className={styles.featuresList}>
+            <li>
+              <CheckCircle2 size={18} className={styles.checkBlue} />
+              Búsqueda por nombre, cédula, correo o rol
+            </li>
+            <li>
+              <CheckCircle2 size={18} className={styles.checkBlue} />
+              Consulta de ficha institucional completa
+            </li>
+            <li>
+              <CheckCircle2 size={18} className={styles.checkBlue} />
+              Edición validada con historial de auditoría
+            </li>
+          </ul>
+
+          <div className={styles.actionGroup}>
+            <button
+              type="button"
+              className={styles.btnBlue}
+              onClick={() => navigate('/admin/users/directory')}
+            >
+              <Eye size={18} />
+              Abrir directorio
             </button>
           </div>
         </div>

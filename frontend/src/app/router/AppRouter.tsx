@@ -5,9 +5,11 @@ import { UserImportPreviewPage } from '@/pages/Admin/Users/UserImportPreviewPage
 import { AdminHomePage } from '@/pages/admin-home';
 import { RolesPermissionsPage } from '@/pages/roles-permissions';
 import { SpecialtiesPage } from '@/pages/specialties';
+import { AcademicPeriodsPage } from '@/pages/academic-periods';
 import { SectionsGroupsPage } from '@/pages/sections-groups';
 import { UserCreatePage } from '@/pages/user-create';
 import { UserDetailPage } from '@/pages/user-detail';
+import { UsersDirectoryPage } from '@/pages/users-directory';
 import { ImportResultPage } from '@/pages/import-result';
 import { AdminShell } from '@/widgets/app-shell';
 
@@ -20,11 +22,13 @@ export const AppRouter = () => (
       <Route path="users" element={<UserMethodSelectionPage />} />
       <Route path="users/import/bulk" element={<UserBulkImportPage />} />
       <Route path="users/import/preview" element={<UserImportPreviewPage />} />
+      <Route path="users/directory" element={<UsersDirectoryPage />} />
       <Route path="users/new" element={<UserCreatePage />} />
       <Route path="users/import-result/:jobId" element={<ImportResultPage />} />
       <Route path="users/:userId" element={<UserDetailPage />} />
       <Route path="roles-permissions" element={<RolesPermissionsPage />} />
       <Route path="specialties" element={<SpecialtiesPage />} />
+      <Route path="academic-periods" element={<AcademicPeriodsPage />} />
       <Route path="sections-groups" element={<SectionsGroupsPage />} />
       <Route path="*" element={<AdminHomePage />} />
     </Route>
@@ -36,6 +40,7 @@ export const AppRouter = () => (
     <Route path="/administrative/users/import/preview" element={<Navigate to="/admin/users/import/preview" replace />} />
     <Route path="/administrative/roles-permissions" element={<Navigate to="/admin/roles-permissions" replace />} />
     <Route path="/administrative/specialties" element={<Navigate to="/admin/specialties" replace />} />
+    <Route path="/administrative/academic-periods" element={<Navigate to="/admin/academic-periods" replace />} />
     <Route path="/administrative/sections-groups" element={<Navigate to="/admin/sections-groups" replace />} />
     <Route path="/administrative/*" element={<Navigate to="/admin" replace />} />
 
