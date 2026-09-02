@@ -17,6 +17,14 @@ import {
 } from 'lucide-react';
 import { userImportApi, ValidateBulkImportResponse } from '@/features/manage-user-import';
 import {
+  computeImportPreviewBreakdown,
+  hasAnyDuplicateInconsistency,
+  hasDbEmailConflict,
+  hasDbNationalIdConflict,
+  mapBackendInvalidFields,
+  revalidateImportPreviewRecords,
+} from '@/features/manage-user-import/lib/validateImportPreviewRow';
+import {
   GENERATED_MOCK_USERS,
   ImportedUserRecord,
 } from '../mocks/importedUsersMock';
@@ -32,21 +40,33 @@ export const UserImportPreviewPage: React.FC = () => {
   const initialRecords = useMemo<ImportedUserRecord[]>(() => {
     if (importPayload && (importPayload.records || importPayload.rows)) {
       const sourceList = importPayload.records || importPayload.rows || [];
-      return sourceList.map((r, idx) => ({
-        id: r.tempId || `tmp-row-${idx + 1}`,
-        rowNumber: r.row || r.rowNumber || idx + 1,
-        identification: r.national_id || r.identification || '',
-        names: r.name || r.names || '',
-        firstLastname: r.first_lastname || r.firstLastname || '',
-        secondLastname: r.second_lastname || r.secondLastname || '',
-        email: r.email || '',
-        role: (r.role as ImportedUserRecord['role']) || 'ESTUDIANTE',
-        section: r.section || '',
-        status: r.status || 'VALID',
-        invalidFields: r.invalidFields || [],
-        errorMessages: r.errorMessages || [],
-        warningMessages: r.warningMessages || [],
-      }));
+      return sourceList.map((r, idx) => {
+        const identification = r.national_id || r.identification || '';
+        const email = r.email || '';
+        const errorMessages = r.errorMessages || [];
+        return {
+          id: r.tempId || `tmp-row-${idx + 1}`,
+          rowNumber: r.row || r.rowNumber || idx + 1,
+          identification,
+          names: r.name || r.names || '',
+          firstLastname: r.first_lastname || r.firstLastname || '',
+          secondLastname: r.second_lastname || r.secondLastname || '',
+          email,
+          role: (r.role as ImportedUserRecord['role']) || 'ESTUDIANTE',
+          section: r.section || '',
+          userStatus: (r.user_status as ImportedUserRecord['userStatus']) || 'ACTIVE',
+          status: r.status || 'VALID',
+          invalidFields: mapBackendInvalidFields(r.invalidFields),
+          errorMessages,
+          warningMessages: r.warningMessages || [],
+          dbConflictNationalId: hasDbNationalIdConflict(errorMessages)
+            ? identification.trim()
+            : null,
+          dbConflictEmail: hasDbEmailConflict(errorMessages)
+            ? email.trim().toLowerCase()
+            : null,
+        };
+      });
     }
     return GENERATED_MOCK_USERS;
   }, [importPayload]);
@@ -59,6 +79,11 @@ export const UserImportPreviewPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [importedCount, setImportedCount] = useState<number>(0);
+
+  const currentBreakdown = useMemo(
+    () => computeImportPreviewBreakdown(records),
+    [records],
+  );
 
   // Cálculo reactivo de KPIs basado en el estado actual de la tabla
   const currentKPIs = useMemo(() => {
@@ -80,11 +105,12 @@ export const UserImportPreviewPage: React.FC = () => {
 
   // Descarga de reporte de validación (CSV)
   const handleDownloadReport = () => {
-    const headers = 'Fila,Identificacion,Nombres,Primer Apellido,Segundo Apellido,Correo,Rol,Seccion,Estado,Errores\n';
+    const headers =
+      'Fila,Identificacion,Nombres,Primer Apellido,Segundo Apellido,Correo,Rol,Seccion,EstadoCuenta,Validacion,Errores\n';
     const rows = filteredRecords
       .map(
         (r) =>
-          `${r.rowNumber},"${r.identification}","${r.names}","${r.firstLastname}","${r.secondLastname}","${r.email}","${r.role}","${r.section || ''}","${r.status}","${(r.errorMessages || []).join('; ')}"`,
+          `${r.rowNumber},"${r.identification}","${r.names}","${r.firstLastname}","${r.secondLastname}","${r.email}","${r.role}","${r.section || ''}","${r.userStatus || 'ACTIVE'}","${r.status}","${(r.errorMessages || []).join('; ')}"`,
       )
       .join('\n');
     const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' });
@@ -117,34 +143,32 @@ export const UserImportPreviewPage: React.FC = () => {
   });
 
   const handleCellChange = (id: string, field: keyof ImportedUserRecord, value: string) => {
-    setRecords((prev) =>
-      prev.map((row) => {
-        if (row.id === id) {
-          const updated = { ...row, [field]: value };
-          // Si el usuario corrige la cédula o el correo, actualiza a Válido
-          if (field === 'identification' && value.trim().length >= 7) {
-            updated.status = 'VALID';
-            updated.errorMessages = [];
-            updated.invalidFields = (updated.invalidFields || []).filter((f) => f !== 'identification');
-          }
-          if (field === 'email' && value.includes('@')) {
-            updated.status = 'VALID';
-            updated.errorMessages = [];
-            updated.invalidFields = (updated.invalidFields || []).filter((f) => f !== 'email');
-          }
-          return updated;
-        }
-        return row;
-      }),
-    );
+    if (field === 'userStatus') {
+      const normalized: ImportedUserRecord['userStatus'] =
+        value === 'INACTIVE' ? 'INACTIVE' : value === 'BLOCKED' ? 'BLOCKED' : 'ACTIVE';
+      setRecords((prev) =>
+        prev.map((row) => (row.id === id ? { ...row, userStatus: normalized } : row)),
+      );
+      return;
+    }
+
+    setRecords((prev) => {
+      const updated = prev.map((row) =>
+        row.id === id ? { ...row, [field]: value } : row,
+      );
+      return revalidateImportPreviewRecords(updated);
+    });
   };
 
   const handleDeleteRow = (id: string) => {
-    setRecords((prev) => prev.filter((row) => row.id !== id));
+    setRecords((prev) => revalidateImportPreviewRecords(prev.filter((row) => row.id !== id)));
   };
 
   const handleConfirmImport = async () => {
-    const validUsers = records.filter((r) => r.status === 'VALID');
+    const validatedRecords = revalidateImportPreviewRecords(records);
+    setRecords(validatedRecords);
+
+    const validUsers = validatedRecords.filter((r) => r.status === 'VALID');
     if (validUsers.length === 0) {
       setSaveError('No hay usuarios con estado Válido para importar.');
       return;
@@ -154,7 +178,22 @@ export const UserImportPreviewPage: React.FC = () => {
     setIsSaving(true);
 
     try {
-      const result = await userImportApi.confirmImport(validUsers as any);
+      const result = await userImportApi.confirmImport(
+        validUsers.map((r) => ({
+          row: r.rowNumber,
+          status: 'VALID' as const,
+          national_id: r.identification,
+          name: r.names,
+          first_lastname: r.firstLastname,
+          second_lastname: r.secondLastname || null,
+          email: r.email,
+          role: r.role,
+          section: r.section || null,
+          phone: r.phone || null,
+          user_status: r.userStatus || 'ACTIVE',
+          userStatus: r.userStatus || 'ACTIVE',
+        })),
+      );
       setImportedCount(result.importedCount);
       setIsSuccessModalOpen(true);
 
@@ -325,7 +364,8 @@ export const UserImportPreviewPage: React.FC = () => {
                   <th>Correo Institucional</th>
                   <th style={{ width: '130px' }}>Rol</th>
                   <th>Sección</th>
-                  <th style={{ width: '120px' }}>Estado</th>
+                  <th style={{ width: '130px' }}>Estado cuenta</th>
+                  <th style={{ width: '120px' }}>Validación</th>
                   <th style={{ width: '50px' }}>Acción</th>
                 </tr>
               </thead>
@@ -403,10 +443,24 @@ export const UserImportPreviewPage: React.FC = () => {
                     <td>
                       <input
                         type="text"
-                        className={styles.cellInput}
+                        className={`${styles.cellInput} ${
+                          row.invalidFields?.includes('section') ? styles.cellInputError : ''
+                        }`}
                         value={row.section || ''}
                         onChange={(e) => handleCellChange(row.id, 'section', e.target.value)}
                       />
+                    </td>
+                    <td>
+                      <select
+                        className={styles.cellInput}
+                        value={row.userStatus || 'ACTIVE'}
+                        onChange={(e) => handleCellChange(row.id, 'userStatus', e.target.value)}
+                        aria-label={`Estado de cuenta fila ${row.rowNumber}`}
+                      >
+                        <option value="ACTIVE">Activo</option>
+                        <option value="INACTIVE">Inactivo</option>
+                        <option value="BLOCKED">Bloqueado</option>
+                      </select>
                     </td>
                     <td>
                       {row.status === 'VALID' && (
@@ -450,30 +504,77 @@ export const UserImportPreviewPage: React.FC = () => {
           </h3>
 
           <ul className={styles.errorBreakdownList}>
-            <li className={styles.errorBreakdownItem}>
-              <div className={styles.errorBreakdownName}>
-                Cédulas Duplicadas ({importPayload?.breakdown?.duplicateNationalId ?? 4})
-              </div>
-              <div className={styles.errorBreakdownDesc}>
-                Filas con números de cédula repetidos dentro del archivo o en base de datos.
-              </div>
-            </li>
-            <li className={styles.errorBreakdownItem}>
-              <div className={styles.errorBreakdownName}>
-                Correos Inválidos ({importPayload?.breakdown?.invalidEmail ?? 5})
-              </div>
-              <div className={styles.errorBreakdownDesc}>
-                Estructura no cumple con el formato estándar de correo institucional.
-              </div>
-            </li>
-            <li className={styles.errorBreakdownItem}>
-              <div className={styles.errorBreakdownName}>
-                Campos Vacíos ({importPayload?.breakdown?.requiredFieldsMissing ?? 3})
-              </div>
-              <div className={styles.errorBreakdownDesc}>
-                Faltan datos obligatorios en identificación, nombres o apellidos.
-              </div>
-            </li>
+            {hasAnyDuplicateInconsistency(currentBreakdown) ? (
+              <>
+                {currentBreakdown.duplicateNationalIdInFile > 0 && (
+                  <li className={styles.errorBreakdownItem}>
+                    <div className={styles.errorBreakdownName}>
+                      Cédulas duplicadas en archivo ({currentBreakdown.duplicateNationalIdInFile})
+                    </div>
+                    <div className={styles.errorBreakdownDesc}>
+                      El mismo número de cédula aparece más de una vez en el archivo.
+                    </div>
+                  </li>
+                )}
+                {currentBreakdown.duplicateNationalIdInDb > 0 && (
+                  <li className={styles.errorBreakdownItem}>
+                    <div className={styles.errorBreakdownName}>
+                      Cédulas ya existentes en BD ({currentBreakdown.duplicateNationalIdInDb})
+                    </div>
+                    <div className={styles.errorBreakdownDesc}>
+                      La cédula ya está registrada en el sistema.
+                    </div>
+                  </li>
+                )}
+                {currentBreakdown.duplicateEmailInFile > 0 && (
+                  <li className={styles.errorBreakdownItem}>
+                    <div className={styles.errorBreakdownName}>
+                      Correos duplicados en archivo ({currentBreakdown.duplicateEmailInFile})
+                    </div>
+                    <div className={styles.errorBreakdownDesc}>
+                      El mismo correo aparece más de una vez en el archivo.
+                    </div>
+                  </li>
+                )}
+                {currentBreakdown.duplicateEmailInDb > 0 && (
+                  <li className={styles.errorBreakdownItem}>
+                    <div className={styles.errorBreakdownName}>
+                      Correos ya existentes en BD ({currentBreakdown.duplicateEmailInDb})
+                    </div>
+                    <div className={styles.errorBreakdownDesc}>
+                      El correo ya se encuentra registrado en el sistema.
+                    </div>
+                  </li>
+                )}
+              </>
+            ) : (
+              <li className={styles.errorBreakdownItem}>
+                <div className={styles.errorBreakdownName}>Sin duplicados detectados</div>
+                <div className={styles.errorBreakdownDesc}>
+                  No hay cédulas ni correos duplicados en archivo o BD en el lote actual.
+                </div>
+              </li>
+            )}
+            {currentBreakdown.invalidEmail > 0 && (
+              <li className={styles.errorBreakdownItem}>
+                <div className={styles.errorBreakdownName}>
+                  Correos inválidos ({currentBreakdown.invalidEmail})
+                </div>
+                <div className={styles.errorBreakdownDesc}>
+                  Estructura no cumple con el formato estándar de correo.
+                </div>
+              </li>
+            )}
+            {currentBreakdown.requiredFieldsMissing > 0 && (
+              <li className={styles.errorBreakdownItem}>
+                <div className={styles.errorBreakdownName}>
+                  Campos vacíos ({currentBreakdown.requiredFieldsMissing})
+                </div>
+                <div className={styles.errorBreakdownDesc}>
+                  Faltan datos obligatorios en identificación, nombres o apellidos.
+                </div>
+              </li>
+            )}
           </ul>
 
           <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', display: 'flex', gap: '0.4rem', alignItems: 'center' }}>

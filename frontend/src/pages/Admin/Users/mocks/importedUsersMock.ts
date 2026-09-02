@@ -9,6 +9,11 @@ export interface ImportedUserRecord {
   role: 'ESTUDIANTE' | 'DOCENTE' | 'ADMINISTRATIVO' | 'DIRECTIVO';
   section?: string;
   phone?: string;
+  userStatus?: 'ACTIVE' | 'INACTIVE' | 'BLOCKED';
+  /** Cédula que chocó con BD en el validate inicial (se re-aplica al editar). */
+  dbConflictNationalId?: string | null;
+  /** Correo que chocó con BD en el validate inicial (se re-aplica al editar). */
+  dbConflictEmail?: string | null;
   status: 'VALID' | 'WARNING' | 'ERROR';
   errorMessages?: string[];
   warningMessages?: string[];
