@@ -5,21 +5,10 @@ import {
   isValidEmail,
 } from '@/features/manage-user/model/userFormRules';
 
-const VALID_ROLES = ['ESTUDIANTE', 'DOCENTE', 'ADMINISTRATIVO', 'DIRECTIVO'] as const;
-type ValidRole = (typeof VALID_ROLES)[number];
+export const BULK_IMPORT_STUDENT_ONLY_ERROR =
+  'La importación masiva solo admite registros con rol ESTUDIANTE';
 
-const ROLE_ALIASES: Record<string, ValidRole> = {
-  estudiante: 'ESTUDIANTE',
-  student: 'ESTUDIANTE',
-  docente: 'DOCENTE',
-  profesor: 'DOCENTE',
-  teacher: 'DOCENTE',
-  administrativo: 'ADMINISTRATIVO',
-  administrador: 'ADMINISTRATIVO',
-  admin: 'ADMINISTRATIVO',
-  directivo: 'DIRECTIVO',
-  director: 'DIRECTIVO',
-};
+const STUDENT_ALIASES = new Set(['estudiante', 'student', 'ESTUDIANTE'.toLowerCase()]);
 
 const BACKEND_INVALID_FIELD_MAP: Record<string, keyof ImportedUserRecord | 'identification' | 'names' | 'firstLastname' | 'email' | 'role' | 'section' | 'phone' | 'userStatus'> = {
   national_id: 'identification',
@@ -36,18 +25,21 @@ const BACKEND_INVALID_FIELD_MAP: Record<string, keyof ImportedUserRecord | 'iden
   firstLastname: 'firstLastname',
 };
 
-export function normalizePreviewRole(raw: string): ValidRole | null {
-  const key = raw
+function normalizeRoleKey(raw: string): string {
+  return raw
     .trim()
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
+}
 
-  if (!key) {
+/** Vacío → ESTUDIANTE; alias estudiante → ESTUDIANTE; otro → null (no permitido). */
+export function normalizePreviewStudentRole(raw: string): 'ESTUDIANTE' | null {
+  const key = normalizeRoleKey(raw);
+  if (!key || STUDENT_ALIASES.has(key)) {
     return 'ESTUDIANTE';
   }
-
-  return ROLE_ALIASES[key] ?? (VALID_ROLES.includes(key as ValidRole) ? (key as ValidRole) : null);
+  return null;
 }
 
 export function mapBackendInvalidFields(fields?: string[]): string[] {
@@ -58,13 +50,20 @@ export function mapBackendInvalidFields(fields?: string[]): string[] {
   return fields.map((field) => BACKEND_INVALID_FIELD_MAP[field] ?? field);
 }
 
-/** Detecta mensajes de conflicto con BD emitidos por el backend. */
 export function hasDbNationalIdConflict(messages?: string[]): boolean {
   return (messages ?? []).some((m) => m.includes('ya existe en la base de datos'));
 }
 
 export function hasDbEmailConflict(messages?: string[]): boolean {
   return (messages ?? []).some((m) => m.includes('ya se encuentra registrado en el sistema'));
+}
+
+export function hasDbRoleConflict(messages?: string[]): boolean {
+  return (messages ?? []).some(
+    (m) =>
+      m.includes(BULK_IMPORT_STUDENT_ONLY_ERROR) ||
+      m.includes('El rol especificado no existe en el sistema'),
+  );
 }
 
 export function validateImportPreviewRow(
@@ -79,7 +78,7 @@ export function validateImportPreviewRow(
   const names = row.names.trim();
   const firstLastname = row.firstLastname.trim();
   const email = row.email.trim().toLowerCase();
-  const normalizedRole = normalizePreviewRole(row.role);
+  const studentRole = normalizePreviewStudentRole(row.role);
 
   if (!identification) {
     invalidFields.push('identification');
@@ -99,7 +98,6 @@ export function validateImportPreviewRow(
       errorMessages.push(`Cédula duplicada dentro del archivo (${identification}).`);
     }
 
-    // Re-aplicar conflicto BD si la cédula no cambió respecto al validate inicial
     if (
       row.dbConflictNationalId &&
       row.dbConflictNationalId.trim().toLowerCase() === idLower
@@ -138,7 +136,6 @@ export function validateImportPreviewRow(
       errorMessages.push(`Correo electrónico duplicado dentro del archivo (${email}).`);
     }
 
-    // Re-aplicar conflicto BD si el correo no cambió respecto al validate inicial
     if (
       row.dbConflictEmail &&
       row.dbConflictEmail.trim().toLowerCase() === email
@@ -150,14 +147,19 @@ export function validateImportPreviewRow(
     }
   }
 
-  if (!normalizedRole) {
+  if (!studentRole) {
     invalidFields.push('role');
-    errorMessages.push(
-      `Rol '${row.role}' no válido. Valores permitidos: Estudiante, Docente, Administrativo, Directivo.`,
-    );
+    errorMessages.push(BULK_IMPORT_STUDENT_ONLY_ERROR);
+  } else if (
+    row.dbConflictRole &&
+    row.dbConflictRole.trim().toLowerCase() === String(row.role).trim().toLowerCase() &&
+    normalizePreviewStudentRole(row.dbConflictRole) === null
+  ) {
+    invalidFields.push('role');
+    errorMessages.push(BULK_IMPORT_STUDENT_ONLY_ERROR);
   }
 
-  if (normalizedRole === 'ESTUDIANTE' && !row.section?.trim()) {
+  if (studentRole === 'ESTUDIANTE' && !row.section?.trim()) {
     if (!invalidFields.includes('section')) {
       invalidFields.push('section');
     }
@@ -180,7 +182,7 @@ export function validateImportPreviewRow(
 
   return {
     ...row,
-    role: (normalizedRole ?? row.role) as ImportedUserRecord['role'],
+    role: (studentRole ?? row.role ?? 'ESTUDIANTE') as ImportedUserRecord['role'],
     userStatus:
       row.userStatus === 'INACTIVE'
         ? 'INACTIVE'
@@ -207,6 +209,7 @@ export interface ImportPreviewBreakdown {
   duplicateEmailInDb: number;
   requiredFieldsMissing: number;
   invalidEmail: number;
+  invalidRole: number;
 }
 
 export function computeImportPreviewBreakdown(
@@ -219,6 +222,7 @@ export function computeImportPreviewBreakdown(
     duplicateEmailInDb: 0,
     requiredFieldsMissing: 0,
     invalidEmail: 0,
+    invalidRole: 0,
   };
 
   records.forEach((row) => {
@@ -233,6 +237,11 @@ export function computeImportPreviewBreakdown(
         breakdown.duplicateEmailInFile += 1;
       } else if (lower.includes('ya se encuentra registrado en el sistema')) {
         breakdown.duplicateEmailInDb += 1;
+      } else if (
+        message.includes(BULK_IMPORT_STUDENT_ONLY_ERROR) ||
+        message.includes('El rol especificado no existe en el sistema')
+      ) {
+        breakdown.invalidRole += 1;
       } else if (
         message.includes('obligatoria') ||
         message.includes('obligatorio')

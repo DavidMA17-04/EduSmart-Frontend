@@ -15,6 +15,26 @@ import {
 import { userImportApi } from '@/features/manage-user-import';
 import styles from './UserBulkImport.module.css';
 
+const MAX_BULK_IMPORT_BYTES = 10 * 1024 * 1024;
+const ALLOWED_BULK_IMPORT_EXTENSIONS = ['.xlsx', '.xls', '.csv'] as const;
+
+function getBulkImportExtension(fileName: string): string {
+  const lower = fileName.toLowerCase();
+  const dot = lower.lastIndexOf('.');
+  return dot >= 0 ? lower.slice(dot) : '';
+}
+
+function validateBulkImportFile(file: File): string | null {
+  const extension = getBulkImportExtension(file.name);
+  if (!(ALLOWED_BULK_IMPORT_EXTENSIONS as readonly string[]).includes(extension)) {
+    return 'Solo se permiten archivos con extensión .xlsx, .xls o .csv.';
+  }
+  if (file.size > MAX_BULK_IMPORT_BYTES) {
+    return 'El archivo supera el límite máximo de 10 MB.';
+  }
+  return null;
+}
+
 export const UserBulkImportPage: React.FC = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -44,25 +64,43 @@ export const UserBulkImportPage: React.FC = () => {
     setIsDragOver(false);
   };
 
+  const acceptSelectedFile = (file: File) => {
+    const validationError = validateBulkImportFile(file);
+    if (validationError) {
+      setSelectedFile(null);
+      setErrorMessage(validationError);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+    setErrorMessage(null);
+    setSelectedFile(file);
+  };
+
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-    setErrorMessage(null);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setSelectedFile(e.dataTransfer.files[0]);
+      acceptSelectedFile(e.dataTransfer.files[0]);
     }
   };
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setErrorMessage(null);
     if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
+      acceptSelectedFile(e.target.files[0]);
     }
   };
 
   const handleValidateFile = async () => {
     if (!selectedFile) {
       setErrorMessage('Por favor seleccione o arrastre un archivo Excel (.xlsx, .xls) o CSV antes de continuar.');
+      return;
+    }
+
+    const validationError = validateBulkImportFile(selectedFile);
+    if (validationError) {
+      setErrorMessage(validationError);
       return;
     }
 
@@ -225,7 +263,7 @@ export const UserBulkImportPage: React.FC = () => {
               </li>
               <li className={styles.checklistItem}>
                 <CheckCircle2 size={16} color="var(--color-primary-green)" />
-                Roles válidos: ESTUDIANTE, DOCENTE, etc.
+                Roles válidos: únicamente ESTUDIANTE (por defecto si se omite).
               </li>
             </ul>
           </div>
@@ -298,10 +336,10 @@ export const UserBulkImportPage: React.FC = () => {
                 <td>asolano@ctphojancha.ed.cr</td>
               </tr>
               <tr>
-                <td><strong>rol*</strong></td>
-                <td><span className={styles.badgeRequiredYes}>Sí</span></td>
+                <td><strong>rol</strong></td>
+                <td><span className={styles.badgeRequiredNo}>No / Por defecto</span></td>
                 <td>Enum</td>
-                <td>ESTUDIANTE, DOCENTE, ADMINISTRATIVO, DIRECTIVO</td>
+                <td>Opcional. Si se omite, se asigna ESTUDIANTE automáticamente</td>
               </tr>
               <tr>
                 <td><strong>seccion</strong></td>
@@ -317,9 +355,9 @@ export const UserBulkImportPage: React.FC = () => {
               </tr>
               <tr>
                 <td><strong>estado</strong></td>
-                <td><span className={styles.badgeRequiredNo}>No</span></td>
+                <td><span className={styles.badgeRequiredNo}>No / Por defecto</span></td>
                 <td>Enum</td>
-                <td>Activo, Inactivo, Bloqueado (Por defecto: Activo)</td>
+                <td>Opcional. Si se omite, se asigna Activo automáticamente (Activo, Inactivo, Bloqueado)</td>
               </tr>
             </tbody>
           </table>
