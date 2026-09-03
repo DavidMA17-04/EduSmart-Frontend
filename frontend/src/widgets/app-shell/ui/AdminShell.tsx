@@ -1,5 +1,5 @@
-import { Bell, CalendarRange, ChevronDown, GraduationCap, Layers, LayoutDashboard, LogOut, Settings, ShieldCheck, Users } from 'lucide-react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Bell, CalendarRange, ChevronDown, GraduationCap, Layers, LayoutDashboard, LogOut, Settings, ShieldCheck, Users } from 'lucide-react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { authApi } from '@/features/auth';
 import { getSessionUser } from '@/shared/auth';
 import styles from './AdminShell.module.css';
@@ -16,6 +16,8 @@ const navigationItems = [
 
 export const AdminShell = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isDashboard = location.pathname === '/admin' || location.pathname === '/admin/dashboard';
   const sessionUser = getSessionUser();
   const email = sessionUser?.email ?? 'Sesión activa';
   const displayName = sessionUser?.roles[0] ?? 'Usuario';
@@ -39,6 +41,7 @@ export const AdminShell = () => {
           {navigationItems.map(({ label, icon: Icon, to }) => (
             <NavLink
               className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
+              end={to === '/admin'}
               key={to}
               to={to}
             >
@@ -73,7 +76,21 @@ export const AdminShell = () => {
             Cerrar sesión
           </button>
         </header>
-        <main className={styles.content}><Outlet /></main>
+        <main className={styles.content}>
+          <Outlet />
+          {!isDashboard && (
+            <div className={styles.backWrap}>
+              <button
+                className={styles.backButton}
+                onClick={() => navigate('/admin')}
+                type="button"
+              >
+                <ArrowLeft size={18} />
+                Regresar al Dashboard Administrativo
+              </button>
+            </div>
+          )}
+        </main>
       </section>
     </div>
   );
