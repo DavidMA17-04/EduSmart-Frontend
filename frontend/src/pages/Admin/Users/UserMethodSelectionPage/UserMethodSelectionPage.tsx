@@ -82,7 +82,7 @@ export const UserMethodSelectionPage: React.FC = () => {
         <div className={styles.card}>
           <span className={styles.recommendedBadge}>Recomendado</span>
           <div className={styles.iconWrapperGreen}>
-            <FileSpreadsheet size={30} />
+            <FileSpreadsheet size={24} />
           </div>
           <h2 className={styles.cardTitle}>
             Importación Masiva desde Archivo (Excel / CSV)
@@ -93,15 +93,15 @@ export const UserMethodSelectionPage: React.FC = () => {
 
           <ul className={styles.featuresList}>
             <li>
-              <CheckCircle2 size={18} className={styles.checkGreen} />
+              <CheckCircle2 size={16} className={styles.checkGreen} />
               Ideal para inicios de curso lectivo y matrículas masivas
             </li>
             <li>
-              <CheckCircle2 size={18} className={styles.checkGreen} />
+              <CheckCircle2 size={16} className={styles.checkGreen} />
               Validación instantánea de formato de cédula y correos MEP
             </li>
             <li>
-              <CheckCircle2 size={18} className={styles.checkGreen} />
+              <CheckCircle2 size={16} className={styles.checkGreen} />
               Pre-visualización interactiva y corrección de celdas con error
             </li>
           </ul>
@@ -112,7 +112,7 @@ export const UserMethodSelectionPage: React.FC = () => {
               className={styles.btnGreen}
               onClick={() => navigate('/admin/users/import/bulk')}
             >
-              <Upload size={18} />
+              <Upload size={16} />
               Importar usuarios
             </button>
             <button
@@ -120,7 +120,7 @@ export const UserMethodSelectionPage: React.FC = () => {
               className={styles.btnOutlineGreen}
               onClick={handleDownloadTemplate}
             >
-              <Download size={18} />
+              <Download size={16} />
               Ver guía / Plantilla
             </button>
           </div>
@@ -129,7 +129,7 @@ export const UserMethodSelectionPage: React.FC = () => {
         {/* Tarjeta de Registro Manual (Azul) */}
         <div className={styles.card}>
           <div className={styles.iconWrapperBlue}>
-            <UserPlus size={30} />
+            <UserPlus size={24} />
           </div>
           <h2 className={styles.cardTitle}>
             Agregar Usuario Manualmente
@@ -140,15 +140,15 @@ export const UserMethodSelectionPage: React.FC = () => {
 
           <ul className={styles.featuresList}>
             <li>
-              <CheckCircle2 size={18} className={styles.checkBlue} />
+              <CheckCircle2 size={16} className={styles.checkBlue} />
               Apropiado para traslados extemporáneos y nuevos funcionarios
             </li>
             <li>
-              <CheckCircle2 size={18} className={styles.checkBlue} />
+              <CheckCircle2 size={16} className={styles.checkBlue} />
               Configuración personalizada de especialidad técnica y grupo
             </li>
             <li>
-              <CheckCircle2 size={18} className={styles.checkBlue} />
+              <CheckCircle2 size={16} className={styles.checkBlue} />
               Activación inmediata de credenciales institucionales
             </li>
           </ul>
@@ -159,7 +159,7 @@ export const UserMethodSelectionPage: React.FC = () => {
               className={styles.btnBlue}
               onClick={() => navigate('/admin/users/new')}
             >
-              <Plus size={18} />
+              <Plus size={16} />
               Agregar manualmente
             </button>
           </div>
@@ -168,7 +168,7 @@ export const UserMethodSelectionPage: React.FC = () => {
         {/* Tarjeta de Consulta y Edición (WF-18) */}
         <div className={styles.card}>
           <div className={styles.iconWrapperBlue}>
-            <Users size={30} />
+            <Users size={24} />
           </div>
           <h2 className={styles.cardTitle}>
             Consultar y Editar Usuarios
@@ -179,15 +179,15 @@ export const UserMethodSelectionPage: React.FC = () => {
 
           <ul className={styles.featuresList}>
             <li>
-              <CheckCircle2 size={18} className={styles.checkBlue} />
+              <CheckCircle2 size={16} className={styles.checkBlue} />
               Búsqueda por nombre, cédula, correo o rol
             </li>
             <li>
-              <CheckCircle2 size={18} className={styles.checkBlue} />
+              <CheckCircle2 size={16} className={styles.checkBlue} />
               Consulta de ficha institucional completa
             </li>
             <li>
-              <CheckCircle2 size={18} className={styles.checkBlue} />
+              <CheckCircle2 size={16} className={styles.checkBlue} />
               Edición validada con historial de auditoría
             </li>
           </ul>
@@ -198,7 +198,7 @@ export const UserMethodSelectionPage: React.FC = () => {
               className={styles.btnBlue}
               onClick={() => navigate('/admin/users/directory')}
             >
-              <Eye size={18} />
+              <Eye size={16} />
               Abrir directorio
             </button>
           </div>
