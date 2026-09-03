@@ -1,5 +1,7 @@
-import { Bell, CalendarRange, ChevronDown, GraduationCap, Layers, LayoutDashboard, Settings, ShieldCheck, Users } from 'lucide-react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { Bell, CalendarRange, ChevronDown, GraduationCap, Layers, LayoutDashboard, LogOut, Settings, ShieldCheck, Users } from 'lucide-react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { authApi } from '@/features/auth';
+import { getSessionUser } from '@/shared/auth';
 import styles from './AdminShell.module.css';
 
 const navigationItems = [
@@ -12,38 +14,67 @@ const navigationItems = [
   { label: 'Configuración', icon: Settings, to: '/admin/settings' },
 ];
 
-export const AdminShell = () => (
-  <div className={`admin-shell ${styles.shell}`}>
-    <aside className={styles.sidebar}>
-      <div className={styles.brand}>
-        <GraduationCap aria-hidden="true" size={34} strokeWidth={1.8} />
-        <span>EduSmart</span>
-        <small>Gestión Académica Integral</small>
-      </div>
-      <p className={styles.institution}>CTP HOJANCHA</p>
-      <nav className={styles.navigation} aria-label="Navegación principal">
-        {navigationItems.map(({ label, icon: Icon, to }) => (
-          <NavLink
-            className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
-            key={to}
-            to={to}
-          >
-            <Icon aria-hidden="true" size={18} />
-            {label}
-          </NavLink>
-        ))}
-      </nav>
-      <div className={styles.account}>
-        <span className={styles.avatar}>A</span>
-        <span><strong>Administrador</strong><small>admin@ctphojancha.ed.cr</small></span>
-      </div>
-    </aside>
-    <section className={styles.main}>
-      <header className={styles.header}>
-        <button aria-label="Notificaciones" className={styles.iconButton} type="button"><Bell size={20} /></button>
-        <button className={styles.profile} type="button"><span className={styles.headerAvatar}>A</span><span><strong>Administrador</strong><small>Administrador</small></span><ChevronDown size={16} /></button>
-      </header>
-      <main className={styles.content}><Outlet /></main>
-    </section>
-  </div>
-);
+export const AdminShell = () => {
+  const navigate = useNavigate();
+  const sessionUser = getSessionUser();
+  const email = sessionUser?.email ?? 'Sesión activa';
+  const displayName = sessionUser?.roles[0] ?? 'Usuario';
+  const avatarLetter = (email[0] ?? 'U').toUpperCase();
+
+  const onLogout = async () => {
+    await authApi.logout();
+    navigate('/login', { replace: true });
+  };
+
+  return (
+    <div className={`admin-shell ${styles.shell}`}>
+      <aside className={styles.sidebar}>
+        <div className={styles.brand}>
+          <GraduationCap aria-hidden="true" size={34} strokeWidth={1.8} />
+          <span>EduSmart</span>
+          <small>Gestión Académica Integral</small>
+        </div>
+        <p className={styles.institution}>CTP HOJANCHA</p>
+        <nav aria-label="Navegación principal" className={styles.navigation}>
+          {navigationItems.map(({ label, icon: Icon, to }) => (
+            <NavLink
+              className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
+              key={to}
+              to={to}
+            >
+              <Icon aria-hidden="true" size={18} />
+              {label}
+            </NavLink>
+          ))}
+        </nav>
+        <div className={styles.account}>
+          <span className={styles.avatar}>{avatarLetter}</span>
+          <span>
+            <strong>{displayName}</strong>
+            <small>{email}</small>
+          </span>
+        </div>
+      </aside>
+      <section className={styles.main}>
+        <header className={styles.header}>
+          <button aria-label="Notificaciones" className={styles.iconButton} type="button">
+            <Bell size={20} />
+          </button>
+          <button className={styles.profile} type="button">
+            <span className={styles.headerAvatar}>{avatarLetter}</span>
+            <span>
+              <strong>{displayName}</strong>
+              <small>{email}</small>
+            </span>
+            <ChevronDown size={16} />
+          </button>
+          <button className={styles.logout} onClick={onLogout} type="button">
+            <LogOut aria-hidden="true" size={16} />
+            Cerrar sesión
+          </button>
+        </header>
+        <main className={styles.content}><Outlet /></main>
+      </section>
+    </div>
+  );
+};

@@ -3,6 +3,7 @@ import { UserMethodSelectionPage } from '@/pages/Admin/Users/UserMethodSelection
 import { UserBulkImportPage } from '@/pages/Admin/Users/UserBulkImportPage/UserBulkImportPage';
 import { UserImportPreviewPage } from '@/pages/Admin/Users/UserImportPreviewPage/UserImportPreviewPage';
 import { AdminHomePage } from '@/pages/admin-home';
+import { LoginPage } from '@/pages/login';
 import { RolesPermissionsPage } from '@/pages/roles-permissions';
 import { SpecialtiesPage } from '@/pages/specialties';
 import { AcademicPeriodsPage } from '@/pages/academic-periods';
@@ -12,42 +13,45 @@ import { UserDetailPage } from '@/pages/user-detail';
 import { UsersDirectoryPage } from '@/pages/users-directory';
 import { ImportResultPage } from '@/pages/import-result';
 import { AdminShell } from '@/widgets/app-shell';
+import { RequireAuth } from './RequireAuth';
+import { RootRedirect } from './RootRedirect';
 
 export const AppRouter = () => (
   <Routes>
-    {/* Rutas Oficiales del Módulo Administrativo: /admin */}
-    <Route path="/admin" element={<AdminShell />}>
-      <Route index element={<AdminHomePage />} />
-      <Route path="dashboard" element={<AdminHomePage />} />
-      <Route path="users" element={<UserMethodSelectionPage />} />
-      <Route path="users/import/bulk" element={<UserBulkImportPage />} />
-      <Route path="users/import/preview" element={<UserImportPreviewPage />} />
-      <Route path="users/directory" element={<UsersDirectoryPage />} />
-      <Route path="users/new" element={<UserCreatePage />} />
-      <Route path="users/import-result/:jobId" element={<ImportResultPage />} />
-      <Route path="users/:userId" element={<UserDetailPage />} />
-      <Route path="roles-permissions" element={<RolesPermissionsPage />} />
-      <Route path="specialties" element={<SpecialtiesPage />} />
-      <Route path="academic-periods" element={<AcademicPeriodsPage />} />
-      <Route path="sections-groups" element={<SectionsGroupsPage />} />
-      <Route path="*" element={<AdminHomePage />} />
+    <Route element={<LoginPage />} path="/login" />
+
+    <Route element={<RequireAuth />}>
+      <Route element={<AdminShell />} path="/admin">
+        <Route element={<AdminHomePage />} index />
+        <Route element={<AdminHomePage />} path="dashboard" />
+        <Route element={<UserMethodSelectionPage />} path="users" />
+        <Route element={<UserBulkImportPage />} path="users/import/bulk" />
+        <Route element={<UserImportPreviewPage />} path="users/import/preview" />
+        <Route element={<UsersDirectoryPage />} path="users/directory" />
+        <Route element={<UserCreatePage />} path="users/new" />
+        <Route element={<ImportResultPage />} path="users/import-result/:jobId" />
+        <Route element={<UserDetailPage />} path="users/:userId" />
+        <Route element={<RolesPermissionsPage />} path="roles-permissions" />
+        <Route element={<SpecialtiesPage />} path="specialties" />
+        <Route element={<AcademicPeriodsPage />} path="academic-periods" />
+        <Route element={<SectionsGroupsPage />} path="sections-groups" />
+        <Route element={<AdminHomePage />} path="*" />
+      </Route>
     </Route>
 
-    {/* Redirecciones de compatibilidad para enlaces antiguos /administrative */}
-    <Route path="/administrative" element={<Navigate to="/admin" replace />} />
-    <Route path="/administrative/users" element={<Navigate to="/admin/users" replace />} />
-    <Route path="/administrative/users/import/bulk" element={<Navigate to="/admin/users/import/bulk" replace />} />
-    <Route path="/administrative/users/import/preview" element={<Navigate to="/admin/users/import/preview" replace />} />
-    <Route path="/administrative/roles-permissions" element={<Navigate to="/admin/roles-permissions" replace />} />
-    <Route path="/administrative/specialties" element={<Navigate to="/admin/specialties" replace />} />
-    <Route path="/administrative/academic-periods" element={<Navigate to="/admin/academic-periods" replace />} />
-    <Route path="/administrative/sections-groups" element={<Navigate to="/admin/sections-groups" replace />} />
-    <Route path="/administrative/*" element={<Navigate to="/admin" replace />} />
+    <Route element={<Navigate replace to="/admin" />} path="/administrative" />
+    <Route element={<Navigate replace to="/admin/users" />} path="/administrative/users" />
+    <Route element={<Navigate replace to="/admin/users/import/bulk" />} path="/administrative/users/import/bulk" />
+    <Route element={<Navigate replace to="/admin/users/import/preview" />} path="/administrative/users/import/preview" />
+    <Route element={<Navigate replace to="/admin/roles-permissions" />} path="/administrative/roles-permissions" />
+    <Route element={<Navigate replace to="/admin/specialties" />} path="/administrative/specialties" />
+    <Route element={<Navigate replace to="/admin/academic-periods" />} path="/administrative/academic-periods" />
+    <Route element={<Navigate replace to="/admin/sections-groups" />} path="/administrative/sections-groups" />
+    <Route element={<Navigate replace to="/admin" />} path="/administrative/*" />
 
-    {/* Redirecciones automáticas */}
-    <Route path="/onboarding" element={<Navigate to="/admin/users" replace />} />
-    <Route path="/" element={<Navigate to="/admin/users" replace />} />
-    <Route path="*" element={<Navigate to="/admin/users" replace />} />
+    <Route element={<Navigate replace to="/admin/users" />} path="/onboarding" />
+    <Route element={<RootRedirect />} path="/" />
+    <Route element={<RootRedirect />} path="*" />
   </Routes>
 );
 

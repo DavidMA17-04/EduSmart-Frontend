@@ -1,0 +1,297 @@
+.layout {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(280px, 32%) 1fr;
+}
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 48px 36px;
+  color: #fff;
+  background: linear-gradient(180deg, #0b438d 0%, #062a61 100%);
+}
+
+.heroWatermark {
+  position: absolute;
+  inset: 0;
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+.heroWatermark svg:nth-child(1) {
+  position: absolute;
+  top: 24px;
+  right: -24px;
+}
+
+.heroWatermark svg:nth-child(2) {
+  position: absolute;
+  top: 42%;
+  left: -18px;
+}
+
+.heroWatermark svg:nth-child(3) {
+  position: absolute;
+  right: -20px;
+  bottom: 24px;
+}
+
+.heroBrand,
+.heroSchool,
+.heroCopy {
+  position: relative;
+}
+
+.heroBrand h1 {
+  margin: 12px 0 4px;
+  font-size: 34px;
+  font-family: var(--font-heading, inherit);
+}
+
+.heroBrand p,
+.heroSchool,
+.heroCopy {
+  opacity: 0.86;
+}
+
+.heroLogo,
+.cardLogo {
+  display: inline-grid;
+  place-items: center;
+}
+
+.heroLogo svg:first-child,
+.cardLogo svg:first-child {
+  grid-area: 1 / 1;
+  transform: translateY(8px);
+}
+
+.heroLogo svg:last-child,
+.cardLogo svg:last-child {
+  grid-area: 1 / 1;
+  transform: translateY(-6px);
+}
+
+.heroSchool {
+  margin: 28px 0 0;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
+.heroCopy {
+  margin: 0;
+  max-width: 280px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.panel {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 18px;
+  padding: 36px 24px 20px;
+  background: var(--admin-background);
+}
+
+.welcome {
+  text-align: center;
+}
+
+.welcome h2 {
+  margin: 0;
+  font-size: 28px;
+  color: var(--admin-text);
+}
+
+.welcome p {
+  margin: 6px 0 0;
+  color: var(--admin-muted);
+}
+
+.card {
+  width: min(100%, 440px);
+  display: grid;
+  gap: 16px;
+  padding: 28px;
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  background: var(--admin-surface);
+  box-shadow: 0 18px 40px #12203a14;
+}
+
+.cardBrand {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  color: var(--admin-primary);
+}
+
+.cardBrand small {
+  color: var(--admin-muted);
+  font-size: 12px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  color: var(--admin-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.inputWrap {
+  position: relative;
+  display: block;
+}
+
+.inputIcon {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  color: var(--admin-muted);
+  pointer-events: none;
+}
+
+.input {
+  padding-left: 38px;
+}
+
+.passwordInput {
+  padding-right: 42px;
+}
+
+.inputInvalid :global(input) {
+  border-color: var(--admin-danger);
+}
+
+.fieldError,
+.formError {
+  color: var(--admin-danger);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.formError {
+  margin: 0;
+}
+
+.togglePassword {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  color: var(--admin-muted);
+}
+
+.togglePassword:hover {
+  color: var(--admin-primary);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.remember {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--admin-text);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.forgot {
+  color: var(--admin-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.forgot:hover {
+  text-decoration: underline;
+}
+
+.submit {
+  width: 100%;
+  min-height: 42px;
+}
+
+.divider {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+  color: var(--admin-muted);
+  font-size: 12px;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  height: 1px;
+  background: var(--admin-border);
+}
+
+.sso {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.sso button {
+  min-height: 40px;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--admin-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.sso button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.help,
+.copyright {
+  margin: 0;
+  color: var(--admin-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.help {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (max-width: 840px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    min-height: 220px;
+    padding: 28px 24px;
+  }
+
+  .heroCopy {
+    max-width: none;
+  }
+}
