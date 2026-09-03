@@ -44,7 +44,17 @@ function formatTime(date: Date): string {
   });
 }
 
-const DONUT_COLORS = ['#002E7A', '#164687', '#CFAC65', '#021A53', '#6B7280', '#168750'];
+const ROLE_COLORS: Record<string, string> = {
+  Administrador: '#CFAC65',
+  Docente: '#164687',
+  Estudiante: '#002E7A',
+};
+
+const FALLBACK_COLORS = ['#021A53', '#6B7280', '#168750', '#9B7D2E'];
+
+function colorForRole(role: string, index: number): string {
+  return ROLE_COLORS[role] ?? FALLBACK_COLORS[index % FALLBACK_COLORS.length];
+}
 
 const quickAccess = [
   { label: 'Usuarios', to: '/admin/users', icon: Users },
@@ -182,8 +192,8 @@ export const AdminHomePage = () => {
                           paddingAngle={3}
                           strokeWidth={0}
                         >
-                          {data.usersByRole.map((_, i) => (
-                            <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />
+                          {data.usersByRole.map((r, i) => (
+                            <Cell key={r.role} fill={colorForRole(r.role, i)} />
                           ))}
                         </Pie>
                         <Tooltip
@@ -202,7 +212,7 @@ export const AdminHomePage = () => {
                       <li key={r.role}>
                         <span
                           className={styles.legendDot}
-                          style={{ background: DONUT_COLORS[i % DONUT_COLORS.length] }}
+                          style={{ background: colorForRole(r.role, i) }}
                         />
                         <span className={styles.legendLabel}>{r.role}</span>
                         <span className={styles.legendCount}>
