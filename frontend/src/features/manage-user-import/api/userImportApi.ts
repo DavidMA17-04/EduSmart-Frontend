@@ -5,6 +5,7 @@ export interface BulkImportBreakdown {
   duplicateEmail: number;
   requiredFieldsMissing: number;
   invalidEmail: number;
+  invalidRole?: number;
 }
 
 export interface KPISummary {

@@ -21,6 +21,7 @@ import {
   hasAnyDuplicateInconsistency,
   hasDbEmailConflict,
   hasDbNationalIdConflict,
+  hasDbRoleConflict,
   mapBackendInvalidFields,
   revalidateImportPreviewRecords,
 } from '@/features/manage-user-import/lib/validateImportPreviewRow';
@@ -64,6 +65,9 @@ export const UserImportPreviewPage: React.FC = () => {
             : null,
           dbConflictEmail: hasDbEmailConflict(errorMessages)
             ? email.trim().toLowerCase()
+            : null,
+          dbConflictRole: hasDbRoleConflict(errorMessages)
+            ? String(r.role || '').trim()
             : null,
         };
       });
@@ -397,7 +401,9 @@ export const UserImportPreviewPage: React.FC = () => {
                     <td>
                       <input
                         type="text"
-                        className={styles.cellInput}
+                        className={`${styles.cellInput} ${
+                          row.invalidFields?.includes('names') ? styles.cellInputError : ''
+                        }`}
                         value={row.names}
                         onChange={(e) => handleCellChange(row.id, 'names', e.target.value)}
                       />
@@ -405,7 +411,9 @@ export const UserImportPreviewPage: React.FC = () => {
                     <td>
                       <input
                         type="text"
-                        className={styles.cellInput}
+                        className={`${styles.cellInput} ${
+                          row.invalidFields?.includes('firstLastname') ? styles.cellInputError : ''
+                        }`}
                         value={row.firstLastname}
                         onChange={(e) => handleCellChange(row.id, 'firstLastname', e.target.value)}
                       />
@@ -430,14 +438,17 @@ export const UserImportPreviewPage: React.FC = () => {
                     </td>
                     <td>
                       <select
-                        className={styles.cellInput}
-                        value={row.role}
+                        className={`${styles.cellInput} ${
+                          row.invalidFields?.includes('role') ? styles.cellInputError : ''
+                        }`}
+                        value={row.role || 'ESTUDIANTE'}
                         onChange={(e) => handleCellChange(row.id, 'role', e.target.value)}
                       >
                         <option value="ESTUDIANTE">ESTUDIANTE</option>
-                        <option value="DOCENTE">DOCENTE</option>
-                        <option value="ADMINISTRATIVO">ADMINISTRATIVO</option>
-                        <option value="DIRECTIVO">DIRECTIVO</option>
+                        {/* Valores legacy visibles solo si la fila llegó con otro rol (error) */}
+                        {row.role && row.role !== 'ESTUDIANTE' && (
+                          <option value={row.role}>{row.role}</option>
+                        )}
                       </select>
                     </td>
                     <td>
@@ -562,6 +573,16 @@ export const UserImportPreviewPage: React.FC = () => {
                 </div>
                 <div className={styles.errorBreakdownDesc}>
                   Estructura no cumple con el formato estándar de correo.
+                </div>
+              </li>
+            )}
+            {currentBreakdown.invalidRole > 0 && (
+              <li className={styles.errorBreakdownItem}>
+                <div className={styles.errorBreakdownName}>
+                  Roles no permitidos ({currentBreakdown.invalidRole})
+                </div>
+                <div className={styles.errorBreakdownDesc}>
+                  La importación masiva solo admite registros con rol ESTUDIANTE.
                 </div>
               </li>
             )}
