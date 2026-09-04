@@ -16,6 +16,8 @@
 .iconButton { color: var(--admin-muted); }
 .profile { display: flex; align-items: center; gap: 8px; text-align: left; color: var(--admin-text); }
 .profile strong { font-size: 12px; }.profile small { color: var(--admin-muted); }
+.logout { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border: 1px solid var(--admin-border); border-radius: 8px; background: #fff; color: var(--admin-text); font-size: 13px; font-weight: 600; }
+.logout:hover { border-color: var(--admin-primary); color: var(--admin-primary); }
 .content { padding: 28px; }
 @media (max-width: 840px) {
   .sidebar { width: 64px; padding-inline: 8px; }
@@ -23,5 +25,6 @@
   .brandLogo { width: 44px; height: 44px; }
   .navItem { justify-content: center; }
   .account { display: none; }
+  .profile span:nth-child(2) { display: none; }
   .content { padding: 18px; }
 }

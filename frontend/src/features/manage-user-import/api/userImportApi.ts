@@ -5,6 +5,7 @@ export interface BulkImportBreakdown {
   duplicateEmail: number;
   requiredFieldsMissing: number;
   invalidEmail: number;
+  invalidRole?: number;
 }
 
 export interface KPISummary {
@@ -35,6 +36,8 @@ export interface ImportedUserRecordApi {
   role: string;
   section?: string | null;
   phone?: string | null;
+  user_status?: 'ACTIVE' | 'INACTIVE' | 'BLOCKED';
+  userStatus?: 'ACTIVE' | 'INACTIVE' | 'BLOCKED';
   observations?: string[];
   invalidFields?: string[];
   errorMessages?: string[];
@@ -104,6 +107,10 @@ export const userImportApi = {
       role: String(r.role || 'ESTUDIANTE').trim(),
       section: (r.section || '').trim() || null,
       phone: (r.phone || '').trim() || null,
+      user_status: (r.user_status || r.userStatus || 'ACTIVE') as
+        | 'ACTIVE'
+        | 'INACTIVE'
+        | 'BLOCKED',
     }));
 
     const response = await httpClient<ApiEnvelope<ConfirmBulkImportResponse>>(

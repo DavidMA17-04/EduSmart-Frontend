@@ -1,4 +1,4 @@
-import { clearAccessToken, ensureAccessToken, loginWithDevCredentials } from '@/shared/auth';
+import { clearAccessToken, getAccessToken } from '@/shared/auth';
 
 const apiBaseUrl = (import.meta.env.VITE_API_URL ?? '/api/v1').replace(/\/$/, '');
 
@@ -33,8 +33,8 @@ async function parseErrorMessage(response: Response): Promise<string> {
 
   if (response.status === 401) {
     return message === 'Invalid credentials'
-      ? 'Credenciales inválidas. Verifique el usuario de desarrollo.'
-      : 'No autorizado. El backend requiere inicio de sesión.';
+      ? 'Credenciales inválidas.'
+      : 'No autorizado. Inicie sesión para continuar.';
   }
 
   if (response.status === 409 && message) {
@@ -44,29 +44,29 @@ async function parseErrorMessage(response: Response): Promise<string> {
   return message ?? 'No se pudo completar la solicitud.';
 }
 
+function redirectToLogin(): void {
+  clearAccessToken();
+  if (window.location.pathname !== '/login') {
+    window.location.assign('/login');
+  }
+}
+
 export async function httpClient<T>(path: string, init: RequestInit = {}): Promise<T> {
-  let token: string | null;
+  const token = getAccessToken();
+
+  let response: Response;
   try {
-    token = await ensureAccessToken(apiBaseUrl);
+    response = await fetch(`${apiBaseUrl}${path}`, {
+      ...init,
+      headers: buildHeaders(init, token),
+    });
   } catch {
     throw new Error(`No se pudo conectar con la API en ${apiBaseUrl}. Verifique que el backend esté activo.`);
   }
 
-  const execute = (accessToken: string | null) => fetch(`${apiBaseUrl}${path}`, {
-    ...init,
-    headers: buildHeaders(init, accessToken),
-  });
-
-  let response: Response;
-  try {
-    response = await execute(token);
-    if (response.status === 401 && !path.startsWith('/auth/')) {
-      clearAccessToken();
-      token = await loginWithDevCredentials(apiBaseUrl);
-      if (token) response = await execute(token);
-    }
-  } catch {
-    throw new Error(`No se pudo conectar con la API en ${apiBaseUrl}. Verifique que el backend esté activo.`);
+  if (response.status === 401 && !path.startsWith('/auth/')) {
+    redirectToLogin();
+    throw new HttpError(response.status, await parseErrorMessage(response));
   }
 
   if (!response.ok) {

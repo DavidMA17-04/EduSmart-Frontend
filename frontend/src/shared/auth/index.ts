@@ -1,1 +1,9 @@
-export { clearAccessToken, ensureAccessToken, getAccessToken, loginWithDevCredentials, setAccessToken } from './session';
+export {
+  AuthLoginError,
+  clearAccessToken,
+  getAccessToken,
+  getSessionUser,
+  loginWithCredentials,
+  setAccessToken,
+} from './session';
+export type { SessionUser } from './session';
