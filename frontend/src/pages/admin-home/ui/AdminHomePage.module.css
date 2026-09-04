@@ -154,7 +154,7 @@
 /* ── Middle grid ── */
 .midGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 10px;
 }
 
@@ -230,35 +230,10 @@
   font-size: 11px;
 }
 
-/* ── Activity placeholder ── */
-.activityPlaceholder {
-  display: grid;
-  justify-items: center;
-  gap: 4px;
-  padding: 16px 12px;
-  text-align: center;
-  color: var(--admin-muted);
-}
-
-.activityPlaceholder svg {
-  opacity: 0.3;
-}
-
-.activityPlaceholder p {
-  margin: 0;
-  font-size: 12px;
-  max-width: 280px;
-}
-
-.activityPlaceholder strong {
-  color: var(--admin-text);
-  font-size: 13px;
-}
-
 /* ── Quick access grid ── */
 .qaGrid {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: repeat(7, 1fr);
   gap: 6px;
 }
 
