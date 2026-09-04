@@ -58,7 +58,7 @@ export function validateUserForm(values: UserFormValues): Partial<Record<keyof U
   return errors;
 }
 
-function splitLastNames(lastName: string): { first_lastname: string; second_lastname?: string } {
+export function splitLastNames(lastName: string): { first_lastname: string; second_lastname?: string } {
   const parts = lastName.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return { first_lastname: '' };
   if (parts.length === 1) return { first_lastname: parts[0] };
