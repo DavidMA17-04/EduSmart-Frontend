@@ -1,10 +1,28 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { BookOpen, CircleHelp, Eye, EyeOff, GraduationCap, Lock, LogIn, Shield, User } from 'lucide-react';
+import {
+  BookOpen,
+  CircleHelp,
+  Eye,
+  EyeOff,
+  GraduationCap,
+  Lock,
+  LogIn,
+  Shield,
+  User,
+  UserCheck,
+  Users,
+} from 'lucide-react';
 import { authApi } from '@/features/auth';
+import { publicApi, type CampusSnapshot } from '@/features/public';
 import { AuthLoginError, getAccessToken } from '@/shared/auth';
 import { Button, Checkbox, Input } from '@/shared/ui';
 import styles from './LoginPage.module.css';
+
+function formatCount(value: number | null): string {
+  if (value === null) return '—';
+  return value.toLocaleString('es-CR');
+}
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -16,6 +34,26 @@ export const LoginPage = () => {
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [snapshot, setSnapshot] = useState<CampusSnapshot | null>(null);
+  const [snapshotLoading, setSnapshotLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    publicApi
+      .getCampusSnapshot()
+      .then((data) => {
+        if (active) setSnapshot(data);
+      })
+      .catch(() => {
+        if (active) setSnapshot(null);
+      })
+      .finally(() => {
+        if (active) setSnapshotLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   if (getAccessToken()) {
     return <Navigate replace to="/admin" />;
@@ -45,32 +83,61 @@ export const LoginPage = () => {
     }
   };
 
+  const activeUsers = snapshotLoading ? null : (snapshot?.activeUsers ?? null);
+  const totalUsers = snapshotLoading ? null : (snapshot?.totalUsers ?? null);
+
   return (
     <div className={`admin-shell ${styles.layout}`}>
       <aside className={styles.hero}>
+        <div className={styles.heroGlow} aria-hidden="true" />
         <div className={styles.heroWatermark} aria-hidden="true">
           <GraduationCap size={180} strokeWidth={1} />
           <BookOpen size={120} strokeWidth={1} />
           <Shield size={160} strokeWidth={1} />
         </div>
-        <div className={styles.heroBrand}>
-          <span className={styles.heroLogo}>
-            <BookOpen aria-hidden="true" size={28} />
-            <GraduationCap aria-hidden="true" size={34} />
-          </span>
-          <h1>EduSmart</h1>
-          <p>Gestión Académica Integral</p>
+
+        <div className={styles.heroTop}>
+          <div className={styles.heroBrand}>
+            <span className={styles.heroLogo}>
+              <BookOpen aria-hidden="true" size={28} />
+              <GraduationCap aria-hidden="true" size={34} />
+            </span>
+            <h1>EduSmart</h1>
+            <p>Gestión Académica Integral</p>
+          </div>
+          <p className={styles.heroSchool}>CTP HOJANCHA</p>
+          <p className={styles.heroCopy}>
+            Accede al panel institucional para administrar usuarios, estructura académica y el día a día del colegio.
+          </p>
         </div>
-        <p className={styles.heroSchool}>CTP HOJANCHA</p>
-        <p className={styles.heroCopy}>
-          Sistema integral para la gestión académica del Colegio Técnico Profesional de Hojancha.
-        </p>
+
+        <div className={styles.metricGrid} aria-live="polite">
+          <div className={styles.metricCard}>
+            <span className={styles.metricIcon}>
+              <UserCheck size={18} aria-hidden="true" />
+            </span>
+            <div>
+              <strong className={styles.metricValue}>{formatCount(activeUsers)}</strong>
+              <span className={styles.metricLabel}>Usuarios activos</span>
+            </div>
+          </div>
+          <div className={styles.metricCard}>
+            <span className={styles.metricIcon}>
+              <Users size={18} aria-hidden="true" />
+            </span>
+            <div>
+              <strong className={styles.metricValue}>{formatCount(totalUsers)}</strong>
+              <span className={styles.metricLabel}>Usuarios registrados</span>
+            </div>
+          </div>
+        </div>
       </aside>
 
       <section className={styles.panel}>
         <header className={styles.welcome}>
-          <h2>Bienvenido a EduSmart</h2>
-          <p>Inicia sesión para continuar</p>
+          <p className={styles.welcomeEyebrow}>Portal administrativo</p>
+          <h2>Bienvenido de nuevo</h2>
+          <p>Inicia sesión con tu cuenta institucional para continuar</p>
         </header>
 
         <form className={styles.card} onSubmit={onSubmit} noValidate>
@@ -147,7 +214,11 @@ export const LoginPage = () => {
             </button>
           </div>
 
-          {formError ? <p className={styles.formError}>{formError}</p> : null}
+          {formError ? (
+            <p className={styles.formError} role="alert">
+              {formError}
+            </p>
+          ) : null}
 
           <Button className={styles.submit} disabled={isSubmitting} type="submit">
             <LogIn aria-hidden="true" size={16} />
