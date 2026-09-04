@@ -77,4 +77,4 @@ Documentación de estructura del layout (PBI-01 #7). El dashboard se documenta a
 
 ## Evidencia de pruebas de navegación
 
-Ver checklist firmable: [`VALIDACION_PBI_MAU.md`](./VALIDACION_PBI_MAU.md) (sección A).
+Validación manual de navegación (login, sidebar, logout, redirect sin sesión) según criterio del equipo / Azure.

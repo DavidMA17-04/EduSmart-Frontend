@@ -108,7 +108,7 @@
 **Autor:** Mauricio Chavarria  
 
 Continuidad post-diagnóstico OpenSpec (PBI-01/02/03):
-- Docs: `docs/AZURE_MARK_DONE.md`, `docs/LAYOUT_ADMIN.md`, `docs/VALIDACION_PBI_MAU.md`
+- Docs: `docs/LAYOUT_ADMIN.md`
 - UX: se quitó el link muerto `/admin/settings` y la card placeholder “Actividad reciente”
 - Layout actual documentado en `docs/LAYOUT_ADMIN.md` (AdminShell + rutas + paleta MEP)
 
