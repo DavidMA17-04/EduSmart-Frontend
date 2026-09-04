@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Build
+dist/
+build/
+coverage/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Vite
+frontend/node_modules/
+frontend/dist/
+**/.vite/
+
+# Logs / OS / editors
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# TypeScript / caches
+*.tsbuildinfo
+.eslintcache
+*.local

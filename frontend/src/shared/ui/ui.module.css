@@ -1,14 +1,14 @@
 .base { font: inherit; }
 .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 38px; height: 38px; padding: 0 16px; border: 1px solid transparent; border-radius: 8px; font-weight: 600; font-size: 14px; transition: background var(--transition-fast), border-color var(--transition-fast); }
 .button svg { width: 16px; height: 16px; flex-shrink: 0; }
-.buttonPrimary { background: #0b5eea; color: #fff; }
+.buttonPrimary { background: var(--admin-primary, #002E7A); color: #fff; }
 .buttonPrimary:hover { background: var(--admin-primary-hover, #084bb8); }
 .buttonSecondary { border-color: var(--admin-border); background: #fff; color: var(--admin-text); }
 .buttonDanger { border-color: #ffd7d7; background: #fff5f5; color: var(--admin-danger); }
 .button:disabled { opacity: .55; cursor: not-allowed; }
 .buttonIcon { width: 38px; min-width: 38px; height: 38px; min-height: 38px; padding: 0; }
 .card { border: 1px solid var(--admin-border); border-radius: 8px; background: var(--admin-surface); }.cardPadding { padding: 20px; }
-.input { width: 100%; min-height: 38px; border: 1px solid var(--admin-border); border-radius: 8px; padding: 0 12px; color: var(--admin-text); background: #fff; font-size: 14px; outline: none; }.input:focus { border-color: var(--admin-primary); box-shadow: 0 0 0 3px #0b5eea16; }
+.input { width: 100%; min-height: 38px; border: 1px solid var(--admin-border); border-radius: 8px; padding: 0 12px; color: var(--admin-text); background: #fff; font-size: 14px; outline: none; }.input:focus { border-color: var(--admin-primary); box-shadow: 0 0 0 3px #002e7a1a; }
 .badge { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 3px 8px; font-size: 12px; font-weight: 600; }
 .badgeSuccess { background: #e5f6ec; color: var(--admin-success); }
 .badgeNeutral { background: #edf1f6; color: #637086; }
@@ -16,12 +16,12 @@
 .badgeDanger { background: #ffebeb; color: var(--admin-danger); }
 .checkbox { width: 15px; height: 15px; accent-color: var(--admin-primary); }
 .tabs { display: flex; gap: 22px; border-bottom: 1px solid var(--admin-border); }.tab { padding: 10px 0; border-bottom: 2px solid transparent; color: var(--admin-muted); font-size: 14px; }.tabActive { color: var(--admin-primary); border-bottom-color: var(--admin-primary); font-weight: 600; }
-.tableWrapper { overflow-x: auto; }.table { width: 100%; border-collapse: collapse; font-size: 14px; }.table th { padding: 10px; color: var(--admin-muted); background: #fafbfd; text-align: left; font-weight: 600; }.table td { padding: 11px 10px; border-top: 1px solid var(--admin-border); }
-.alert { display: flex; gap: 9px; padding: 12px; border: 1px solid #cddcf9; border-radius: 8px; background: #f3f7ff; color: #315a9d; font-size: 14px; }
+.tableWrapper { overflow-x: auto; }.table { width: 100%; border-collapse: collapse; font-size: 14px; }.table th { padding: 10px; color: var(--admin-muted); background: var(--admin-background, #F5F6F8); text-align: left; font-weight: 600; }.table td { padding: 11px 10px; border-top: 1px solid var(--admin-border); }
+.alert { display: flex; gap: 9px; padding: 12px; border: 1px solid var(--admin-border); border-radius: 8px; background: #edf1f7; color: var(--admin-primary, #002E7A); font-size: 14px; }
 .pagination { display: flex; align-items: center; justify-content: end; flex-wrap: nowrap; gap: 12px; padding-top: 4px; color: var(--admin-muted); font-size: 14px; }
 .paginationButton { white-space: nowrap; flex-shrink: 0; min-width: 90px; }
 .paginationInfo { white-space: nowrap; flex-shrink: 0; min-width: 60px; text-align: center; }
-.textarea { width: 100%; min-height: 88px; resize: vertical; border: 1px solid var(--admin-border); border-radius: 8px; padding: 9px 12px; color: var(--admin-text); background: #fff; font: inherit; font-size: 14px; outline: none; }.textarea:focus { border-color: var(--admin-primary); box-shadow: 0 0 0 3px #0b5eea16; }
+.textarea { width: 100%; min-height: 88px; resize: vertical; border: 1px solid var(--admin-border); border-radius: 8px; padding: 9px 12px; color: var(--admin-text); background: #fff; font: inherit; font-size: 14px; outline: none; }.textarea:focus { border-color: var(--admin-primary); box-shadow: 0 0 0 3px #002e7a1a; }
 .formActions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
 .formHint { color: var(--admin-muted); font-size: 12px; font-weight: 400; }
 

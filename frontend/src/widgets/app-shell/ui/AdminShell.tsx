@@ -1,29 +1,40 @@
-import { Bell, CalendarRange, ChevronDown, GraduationCap, Layers, LayoutDashboard, LogOut, Settings, ShieldCheck, Users } from 'lucide-react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { ArrowLeft, Bell, CalendarRange, ChevronDown, GraduationCap, Layers, LayoutDashboard, LogOut, ShieldCheck, Users } from 'lucide-react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { authApi } from '@/features/auth';
 import { getSessionUser } from '@/shared/auth';
+import { Button, Modal } from '@/shared/ui';
 import styles from './AdminShell.module.css';
 
 const navigationItems = [
   { label: 'Dashboard', icon: LayoutDashboard, to: '/admin' },
   { label: 'Usuarios', icon: Users, to: '/admin/users' },
   { label: 'Roles y permisos', icon: ShieldCheck, to: '/admin/roles-permissions' },
-  { label: 'Estructura academica', icon: GraduationCap, to: '/admin/specialties' },
-  { label: 'Periodos academicos', icon: CalendarRange, to: '/admin/academic-periods' },
+  { label: 'Estructura académica', icon: GraduationCap, to: '/admin/specialties' },
+  { label: 'Períodos académicos', icon: CalendarRange, to: '/admin/academic-periods' },
   { label: 'Niveles y secciones', icon: Layers, to: '/admin/sections-groups' },
-  { label: 'Configuracion', icon: Settings, to: '/admin/settings' },
 ];
 
 export const AdminShell = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isDashboard = location.pathname === '/admin' || location.pathname === '/admin/dashboard';
   const sessionUser = getSessionUser();
-  const email = sessionUser?.email ?? 'Sesion activa';
+  const email = sessionUser?.email ?? 'Sesión activa';
   const displayName = sessionUser?.roles[0] ?? 'Usuario';
   const avatarLetter = (email[0] ?? 'U').toUpperCase();
+  const [logoutOpen, setLogoutOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const onLogout = async () => {
-    await authApi.logout();
-    navigate('/login', { replace: true });
+    setIsLoggingOut(true);
+    try {
+      await authApi.logout();
+      navigate('/login', { replace: true });
+    } finally {
+      setIsLoggingOut(false);
+      setLogoutOpen(false);
+    }
   };
 
   return (
@@ -36,13 +47,14 @@ export const AdminShell = () => {
             src="/brand/ctp-hojancha-logo.jpeg"
           />
           <span className={styles.brandTitle}>C.T.P. de Hojancha</span>
-          <small>Colegio Tecnico Profesional</small>
-          <small className={styles.brandMotto}>Ciencia - Cultura - 1972</small>
+          <small>Colegio Técnico Profesional</small>
+          <small className={styles.brandMotto}>Ciencia · Cultura · 1972</small>
         </div>
-        <nav aria-label="Navegacion principal" className={styles.navigation}>
+        <nav aria-label="Navegación principal" className={styles.navigation}>
           {navigationItems.map(({ label, icon: Icon, to }) => (
             <NavLink
               className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
+              end={to === '/admin'}
               key={to}
               to={to}
             >
@@ -72,13 +84,53 @@ export const AdminShell = () => {
             </span>
             <ChevronDown size={16} />
           </button>
-          <button className={styles.logout} onClick={onLogout} type="button">
+          <button className={styles.logout} onClick={() => setLogoutOpen(true)} type="button">
             <LogOut aria-hidden="true" size={16} />
-            Cerrar sesion
+            Cerrar sesión
           </button>
         </header>
-        <main className={styles.content}><Outlet /></main>
+        <main className={styles.content}>
+          <Outlet />
+          {!isDashboard && (
+            <div className={styles.backWrap}>
+              <button
+                className={styles.backButton}
+                onClick={() => navigate('/admin')}
+                type="button"
+              >
+                <ArrowLeft size={18} />
+                Regresar al Dashboard Administrativo
+              </button>
+            </div>
+          )}
+        </main>
       </section>
+
+      <Modal
+        isOpen={logoutOpen}
+        onClose={() => {
+          if (!isLoggingOut) setLogoutOpen(false);
+        }}
+        title="Cerrar sesión"
+      >
+        <div className={styles.logoutModal}>
+          <p className={styles.logoutMessage}>¿Seguro que desea salir del sistema?</p>
+          <p className={styles.logoutSecondary}>Se cerrará la sesión de EduSmart.</p>
+          <div className={styles.logoutActions}>
+            <Button
+              disabled={isLoggingOut}
+              onClick={() => setLogoutOpen(false)}
+              type="button"
+              variant="secondary"
+            >
+              Cancelar
+            </Button>
+            <Button disabled={isLoggingOut} onClick={onLogout} type="button" variant="danger">
+              {isLoggingOut ? 'Saliendo…' : 'Salir'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

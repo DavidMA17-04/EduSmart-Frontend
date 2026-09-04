@@ -6,8 +6,9 @@
 .brand small, .account small, .profile small { font: 500 10px var(--font-sans); opacity: .82; }
 .brandMotto { color: #dbe8ff; letter-spacing: .06em; text-transform: uppercase; }
 .navigation { display: grid; gap: 4px; }
-.navItem { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; color: #dbe8ff; font-size: 13px; text-decoration: none; transition: background var(--transition-fast); }
-.navItem:hover, .navItem.active { color: #fff; background: var(--admin-sidebar-hover); }
+.navItem { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; border-left: 3px solid transparent; color: #dbe8ff; font-size: 13px; text-decoration: none; transition: background var(--transition-fast), border-color 0.15s; }
+.navItem:hover { color: #fff; background: var(--admin-sidebar-hover); }
+.navItem.active { color: #fff; background: var(--admin-sidebar-hover); border-left-color: #7eb6ff; }
 .account { display: flex; align-items: center; gap: 9px; margin-top: auto; padding: 12px 6px 0; font-size: 11px; }
 .account span:last-child, .profile span:nth-child(2) { display: grid; }
 .avatar, .headerAvatar { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: #e9eef8; color: var(--admin-sidebar); font-weight: 700; }
@@ -18,7 +19,15 @@
 .profile strong { font-size: 12px; }.profile small { color: var(--admin-muted); }
 .logout { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border: 1px solid var(--admin-border); border-radius: 8px; background: #fff; color: var(--admin-text); font-size: 13px; font-weight: 600; }
 .logout:hover { border-color: var(--admin-primary); color: var(--admin-primary); }
-.content { padding: 28px; }
+.content { padding: 20px 24px 28px; }
+.backWrap { display: flex; justify-content: center; margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--admin-border); }
+.backButton { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 22px; border: none; border-radius: 999px; background: linear-gradient(135deg, #021A53 0%, #002E7A 70%, #164687 100%); color: #fff; font-size: 14px; font-weight: 700; box-shadow: 0 8px 20px rgba(2, 26, 83, 0.18); cursor: pointer; }
+.backButton:hover { background: linear-gradient(135deg, #002E7A 0%, #164687 100%); box-shadow: 0 10px 24px rgba(2, 26, 83, 0.24); }
+.backButton svg { color: #7eb6ff; }
+.logoutModal { display: grid; gap: 8px; }
+.logoutMessage { margin: 0; color: var(--admin-text); font-size: 15px; font-weight: 600; }
+.logoutSecondary { margin: 0 0 12px; color: var(--admin-muted); font-size: 13px; line-height: 1.45; }
+.logoutActions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
 @media (max-width: 840px) {
   .sidebar { width: 64px; padding-inline: 8px; }
   .brandTitle, .brand small, .brandMotto, .navItem:not(.active)::after, .navItem { font-size: 0; }
@@ -26,5 +35,5 @@
   .navItem { justify-content: center; }
   .account { display: none; }
   .profile span:nth-child(2) { display: none; }
-  .content { padding: 18px; }
+  .content { padding: 16px; }
 }
