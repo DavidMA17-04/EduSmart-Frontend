@@ -1,18 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  BookOpen,
   CalendarRange,
-  Clock,
   FileSpreadsheet,
   FolderOpen,
   GraduationCap,
   Layers,
   LayoutDashboard,
-  Settings,
   ShieldCheck,
   UserCheck,
   Users,
+  Zap,
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { dashboardApi } from '@/features/dashboard';
@@ -64,7 +62,6 @@ const quickAccess = [
   { label: 'Períodos', to: '/admin/academic-periods', icon: CalendarRange },
   { label: 'Secciones', to: '/admin/sections-groups', icon: Layers },
   { label: 'Importar', to: '/admin/users', icon: FileSpreadsheet },
-  { label: 'Configuración', to: '/admin/settings', icon: Settings },
 ];
 
 export const AdminHomePage = () => {
@@ -168,9 +165,8 @@ export const AdminHomePage = () => {
             </div>
           </div>
 
-          {/* Middle row */}
+          {/* Donut chart */}
           <div className={styles.midGrid}>
-            {/* Donut chart */}
             <div className={styles.card}>
               <div className={styles.cardHead}>
                 <LayoutDashboard size={18} />
@@ -226,25 +222,12 @@ export const AdminHomePage = () => {
                 <p className={styles.muted}>Sin datos de roles disponibles.</p>
               )}
             </div>
-
-            {/* Activity placeholder */}
-            <div className={styles.card}>
-              <div className={styles.cardHead}>
-                <Clock size={18} />
-                <h2>Actividad reciente</h2>
-              </div>
-              <div className={styles.activityPlaceholder}>
-                <BookOpen size={28} />
-                <p><strong>Próximamente</strong></p>
-                <p>Historial de actividad del sistema: importaciones, cambios de roles, ediciones de usuarios y más.</p>
-              </div>
-            </div>
           </div>
 
           {/* Quick access */}
           <div className={styles.card}>
             <div className={styles.cardHead}>
-              <Settings size={18} />
+              <Zap size={18} />
               <h2>Accesos rápidos</h2>
             </div>
             <div className={styles.qaGrid}>
