@@ -1,0 +1,193 @@
+.hub {
+  display: grid;
+  gap: 16px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.card,
+.configPreview {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 70% 60% at 20% 0%, rgba(207, 172, 101, 0.28), transparent 55%),
+    linear-gradient(155deg, #002E7A 0%, #021A53 60%, #011033 100%);
+  color: #fff;
+}
+
+.card {
+  min-height: 300px;
+  border-radius: 18px;
+  border: 1px solid var(--admin-border);
+  box-shadow: 0 18px 40px rgba(2, 26, 83, 0.16);
+  transition:
+    transform 0.28s ease,
+    box-shadow 0.28s ease,
+    border-color 0.28s ease;
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: translateY(-6px) scale(1.01);
+  border-color: rgba(207, 172, 101, 0.55);
+  box-shadow: 0 26px 48px rgba(2, 26, 83, 0.28);
+}
+
+.card:hover .cardImage {
+  transform: scale(1.06);
+}
+
+.card:hover .overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(2, 26, 83, 0.08) 0%,
+    rgba(2, 26, 83, 0.28) 40%,
+    rgba(1, 12, 40, 0.72) 100%
+  );
+}
+
+.card:hover .cardIcon {
+  background: rgba(207, 172, 101, 0.4);
+  transform: translateY(-2px);
+}
+
+.cardImage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transform: scale(1);
+  transition: transform 0.45s ease;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(2, 26, 83, 0.18) 0%,
+    rgba(2, 26, 83, 0.42) 45%,
+    rgba(1, 12, 40, 0.78) 100%
+  );
+  transition: background 0.28s ease;
+}
+
+.cardIcon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(207, 172, 101, 0.28);
+  color: var(--admin-accent, #CFAC65);
+  transition: background 0.28s ease, transform 0.28s ease;
+}
+
+.cardBody {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  align-content: end;
+  gap: 8px;
+  min-height: 300px;
+  padding: 24px;
+}
+
+.cardBody h2 {
+  margin: 8px 0 0;
+  font-size: clamp(24px, 3vw, 30px);
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
+}
+
+.cardBody p,
+.cardBody small {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
+}
+
+.cardBody small {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.cardActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.cardActions :global(button) {
+  min-height: 40px;
+}
+
+.configBody {
+  display: grid;
+  gap: 14px;
+}
+
+.configPreview {
+  min-height: 180px;
+  border-radius: 12px;
+}
+
+.configPreview span {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  font-size: 13px;
+  font-weight: 600;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
+}
+
+.fileLabel {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--admin-text);
+}
+
+.configActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+@media (max-width: 840px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .cardImage,
+  .overlay,
+  .cardIcon {
+    transition: none;
+  }
+
+  .card:hover {
+    transform: none;
+  }
+
+  .card:hover .cardImage,
+  .card:hover .cardIcon {
+    transform: none;
+  }
+}
