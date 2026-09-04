@@ -1,1 +1,22 @@
-.filters { display: grid; grid-template-columns: minmax(220px, 1fr) 160px 160px; gap: 9px; }.search { display: flex; align-items: center; gap: 7px; color: var(--admin-muted); }@media (max-width: 680px) { .filters { grid-template-columns: 1fr; } }
+.filters {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 160px;
+  gap: 9px;
+  padding: 10px 12px;
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--admin-muted);
+}
+
+@media (max-width: 680px) {
+  .filters {
+    grid-template-columns: 1fr;
+  }
+}

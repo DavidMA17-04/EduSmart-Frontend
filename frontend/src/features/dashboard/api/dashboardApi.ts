@@ -11,6 +11,7 @@ export interface DashboardSummary {
   totalRoles: number;
   totalAcademicPeriods: number;
   totalSections: number;
+  totalExploratoryWorkshops: number;
   totalSpecialties: number;
   usersByRole: UsersByRole[];
 }

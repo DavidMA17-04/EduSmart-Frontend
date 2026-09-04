@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
+  BookOpen,
   CalendarRange,
   FileSpreadsheet,
   FolderOpen,
@@ -12,7 +13,7 @@ import {
   Users,
   Zap,
 } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { dashboardApi } from '@/features/dashboard';
 import type { DashboardSummary } from '@/features/dashboard';
 import { getSessionUser } from '@/shared/auth';
@@ -23,6 +24,12 @@ function getGreeting(date: Date): string {
   if (h < 12) return 'Buenos días';
   if (h < 18) return 'Buenas tardes';
   return 'Buenas noches';
+}
+
+/** Etiqueta pluralizada según cantidad (0/1/n). */
+function countLabel(count: number, singular: string, plural: string): string {
+  const word = count === 1 ? singular : plural;
+  return word.charAt(0).toUpperCase() + word.slice(1);
 }
 
 function formatDate(date: Date): string {
@@ -54,11 +61,110 @@ function colorForRole(role: string, index: number): string {
   return ROLE_COLORS[role] ?? FALLBACK_COLORS[index % FALLBACK_COLORS.length];
 }
 
+type DonutSlice = { name: string; shortName: string; count: number; color: string };
+
+function DonutCard({
+  title,
+  icon: Icon,
+  slices,
+  emptyText,
+}: {
+  title: string;
+  icon: typeof LayoutDashboard;
+  slices: DonutSlice[];
+  emptyText: string;
+}) {
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const total = slices.reduce((sum, slice) => sum + slice.count, 0);
+  const hasData = slices.some((slice) => slice.count > 0);
+  const activeSlice = activeIndex != null ? slices[activeIndex] : null;
+  const centerValue = activeSlice ? activeSlice.count : total;
+  const centerLabel = activeSlice ? activeSlice.shortName : 'Total';
+
+  return (
+    <div className={styles.card}>
+      <div className={styles.cardHead}>
+        <Icon size={18} />
+        <h2>{title}</h2>
+      </div>
+      {hasData ? (
+        <div className={styles.donutRow}>
+          <div className={styles.donutWrap}>
+            <ResponsiveContainer width="100%" height={168}>
+              <PieChart>
+                <Pie
+                  animationBegin={0}
+                  animationDuration={700}
+                  animationEasing="ease-out"
+                  cx="50%"
+                  cy="50%"
+                  data={slices}
+                  dataKey="count"
+                  innerRadius={50}
+                  isAnimationActive
+                  nameKey="name"
+                  onMouseEnter={(_, index) => setActiveIndex(index)}
+                  onMouseLeave={() => setActiveIndex(null)}
+                  outerRadius={72}
+                  paddingAngle={2}
+                  stroke="none"
+                >
+                  {slices.map((slice, index) => {
+                    const isActive = activeIndex === index;
+                    const isDimmed = activeIndex != null && !isActive;
+                    return (
+                      <Cell
+                        fill={slice.color}
+                        key={slice.name}
+                        style={{
+                          cursor: 'pointer',
+                          filter: isActive ? 'brightness(1.08)' : 'none',
+                          opacity: isDimmed ? 0.4 : 1,
+                          outline: 'none',
+                          transition: 'opacity 0.4s ease, filter 0.4s ease',
+                        }}
+                      />
+                    );
+                  })}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+            <div className={styles.donutCenter}>
+              <div className={styles.donutCenterContent} key={`${centerValue}-${centerLabel}`}>
+                <span className={styles.donutTotal}>{centerValue}</span>
+                <span className={styles.donutTotalLabel}>{centerLabel}</span>
+              </div>
+            </div>
+          </div>
+          <ul className={styles.legend}>
+            {slices.map((slice, index) => (
+              <li
+                className={activeIndex === index ? styles.legendActive : undefined}
+                key={slice.name}
+                onMouseEnter={() => setActiveIndex(index)}
+                onMouseLeave={() => setActiveIndex(null)}
+              >
+                <span className={styles.legendDot} style={{ background: slice.color }} />
+                <span className={styles.legendLabel}>{slice.name}</span>
+                <span className={styles.legendCount}>
+                  {slice.count} ({total > 0 ? Math.round((slice.count / total) * 100) : 0}%)
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <p className={styles.muted}>{emptyText}</p>
+      )}
+    </div>
+  );
+}
+
 const quickAccess = [
   { label: 'Usuarios', to: '/admin/users', icon: Users },
   { label: 'Directorio', to: '/admin/users/directory', icon: FolderOpen },
   { label: 'Roles y permisos', to: '/admin/roles-permissions', icon: ShieldCheck },
-  { label: 'Especialidades', to: '/admin/specialties', icon: GraduationCap },
+  { label: 'Oferta académica', to: '/admin/specialties', icon: GraduationCap },
   { label: 'Períodos', to: '/admin/academic-periods', icon: CalendarRange },
   { label: 'Secciones', to: '/admin/sections-groups', icon: Layers },
   { label: 'Importar', to: '/admin/users', icon: FileSpreadsheet },
@@ -118,10 +224,43 @@ export const AdminHomePage = () => {
     };
   }, []);
 
-  const donutTotal = useMemo(
-    () => data?.usersByRole.reduce((sum, r) => sum + r.count, 0) ?? 0,
+  const usersByRoleSlices = useMemo<DonutSlice[]>(
+    () =>
+      (data?.usersByRole ?? []).map((role, index) => ({
+        name: role.role,
+        shortName: role.role.length > 10 ? `${role.role.slice(0, 9)}…` : role.role,
+        count: role.count,
+        color: colorForRole(role.role, index),
+      })),
     [data],
   );
+
+  const usersStatusSlices = useMemo<DonutSlice[]>(() => {
+    if (!data) return [];
+    const inactive = Math.max(0, data.totalUsers - data.activeUsers);
+    return [
+      { name: 'Activos', shortName: 'Activos', count: data.activeUsers, color: '#168750' },
+      { name: 'Inactivos', shortName: 'Inactivos', count: inactive, color: '#6B7280' },
+    ];
+  }, [data]);
+
+  const offerSlices = useMemo<DonutSlice[]>(() => {
+    if (!data) return [];
+    return [
+      {
+        name: 'Talleres exploratorios',
+        shortName: 'Talleres',
+        count: data.totalExploratoryWorkshops ?? 0,
+        color: '#0E7490',
+      },
+      {
+        name: 'Especialidades técnicas',
+        shortName: 'Especialidades',
+        count: data.totalSpecialties,
+        color: '#9B7D2E',
+      },
+    ];
+  }, [data]);
 
   return (
     <section className={styles.page}>
@@ -163,7 +302,9 @@ export const AdminHomePage = () => {
               <div className={styles.kpiIcon}><Users size={22} /></div>
               <div className={styles.kpiBody}>
                 <span className={styles.kpiValue}>{data.totalUsers}</span>
-                <span className={styles.kpiLabel}>Total Usuarios</span>
+                <span className={styles.kpiLabel}>
+                  {countLabel(data.totalUsers, 'usuario', 'usuarios')}
+                </span>
                 <span className={styles.kpiSub}>Registrados en el sistema</span>
               </div>
             </div>
@@ -171,7 +312,9 @@ export const AdminHomePage = () => {
               <div className={styles.kpiIcon}><UserCheck size={22} /></div>
               <div className={styles.kpiBody}>
                 <span className={styles.kpiValue}>{data.activeUsers}</span>
-                <span className={styles.kpiLabel}>Usuarios Activos</span>
+                <span className={styles.kpiLabel}>
+                  {countLabel(data.activeUsers, 'usuario activo', 'usuarios activos')}
+                </span>
                 <span className={styles.kpiSub}>Con acceso habilitado</span>
               </div>
             </div>
@@ -179,7 +322,9 @@ export const AdminHomePage = () => {
               <div className={styles.kpiIcon}><ShieldCheck size={22} /></div>
               <div className={styles.kpiBody}>
                 <span className={styles.kpiValue}>{data.totalRoles}</span>
-                <span className={styles.kpiLabel}>Roles</span>
+                <span className={styles.kpiLabel}>
+                  {countLabel(data.totalRoles, 'rol', 'roles')}
+                </span>
                 <span className={styles.kpiSub}>Configurados</span>
               </div>
             </div>
@@ -187,7 +332,9 @@ export const AdminHomePage = () => {
               <div className={styles.kpiIcon}><CalendarRange size={22} /></div>
               <div className={styles.kpiBody}>
                 <span className={styles.kpiValue}>{data.totalAcademicPeriods}</span>
-                <span className={styles.kpiLabel}>Períodos</span>
+                <span className={styles.kpiLabel}>
+                  {countLabel(data.totalAcademicPeriods, 'período', 'períodos')}
+                </span>
                 <span className={styles.kpiSub}>Académicos registrados</span>
               </div>
             </div>
@@ -195,77 +342,58 @@ export const AdminHomePage = () => {
               <div className={styles.kpiIcon}><Layers size={22} /></div>
               <div className={styles.kpiBody}>
                 <span className={styles.kpiValue}>{data.totalSections}</span>
-                <span className={styles.kpiLabel}>Secciones</span>
+                <span className={styles.kpiLabel}>
+                  {countLabel(data.totalSections, 'sección', 'secciones')}
+                </span>
                 <span className={styles.kpiSub}>Niveles y grupos</span>
               </div>
             </div>
             <div className={`${styles.kpi} ${styles.kpi6}`}>
+              <div className={styles.kpiIcon}><BookOpen size={22} /></div>
+              <div className={styles.kpiBody}>
+                <span className={styles.kpiValue}>{data.totalExploratoryWorkshops ?? 0}</span>
+                <span className={styles.kpiLabel}>
+                  {countLabel(
+                    data.totalExploratoryWorkshops ?? 0,
+                    'taller exploratorio',
+                    'talleres exploratorios',
+                  )}
+                </span>
+                <span className={styles.kpiSub}>Séptimo a noveno</span>
+              </div>
+            </div>
+            <div className={`${styles.kpi} ${styles.kpi7}`}>
               <div className={styles.kpiIcon}><GraduationCap size={22} /></div>
               <div className={styles.kpiBody}>
                 <span className={styles.kpiValue}>{data.totalSpecialties}</span>
-                <span className={styles.kpiLabel}>Especialidades</span>
-                <span className={styles.kpiSub}>Técnicas registradas</span>
+                <span className={styles.kpiLabel}>
+                  {countLabel(data.totalSpecialties, 'especialidad', 'especialidades')}
+                </span>
+                <span className={styles.kpiSub}>Décimo a duodécimo</span>
               </div>
             </div>
           </div>
 
-          {/* Donut chart */}
+          {/* Donut charts */}
           <div className={styles.midGrid}>
-            <div className={styles.card}>
-              <div className={styles.cardHead}>
-                <LayoutDashboard size={18} />
-                <h2>Distribución de usuarios</h2>
-              </div>
-              {data.usersByRole.length > 0 ? (
-                <div className={styles.donutRow}>
-                  <div className={styles.donutWrap}>
-                    <ResponsiveContainer width="100%" height={150}>
-                      <PieChart>
-                        <Pie
-                          data={data.usersByRole}
-                          dataKey="count"
-                          nameKey="role"
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={42}
-                          outerRadius={64}
-                          paddingAngle={3}
-                          strokeWidth={0}
-                        >
-                          {data.usersByRole.map((r, i) => (
-                            <Cell key={r.role} fill={colorForRole(r.role, i)} />
-                          ))}
-                        </Pie>
-                        <Tooltip
-                          formatter={(value) => [String(value), 'Usuarios']}
-                          contentStyle={{ borderRadius: 8, border: '1px solid #C1C5C8', fontSize: 13 }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                    <div className={styles.donutCenter}>
-                      <span className={styles.donutTotal}>{donutTotal}</span>
-                      <span className={styles.donutTotalLabel}>Total</span>
-                    </div>
-                  </div>
-                  <ul className={styles.legend}>
-                    {data.usersByRole.map((r, i) => (
-                      <li key={r.role}>
-                        <span
-                          className={styles.legendDot}
-                          style={{ background: colorForRole(r.role, i) }}
-                        />
-                        <span className={styles.legendLabel}>{r.role}</span>
-                        <span className={styles.legendCount}>
-                          {r.count} ({donutTotal > 0 ? Math.round((r.count / donutTotal) * 100) : 0}%)
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : (
-                <p className={styles.muted}>Sin datos de roles disponibles.</p>
-              )}
-            </div>
+            <DonutCard
+              emptyText="Sin datos de roles disponibles."
+              icon={LayoutDashboard}
+              slices={usersByRoleSlices}
+              title="Distribución de usuarios"
+            />
+            <DonutCard
+              emptyText="Sin datos de estado de usuarios."
+              icon={UserCheck}
+              slices={usersStatusSlices}
+              title="Usuarios activos e inactivos"
+            />
+            <DonutCard
+              emptyText="Sin talleres ni especialidades registradas."
+              icon={BookOpen}
+              slices={offerSlices}
+              title="Talleres y especialidades"
+            />
           </div>
 
           {/* Quick access */}
