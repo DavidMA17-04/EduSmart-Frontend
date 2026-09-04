@@ -295,7 +295,39 @@
   font-size: 13px;
   color: var(--admin-danger);
   text-align: center;
+  padding: 0;
+  margin: 0;
+}
+
+.errorRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   padding: 16px;
+}
+
+.retryButton {
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--admin-primary);
+  border-radius: 8px;
+  background: var(--admin-primary);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.retryButton:hover:not(:disabled) {
+  background: var(--admin-primary-hover);
+  border-color: var(--admin-primary-hover);
+}
+
+.retryButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* ── Responsive ── */

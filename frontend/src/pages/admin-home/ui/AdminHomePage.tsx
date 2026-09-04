@@ -78,14 +78,44 @@ export const AdminHomePage = () => {
     return () => window.clearInterval(timer);
   }, []);
 
+  const loadSummary = () => {
+    setLoading(true);
+    setError(null);
+    return dashboardApi
+      .getSummary()
+      .then((summary) => {
+        setData(summary);
+        setError(null);
+      })
+      .catch(() => {
+        setError('No se pudieron cargar las estadísticas.');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
   useEffect(() => {
     let active = true;
+    setLoading(true);
+    setError(null);
     dashboardApi
       .getSummary()
-      .then((summary) => { if (active) setData(summary); })
-      .catch(() => { if (active) setError('No se pudieron cargar las estadísticas.'); })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
+      .then((summary) => {
+        if (!active) return;
+        setData(summary);
+        setError(null);
+      })
+      .catch(() => {
+        if (!active) return;
+        setError('No se pudieron cargar las estadísticas.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
   const donutTotal = useMemo(
@@ -109,7 +139,21 @@ export const AdminHomePage = () => {
       </header>
 
       {loading && <p className={styles.muted}>Cargando estadísticas…</p>}
-      {error && <p className={styles.error}>{error}</p>}
+      {error && (
+        <div className={styles.errorRow}>
+          <p className={styles.error}>{error}</p>
+          <button
+            className={styles.retryButton}
+            disabled={loading}
+            onClick={() => {
+              void loadSummary();
+            }}
+            type="button"
+          >
+            Reintentar
+          </button>
+        </div>
+      )}
 
       {data && (
         <>
