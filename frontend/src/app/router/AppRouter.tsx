@@ -11,6 +11,7 @@ import { SectionsGroupsPage } from '@/pages/sections-groups';
 import { UserCreatePage } from '@/pages/user-create';
 import { UserDetailPage } from '@/pages/user-detail';
 import { UsersDirectoryPage } from '@/pages/users-directory';
+import { AdministrativeReportsPage } from '@/pages/administrative-reports';
 import { ImportResultPage } from '@/pages/import-result';
 import { AdminShell } from '@/widgets/app-shell';
 import { RequireAuth } from './RequireAuth';
@@ -35,6 +36,7 @@ export const AppRouter = () => (
         <Route element={<SpecialtiesPage />} path="specialties" />
         <Route element={<AcademicPeriodsPage />} path="academic-periods" />
         <Route element={<SectionsGroupsPage />} path="sections-groups" />
+        <Route element={<AdministrativeReportsPage />} path="reports" />
         <Route element={<AdminHomePage />} path="*" />
       </Route>
     </Route>
@@ -47,6 +49,7 @@ export const AppRouter = () => (
     <Route element={<Navigate replace to="/admin/specialties" />} path="/administrative/specialties" />
     <Route element={<Navigate replace to="/admin/academic-periods" />} path="/administrative/academic-periods" />
     <Route element={<Navigate replace to="/admin/sections-groups" />} path="/administrative/sections-groups" />
+    <Route element={<Navigate replace to="/admin/reports" />} path="/administrative/reports" />
     <Route element={<Navigate replace to="/admin" />} path="/administrative/*" />
 
     <Route element={<Navigate replace to="/admin/users" />} path="/onboarding" />

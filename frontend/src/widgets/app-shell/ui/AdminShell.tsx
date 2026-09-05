@@ -1,4 +1,4 @@
-import { ArrowLeft, Bell, CalendarRange, ChevronDown, GraduationCap, Layers, LayoutDashboard, LogOut, Settings, ShieldCheck, Users } from 'lucide-react';
+import { ArrowLeft, Bell, CalendarRange, ChevronDown, FileBarChart, GraduationCap, Layers, LayoutDashboard, LogOut, Settings, ShieldCheck, Users } from 'lucide-react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { authApi } from '@/features/auth';
 import { getSessionUser } from '@/shared/auth';
@@ -11,6 +11,7 @@ const navigationItems = [
   { label: 'Estructura académica', icon: GraduationCap, to: '/admin/specialties' },
   { label: 'Períodos académicos', icon: CalendarRange, to: '/admin/academic-periods' },
   { label: 'Niveles y secciones', icon: Layers, to: '/admin/sections-groups' },
+  { label: 'Reportes', icon: FileBarChart, to: '/admin/reports' },
   { label: 'Configuración', icon: Settings, to: '/admin/settings' },
 ];
 
