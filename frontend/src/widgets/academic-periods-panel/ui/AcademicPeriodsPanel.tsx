@@ -1,5 +1,5 @@
 import { Edit3, Lock, Play, Plus, RotateCcw } from 'lucide-react';
-import { Alert, Button, Card, Pagination, Table } from '@/shared/ui';
+import { Alert, Button, Card, Modal, Pagination, Table } from '@/shared/ui';
 import { AcademicPeriodTableRow } from '@/entities/academic-period';
 import { AcademicPeriodFilters, AcademicPeriodFormPanel } from '@/features/manage-academic-period';
 import { useAcademicPeriodsPanel } from '../model/useAcademicPeriodsPanel';
@@ -8,8 +8,9 @@ import styles from './AcademicPeriodsPanel.module.css';
 
 export const AcademicPeriodsPanel = () => {
   const model = useAcademicPeriodsPanel();
-  const formTitle = model.formMode === 'create' ? 'Nuevo período' : 'Detalle del período';
-  const formStatus = model.formMode === 'edit' ? model.selectedPeriod?.status : undefined;
+  const dialogTitle = model.dialogMode === 'create' ? 'Nuevo período' : 'Editar período';
+  const submitLabel = model.dialogMode === 'create' ? 'Guardar' : 'Guardar cambios';
+  const formStatus = model.dialogMode === 'edit' ? model.selectedPeriod?.status : undefined;
 
   return (
     <section className={styles.layout}>
@@ -23,14 +24,13 @@ export const AcademicPeriodsPanel = () => {
               status={model.status}
             />
             <div className={styles.toolbarActions}>
-              <Button onClick={model.createPeriod} type="button">
+              <Button onClick={model.openCreateDialog} type="button">
                 <Plus size={16} /> Nuevo período
               </Button>
             </div>
           </div>
           {model.error && <Alert>{model.error}</Alert>}
           {model.mutationError && <Alert>{model.mutationError}</Alert>}
-          {model.formError && <Alert>{model.formError}</Alert>}
           {model.isLoading ? (
             <p className={styles.muted}>Cargando períodos académicos…</p>
           ) : (
@@ -53,7 +53,7 @@ export const AcademicPeriodsPanel = () => {
                           <Button
                             aria-label={`Editar ${period.name}`}
                             disabled={model.isSubmitting}
-                            onClick={() => model.selectPeriod(period.id)}
+                            onClick={() => model.openEditDialog(period.id)}
                             size="icon"
                             title="Editar"
                             type="button"
@@ -127,18 +127,26 @@ export const AcademicPeriodsPanel = () => {
         </Card>
         <Alert>El estado de un período solo se modifica con las acciones Activar, Cerrar o Reabrir.</Alert>
       </div>
-      <div className={styles.sidePanel}>
+
+      <Modal
+        isOpen={model.dialogMode !== null}
+        onClose={model.closeDialog}
+        title={dialogTitle}
+      >
+        {model.formError && <Alert>{model.formError}</Alert>}
+        {model.mutationError && <Alert>{model.mutationError}</Alert>}
         <AcademicPeriodFormPanel
           isReadOnly={model.isReadOnly}
           isSubmitting={model.isSubmitting}
-          onCancel={model.createPeriod}
+          onCancel={model.closeDialog}
           onChange={model.periodForm.setField}
           onSubmit={model.periodForm.submit}
           status={formStatus}
-          title={formTitle}
+          submitLabel={submitLabel}
           values={model.periodForm.values}
         />
-      </div>
+      </Modal>
+
       <AcademicPeriodConfirmDialog
         action={model.pendingTransition?.action ?? null}
         isSubmitting={model.isSubmitting}

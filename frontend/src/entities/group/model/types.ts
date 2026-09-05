@@ -10,8 +10,12 @@ export interface GuideTeacher {
 
 export interface CreateGuideTeacherPayload {
   nationalId: string;
-  firstName: string;
-  lastName: string;
+  /** Nombres de pila (campo backend: name) */
+  name: string;
+  /** Primer apellido */
+  first_lastname: string;
+  /** Segundo apellido (opcional) */
+  second_lastname?: string;
   email: string;
   phone?: string;
 }

@@ -49,7 +49,7 @@ export const UsersDirectoryPage = () => {
         <span className={styles.icon}><Users size={22} /></span>
         <div>
           <h1>Consulta y edición de usuarios</h1>
-          <p>Filtre por estado o rol con un clic. La búsqueda por texto es opcional (WF-18).</p>
+          <p>Filtre por estado o rol con un clic. La búsqueda por texto es opcional.</p>
         </div>
       </header>
 
@@ -58,7 +58,7 @@ export const UsersDirectoryPage = () => {
           <div className={styles.resultMeta}>
             <strong>{filteredCount}</strong> de {totalCount} usuarios
           </div>
-          <Button type="button" variant="secondary" onClick={() => navigate('/admin/users/new')}>
+          <Button type="button" onClick={() => navigate('/admin/users/new')}>
             Nuevo usuario
           </Button>
         </div>
@@ -90,42 +90,55 @@ export const UsersDirectoryPage = () => {
 
         {!isLoading && !error && paginatedUsers.length > 0 && (
           <>
-            <Table>
-              <thead>
-                <tr>
-                  <th>Usuario</th>
-                  <th>Cédula</th>
-                  <th>Correo</th>
-                  <th>Estado</th>
-                  <th>Roles</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedUsers.map((user) => (
-                  <tr key={user.id}>
-                    <td>{formatUserName(user)}</td>
-                    <td>{user.nationalId ?? '—'}</td>
-                    <td>{user.email ?? '—'}</td>
-                    <td>
-                      <Badge tone={statusTone(user.status)}>
-                        {STATUS_LABELS[user.status]}
-                      </Badge>
-                    </td>
-                    <td>{user.roles.map((role) => role.name).join(', ') || '—'}</td>
-                    <td>
-                      <Button
-                        onClick={() => navigate(`/admin/users/${user.id}`)}
-                        type="button"
-                        variant="secondary"
-                      >
-                        <Eye size={14} /> Ver ficha
-                      </Button>
-                    </td>
+            <div className={styles.tableWrap}>
+              <Table>
+                <thead>
+                  <tr>
+                    <th className={styles.colUser}>Usuario</th>
+                    <th className={styles.colId}>Cédula</th>
+                    <th className={styles.colEmail}>Correo</th>
+                    <th className={styles.colStatus}>Estado</th>
+                    <th className={styles.colRoles}>Roles</th>
+                    <th className={styles.colActions}>Acciones</th>
                   </tr>
-                ))}
-              </tbody>
-            </Table>
+                </thead>
+                <tbody>
+                  {paginatedUsers.map((user) => (
+                    <tr key={user.id}>
+                      <td className={styles.colUser}>
+                        <span className={styles.userName}>{formatUserName(user)}</span>
+                      </td>
+                      <td className={styles.colId}>{user.nationalId ?? '—'}</td>
+                      <td className={styles.colEmail}>
+                        <span className={styles.email}>{user.email ?? '—'}</span>
+                      </td>
+                      <td className={styles.colStatus}>
+                        <Badge tone={statusTone(user.status)}>
+                          {STATUS_LABELS[user.status]}
+                        </Badge>
+                      </td>
+                      <td className={styles.colRoles}>
+                        <span className={styles.roles} title={user.roles.map((role) => role.name).join(', ') || undefined}>
+                          {user.roles.map((role) => role.name).join(', ') || '—'}
+                        </span>
+                      </td>
+                      <td className={styles.colActions}>
+                        <Button
+                          aria-label={`Ver ficha de ${formatUserName(user)}`}
+                          onClick={() => navigate(`/admin/users/${user.id}`)}
+                          size="icon"
+                          title="Ver ficha"
+                          type="button"
+                          variant="secondary"
+                        >
+                          <Eye />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
 
             {totalPages > 1 && (
               <div className={styles.paginationWrap}>

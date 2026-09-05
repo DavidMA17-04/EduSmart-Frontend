@@ -7,7 +7,7 @@ import {
   useManageAcademicPeriod,
 } from '@/features/manage-academic-period';
 
-type FormMode = 'create' | 'edit';
+type DialogMode = 'create' | 'edit' | null;
 
 export type AcademicPeriodTransitionAction = 'activate' | 'close' | 'reopen';
 
@@ -19,7 +19,7 @@ interface PendingPeriodTransition {
 export function useAcademicPeriodsPanel() {
   const periods = useAcademicPeriods();
   const [selectedPeriodId, setSelectedPeriodId] = useState<string | null>(null);
-  const [formMode, setFormMode] = useState<FormMode>('create');
+  const [dialogMode, setDialogMode] = useState<DialogMode>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [pendingTransition, setPendingTransition] = useState<PendingPeriodTransition | null>(null);
   const transitionLockRef = useRef(false);
@@ -28,8 +28,8 @@ export function useAcademicPeriodsPanel() {
     () => periods.allPeriods.find((period) => period.id === selectedPeriodId),
     [periods.allPeriods, selectedPeriodId],
   );
-  const formPeriod = formMode === 'edit' ? selectedPeriod : undefined;
-  const isReadOnly = formMode === 'edit' && selectedPeriod?.status === 'CLOSED';
+  const formPeriod = dialogMode === 'edit' ? selectedPeriod : undefined;
+  const isReadOnly = dialogMode === 'edit' && selectedPeriod?.status === 'CLOSED';
   const { values, setField, toPayload } = useAcademicPeriodForm(formPeriod);
   const {
     create,
@@ -43,13 +43,22 @@ export function useAcademicPeriodsPanel() {
 
   const selectPeriod = useCallback((id: string) => {
     setSelectedPeriodId(id);
-    setFormMode('edit');
+  }, []);
+
+  const openCreateDialog = useCallback(() => {
+    setSelectedPeriodId(null);
+    setDialogMode('create');
     setFormError(null);
   }, []);
 
-  const createPeriod = useCallback(() => {
-    setSelectedPeriodId(null);
-    setFormMode('create');
+  const openEditDialog = useCallback((id: string) => {
+    setSelectedPeriodId(id);
+    setDialogMode('edit');
+    setFormError(null);
+  }, []);
+
+  const closeDialog = useCallback(() => {
+    setDialogMode(null);
     setFormError(null);
   }, []);
 
@@ -66,17 +75,18 @@ export function useAcademicPeriodsPanel() {
 
     setFormError(null);
     try {
-      if (formMode === 'create') {
+      if (dialogMode === 'create') {
         const created = await create(payload);
         setSelectedPeriodId(created.id);
-        setFormMode('edit');
+        setDialogMode(null);
       } else if (selectedPeriod) {
         await update(selectedPeriod.id, payload);
+        setDialogMode(null);
       }
     } catch {
       // El hook de mutaciones publica el error para la interfaz.
     }
-  }, [create, formMode, isReadOnly, selectedPeriod, toPayload, update]);
+  }, [create, dialogMode, isReadOnly, selectedPeriod, toPayload, update]);
 
   const activatePeriod = useCallback((period: AcademicPeriod) => {
     setPendingTransition({ action: 'activate', period });
@@ -105,10 +115,8 @@ export function useAcademicPeriodsPanel() {
       else if (action === 'close') await close(period.id);
       else await reopen(period.id);
       setSelectedPeriodId(period.id);
-      setFormMode('edit');
       setPendingTransition(null);
     } catch {
-      // El error se expone desde el hook.
       setPendingTransition(null);
     } finally {
       transitionLockRef.current = false;
@@ -120,8 +128,10 @@ export function useAcademicPeriodsPanel() {
     selectedPeriod,
     selectedPeriodId,
     selectPeriod,
-    createPeriod,
-    formMode,
+    dialogMode,
+    openCreateDialog,
+    openEditDialog,
+    closeDialog,
     isReadOnly,
     formError,
     periodForm: { values, setField, submit },

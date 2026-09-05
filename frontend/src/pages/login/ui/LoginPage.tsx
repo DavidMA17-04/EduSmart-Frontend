@@ -1,14 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import {
-  BookOpen,
   CircleHelp,
   Eye,
   EyeOff,
-  GraduationCap,
   Lock,
   LogIn,
-  Shield,
   TrendingUp,
   User,
   Users,
@@ -128,24 +125,19 @@ export const LoginPage = () => {
         <div className={styles.heroAura} aria-hidden="true" />
         <div className={styles.heroGlow} aria-hidden="true" />
         <div className={styles.heroGlowSecondary} aria-hidden="true" />
-        <div className={styles.heroWatermark} aria-hidden="true">
-          <GraduationCap size={180} strokeWidth={1} />
-          <BookOpen size={120} strokeWidth={1} />
-          <Shield size={160} strokeWidth={1} />
-        </div>
+        <div className={styles.heroPattern} aria-hidden="true" />
 
         <div className={styles.heroTop}>
-          <div className={styles.heroBrand}>
-            <span className={styles.heroLogo}>
-              <BookOpen aria-hidden="true" size={28} />
-              <GraduationCap aria-hidden="true" size={34} />
-            </span>
-            <h1>EduSmart</h1>
-            <p>Gestión Académica Integral</p>
-          </div>
-          <p className={styles.heroSchool}>CTP HOJANCHA</p>
+          <img
+            alt="Escudo C.T.P. de Hojancha"
+            className={styles.heroCrest}
+            src="/brand/ctp-hojancha-logo.jpeg"
+          />
+          <p className={styles.heroSchool}>C.T.P. de Hojancha</p>
+          <h1 className={styles.heroTitle}>EduSmart</h1>
+          <p className={styles.heroMotto}>Ciencia · Cultura · 1972</p>
           <p className={styles.heroCopy}>
-            Accede al panel institucional para administrar usuarios, estructura académica y el día a día del colegio.
+            Panel institucional para usuarios, estructura académica y la gestión diaria del colegio.
           </p>
         </div>
 
@@ -158,7 +150,6 @@ export const LoginPage = () => {
               {displayCount === null ? '—' : formatCount(displayCount)}
             </strong>
             <span className={styles.sellLabel}>Usuarios en la plataforma</span>
-            <p className={styles.sellHint}>Comunidad institucional en crecimiento</p>
           </div>
           <span className={styles.trendBadge} aria-hidden="true">
             <TrendingUp className={styles.trendArrow} size={14} strokeWidth={2.4} />
@@ -167,24 +158,14 @@ export const LoginPage = () => {
       </aside>
 
       <section className={styles.panel}>
-        <header className={styles.welcome}>
-          <p className={styles.welcomeEyebrow}>Portal administrativo</p>
-          <h2>Bienvenido de nuevo</h2>
-          <p>Inicia sesión con tu cuenta institucional para continuar</p>
-        </header>
-
         <form className={styles.card} onSubmit={onSubmit} noValidate>
           <div className={styles.cardBrand}>
-            <span className={styles.cardLogo}>
-              <BookOpen aria-hidden="true" size={20} />
-              <GraduationCap aria-hidden="true" size={24} />
-            </span>
-            <strong>EduSmart</strong>
-            <small>CTP Hojancha</small>
+            <h2>Iniciar sesión</h2>
+            <p>Cuenta institucional CTP Hojancha</p>
           </div>
 
           <label className={styles.field}>
-            Correo electrónico o identificación
+            Correo o identificación
             <span className={`${styles.inputWrap} ${emailError ? styles.inputInvalid : ''}`}>
               <User aria-hidden="true" className={styles.inputIcon} size={16} />
               <Input
@@ -194,7 +175,7 @@ export const LoginPage = () => {
                   setEmail(event.target.value);
                   if (emailError) setEmailError(null);
                 }}
-                placeholder="usuario@ctphojancha.ac.cr"
+                placeholder="usuario@ctphojancha.ed.cr"
                 type="email"
                 value={email}
               />
@@ -214,7 +195,7 @@ export const LoginPage = () => {
                   setPassword(event.target.value);
                   if (passwordError) setPasswordError(null);
                 }}
-                placeholder="Ingresa tu contraseña"
+                placeholder="••••••••"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
               />
@@ -236,7 +217,7 @@ export const LoginPage = () => {
                 checked={rememberMe}
                 onChange={(event) => setRememberMe(event.target.checked)}
               />
-              Recordarme en este dispositivo
+              Recordarme
             </label>
             <button
               className={styles.forgot}
@@ -268,9 +249,9 @@ export const LoginPage = () => {
 
         <p className={styles.help}>
           <CircleHelp aria-hidden="true" size={14} />
-          ¿Necesitas ayuda? Contacta al administrador del sistema.
+          ¿Necesitas ayuda? Contacta al administrador.
         </p>
-        <p className={styles.copyright}>© 2026 EduSmart - CTP Hojancha. Todos los derechos reservados.</p>
+        <p className={styles.copyright}>© 2026 EduSmart · CTP Hojancha</p>
       </section>
     </div>
   );

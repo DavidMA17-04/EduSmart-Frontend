@@ -80,9 +80,9 @@ export function useSectionsGroupsPanel() {
   const [activeTab, setActiveTab] = useState<PanelTab>(() => parsePanelTab(searchParams.get('tab')));
   const [selectedSectionId, setSelectedSectionId] = useState<number | null>(null);
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
-  const [sectionFormMode, setSectionFormMode] = useState<FormMode>('create');
+  const [sectionDialogMode, setSectionDialogMode] = useState<FormMode | null>(null);
   const [groupFormMode, setGroupFormMode] = useState<FormMode | null>(null);
-  const [teacherFormMode, setTeacherFormMode] = useState<FormMode>('create');
+  const [teacherFormMode, setTeacherFormMode] = useState<FormMode | null>(null);
   const [selectedTeacherId, setSelectedTeacherId] = useState<number | null>(null);
   const [expandedSectionIds, setExpandedSectionIds] = useState<Set<number>>(new Set());
   const [groupSectionFilter, setGroupSectionFilter] = useState('');
@@ -139,15 +139,15 @@ export function useSectionsGroupsPanel() {
     [groupsBySection, selectedSectionId],
   );
 
-  const sectionForm = useSectionForm(sectionFormMode === 'edit' ? selectedSection : undefined);
+  const sectionForm = useSectionForm(sectionDialogMode === 'edit' ? selectedSection : undefined);
   const groupForm = useGroupForm(groupFormMode === 'edit' ? selectedGroup : undefined);
   const teacherForm = useGuideTeacherForm(teacherFormMode === 'edit' ? selectedTeacher : undefined);
 
   useEffect(() => {
-    if (groupFormMode === 'create' && selectedSectionId && activeTab === 'niveles') {
+    if (groupFormMode === 'create' && selectedSectionId) {
       groupForm.setField('sectionId', String(selectedSectionId));
     }
-  }, [activeTab, groupForm, groupFormMode, selectedSectionId]);
+  }, [groupForm, groupFormMode, selectedSectionId]);
 
   const getSectionInfo = useCallback(
     (sectionId: number) => {
@@ -209,33 +209,56 @@ export function useSectionsGroupsPanel() {
 
   const selectSection = useCallback((id: number) => {
     setSelectedSectionId(id);
-    setSectionFormMode('edit');
     setGroupFormMode(null);
     setSelectedGroupId(null);
   }, []);
 
-  const createSectionMode = useCallback(() => {
+  const openCreateSectionDialog = useCallback(() => {
     setSelectedSectionId(null);
-    setSectionFormMode('create');
+    setSectionDialogMode('create');
     setGroupFormMode(null);
     setSelectedGroupId(null);
   }, []);
+
+  const openEditSectionDialog = useCallback((id: number) => {
+    setSelectedSectionId(id);
+    setSectionDialogMode('edit');
+    setGroupFormMode(null);
+    setSelectedGroupId(null);
+  }, []);
+
+  const closeSectionDialog = useCallback(() => {
+    setSectionDialogMode(null);
+  }, []);
+
+  /** @deprecated Prefer openCreateSectionDialog — kept for primary action helpers */
+  const createSectionMode = openCreateSectionDialog;
 
   const createGroupMode = useCallback((sectionId?: number | string) => {
     setSelectedGroupId(null);
     setGroupFormMode('create');
     if (sectionId) {
       setSelectedSectionId(Number(sectionId));
-      setSectionFormMode('edit');
     }
   }, []);
 
-  const selectGroup = useCallback((id: number) => {
+  const openEditGroupDialog = useCallback((id: number) => {
     setSelectedGroupId(id);
     setGroupFormMode('edit');
     const group = groups.find((item) => item.id === id);
     if (group) setSelectedSectionId(group.sectionId);
   }, [groups]);
+
+  const selectGroup = useCallback((id: number) => {
+    setSelectedGroupId(id);
+    setGroupFormMode(null);
+    const group = groups.find((item) => item.id === id);
+    if (group) setSelectedSectionId(group.sectionId);
+  }, [groups]);
+
+  const closeGroupDialog = useCallback(() => {
+    setGroupFormMode(null);
+  }, []);
 
   const toggleSectionExpanded = useCallback((id: number) => {
     setExpandedSectionIds((current) => {
@@ -252,18 +275,19 @@ export function useSectionsGroupsPanel() {
       const payload = sectionForm.toPayload();
       if (!payload.name || !payload.academicPeriodId) return;
       try {
-        if (sectionFormMode === 'create') {
+        if (sectionDialogMode === 'create') {
           const created = await createSection(payload);
           setSelectedSectionId(created.id);
-          setSectionFormMode('edit');
+          setSectionDialogMode(null);
         } else if (selectedSection) {
           await updateSection(selectedSection.id, payload);
+          setSectionDialogMode(null);
         }
       } catch {
         // El hook de mutaciones expone el error para la interfaz.
       }
     },
-    [createSection, sectionForm, sectionFormMode, selectedSection, updateSection],
+    [createSection, sectionDialogMode, sectionForm, selectedSection, updateSection],
   );
 
   const submitGroup = useCallback(
@@ -275,11 +299,11 @@ export function useSectionsGroupsPanel() {
         if (groupFormMode === 'create') {
           const created = await createGroup(payload);
           setSelectedGroupId(created.id);
-          setGroupFormMode('edit');
           setSelectedSectionId(created.sectionId);
-          setSectionFormMode('edit');
+          setGroupFormMode(null);
         } else if (selectedGroup) {
           await updateGroup(selectedGroup.id, payload);
+          setGroupFormMode(null);
         }
       } catch {
         // El hook de mutaciones expone el error para la interfaz.
@@ -296,7 +320,7 @@ export function useSectionsGroupsPanel() {
         removeSection(section.id);
         if (selectedSectionId === section.id) {
           setSelectedSectionId(null);
-          setSectionFormMode('create');
+          setSectionDialogMode(null);
         }
       } catch {
         // El error se expone desde el hook.
@@ -329,13 +353,19 @@ export function useSectionsGroupsPanel() {
 
   const selectTeacher = useCallback((id: number) => {
     setSelectedTeacherId(id);
+    setTeacherFormMode(null);
+  }, []);
+
+  const openEditTeacherDialog = useCallback((id: number) => {
+    setSelectedTeacherId(id);
     setTeacherFormMode('edit');
   }, []);
 
-  const cancelTeacherForm = useCallback(() => {
-    setSelectedTeacherId(null);
-    setTeacherFormMode('create');
+  const closeTeacherDialog = useCallback(() => {
+    setTeacherFormMode(null);
   }, []);
+
+  const cancelTeacherForm = closeTeacherDialog;
 
   const submitTeacher = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
@@ -347,10 +377,11 @@ export function useSectionsGroupsPanel() {
           const created = await createGuideTeacher(payload);
           guideTeachersState.upsert(created);
           setSelectedTeacherId(created.id);
-          setTeacherFormMode('edit');
+          setTeacherFormMode(null);
         } else if (selectedTeacher) {
           const updated = await updateGuideTeacherRecord(selectedTeacher.id, payload);
           guideTeachersState.upsert(updated);
+          setTeacherFormMode(null);
         }
       } catch {
         // El hook de mutaciones expone el error para la interfaz.
@@ -368,7 +399,7 @@ export function useSectionsGroupsPanel() {
         await reloadGroups(true);
         if (selectedTeacherId === teacher.id) {
           setSelectedTeacherId(null);
-          setTeacherFormMode('create');
+          setTeacherFormMode(null);
         }
       } catch {
         // El error se expone desde el hook.
@@ -422,10 +453,7 @@ export function useSectionsGroupsPanel() {
     createTeacherMode();
   }, [activeTab, createGroupMode, createSectionMode, createTeacherMode, groupSectionFilter, selectedSectionId]);
 
-  const cancelGroupForm = useCallback(() => {
-    setGroupFormMode(null);
-    setSelectedGroupId(null);
-  }, []);
+  const cancelGroupForm = closeGroupDialog;
 
   const isLoading = isLoadingSections || isLoadingGroups || guideTeachersState.isLoading;
   const loadError = sectionsError ?? groupsError ?? guideTeachersState.error;
@@ -445,7 +473,7 @@ export function useSectionsGroupsPanel() {
     selectedGroupId,
     selectedTeacher,
     selectedTeacherId,
-    sectionFormMode,
+    sectionDialogMode,
     groupFormMode,
     teacherFormMode,
     expandedSectionIds,
@@ -461,9 +489,16 @@ export function useSectionsGroupsPanel() {
     teacherForm: { values: teacherForm.values, errors: teacherForm.errors, setField: teacherForm.setField, submit: submitTeacher },
     selectSection,
     createSectionMode,
+    openCreateSectionDialog,
+    openEditSectionDialog,
+    closeSectionDialog,
     createGroupMode,
+    openEditGroupDialog,
+    closeGroupDialog,
     selectGroup,
     createTeacherMode,
+    openEditTeacherDialog,
+    closeTeacherDialog,
     selectTeacher,
     cancelTeacherForm,
     removeSelectedTeacher,
@@ -474,7 +509,7 @@ export function useSectionsGroupsPanel() {
     submitGuideTeacher,
     handlePrimaryAction,
     cancelGroupForm,
-    cancelSectionForm: createSectionMode,
+    cancelSectionForm: closeSectionDialog,
     getSectionCode,
     getSectionName,
     getSectionLabel,

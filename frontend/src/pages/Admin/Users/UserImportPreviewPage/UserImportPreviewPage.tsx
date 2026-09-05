@@ -14,6 +14,8 @@ import {
   HelpCircle,
   Download,
   Loader2,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { userImportApi, ValidateBulkImportResponse } from '@/features/manage-user-import';
 import {
@@ -30,6 +32,8 @@ import {
   ImportedUserRecord,
 } from '../mocks/importedUsersMock';
 import styles from './UserImportPreview.module.css';
+
+const PREVIEW_VISIBLE_ROWS = 5;
 
 export const UserImportPreviewPage: React.FC = () => {
   const navigate = useNavigate();
@@ -83,6 +87,8 @@ export const UserImportPreviewPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [importedCount, setImportedCount] = useState<number>(0);
+  const [showAllRows, setShowAllRows] = useState(false);
+  const [showInconsistencies, setShowInconsistencies] = useState(false);
 
   const currentBreakdown = useMemo(
     () => computeImportPreviewBreakdown(records),
@@ -145,6 +151,23 @@ export const UserImportPreviewPage: React.FC = () => {
 
     return matchesSearch;
   });
+
+  const hasMoreRows = filteredRecords.length > PREVIEW_VISIBLE_ROWS;
+  const visibleRecords = showAllRows || !hasMoreRows
+    ? filteredRecords
+    : filteredRecords.slice(0, PREVIEW_VISIBLE_ROWS);
+
+  const inconsistencyCount = useMemo(() => {
+    let count = 0;
+    if (currentBreakdown.duplicateNationalIdInFile > 0) count += 1;
+    if (currentBreakdown.duplicateNationalIdInDb > 0) count += 1;
+    if (currentBreakdown.duplicateEmailInFile > 0) count += 1;
+    if (currentBreakdown.duplicateEmailInDb > 0) count += 1;
+    if (currentBreakdown.invalidEmail > 0) count += 1;
+    if (currentBreakdown.invalidRole > 0) count += 1;
+    if (currentBreakdown.requiredFieldsMissing > 0) count += 1;
+    return count;
+  }, [currentBreakdown]);
 
   const handleCellChange = (id: string, field: keyof ImportedUserRecord, value: string) => {
     if (field === 'userStatus') {
@@ -249,21 +272,7 @@ export const UserImportPreviewPage: React.FC = () => {
       </header>
 
       {saveError && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            padding: '1rem 1.25rem',
-            background: 'var(--status-error-bg)',
-            border: '1px solid var(--status-error-border)',
-            borderRadius: '12px',
-            color: 'var(--status-error-text)',
-            marginBottom: '1.5rem',
-            fontSize: '0.9rem',
-            fontWeight: 500,
-          }}
-        >
+        <div className={styles.saveError}>
           <AlertTriangle size={20} />
           <span>{saveError}</span>
         </div>
@@ -352,29 +361,145 @@ export const UserImportPreviewPage: React.FC = () => {
         </div>
       </section>
 
-      {/* 3. Layout Central: Tabla (Izq) y Panel de Errores (Der) */}
+      {/* Resumen de inconsistencias: colapsable */}
+      <aside className={styles.summaryPanel}>
+        <button
+          type="button"
+          className={styles.summaryToggle}
+          onClick={() => setShowInconsistencies((prev) => !prev)}
+          aria-expanded={showInconsistencies}
+        >
+          <span className={styles.summaryToggleLeft}>
+            <AlertCircle size={16} color="var(--status-error-text)" />
+            Resumen de inconsistencias
+            {inconsistencyCount > 0 && (
+              <span className={styles.summaryBadge}>{inconsistencyCount}</span>
+            )}
+          </span>
+          <span className={styles.summaryToggleRight}>
+            {showInconsistencies ? 'Ocultar' : 'Ver detalle'}
+            {showInconsistencies ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </span>
+        </button>
+
+        {showInconsistencies && (
+          <div className={styles.summaryBody}>
+            <p className={styles.summaryHint}>
+              <HelpCircle size={14} />
+              Edite las celdas directamente en la tabla para resolver los errores antes de confirmar.
+            </p>
+
+            <ul className={styles.errorBreakdownList}>
+              {hasAnyDuplicateInconsistency(currentBreakdown) ? (
+                <>
+                  {currentBreakdown.duplicateNationalIdInFile > 0 && (
+                    <li className={styles.errorBreakdownItem}>
+                      <div className={styles.errorBreakdownName}>
+                        Cédulas duplicadas en archivo ({currentBreakdown.duplicateNationalIdInFile})
+                      </div>
+                      <div className={styles.errorBreakdownDesc}>
+                        El mismo número de cédula aparece más de una vez en el archivo.
+                      </div>
+                    </li>
+                  )}
+                  {currentBreakdown.duplicateNationalIdInDb > 0 && (
+                    <li className={styles.errorBreakdownItem}>
+                      <div className={styles.errorBreakdownName}>
+                        Cédulas ya existentes en BD ({currentBreakdown.duplicateNationalIdInDb})
+                      </div>
+                      <div className={styles.errorBreakdownDesc}>
+                        La cédula ya está registrada en el sistema.
+                      </div>
+                    </li>
+                  )}
+                  {currentBreakdown.duplicateEmailInFile > 0 && (
+                    <li className={styles.errorBreakdownItem}>
+                      <div className={styles.errorBreakdownName}>
+                        Correos duplicados en archivo ({currentBreakdown.duplicateEmailInFile})
+                      </div>
+                      <div className={styles.errorBreakdownDesc}>
+                        El mismo correo aparece más de una vez en el archivo.
+                      </div>
+                    </li>
+                  )}
+                  {currentBreakdown.duplicateEmailInDb > 0 && (
+                    <li className={styles.errorBreakdownItem}>
+                      <div className={styles.errorBreakdownName}>
+                        Correos ya existentes en BD ({currentBreakdown.duplicateEmailInDb})
+                      </div>
+                      <div className={styles.errorBreakdownDesc}>
+                        El correo ya se encuentra registrado en el sistema.
+                      </div>
+                    </li>
+                  )}
+                </>
+              ) : (
+                <li className={`${styles.errorBreakdownItem} ${styles.errorBreakdownItemOk}`}>
+                  <div className={styles.errorBreakdownName}>Sin duplicados detectados</div>
+                  <div className={styles.errorBreakdownDesc}>
+                    No hay cédulas ni correos duplicados en archivo o BD en el lote actual.
+                  </div>
+                </li>
+              )}
+              {currentBreakdown.invalidEmail > 0 && (
+                <li className={styles.errorBreakdownItem}>
+                  <div className={styles.errorBreakdownName}>
+                    Correos inválidos ({currentBreakdown.invalidEmail})
+                  </div>
+                  <div className={styles.errorBreakdownDesc}>
+                    Estructura no cumple con el formato estándar de correo.
+                  </div>
+                </li>
+              )}
+              {currentBreakdown.invalidRole > 0 && (
+                <li className={styles.errorBreakdownItem}>
+                  <div className={styles.errorBreakdownName}>
+                    Roles no permitidos ({currentBreakdown.invalidRole})
+                  </div>
+                  <div className={styles.errorBreakdownDesc}>
+                    La importación masiva solo admite registros con rol ESTUDIANTE.
+                  </div>
+                </li>
+              )}
+              {currentBreakdown.requiredFieldsMissing > 0 && (
+                <li className={styles.errorBreakdownItem}>
+                  <div className={styles.errorBreakdownName}>
+                    Campos vacíos ({currentBreakdown.requiredFieldsMissing})
+                  </div>
+                  <div className={styles.errorBreakdownDesc}>
+                    Faltan datos obligatorios en identificación, nombres o apellidos.
+                  </div>
+                </li>
+              )}
+            </ul>
+          </div>
+        )}
+      </aside>
+
+      {/* Tabla de registros a ancho completo */}
       <div className={styles.mainLayout}>
-        {/* Tabla Interactiva de 10 Columnas */}
         <div className={styles.tableContainer}>
-          <div className={styles.tableWrapper}>
+          <div
+            className={`${styles.tableWrapper}${showAllRows && hasMoreRows ? ` ${styles.tableWrapperExpanded}` : ''}`}
+          >
             <table className={styles.previewTable}>
               <thead>
                 <tr>
-                  <th style={{ width: '50px' }}># Fila</th>
-                  <th style={{ width: '130px' }}>Identificación</th>
-                  <th>Nombres</th>
-                  <th>Primer Apellido</th>
-                  <th>Segundo Apellido</th>
-                  <th>Correo Institucional</th>
-                  <th style={{ width: '130px' }}>Rol</th>
-                  <th>Sección</th>
-                  <th style={{ width: '130px' }}>Estado cuenta</th>
-                  <th style={{ width: '120px' }}>Validación</th>
-                  <th style={{ width: '50px' }}>Acción</th>
+                  <th className={styles.colRow}># Fila</th>
+                  <th className={styles.colId}>Identificación</th>
+                  <th className={styles.colName}>Nombres</th>
+                  <th className={styles.colLastName}>Primer Apellido</th>
+                  <th className={styles.colLastName}>Segundo Apellido</th>
+                  <th className={styles.colEmail}>Correo Institucional</th>
+                  <th className={styles.colRole}>Rol</th>
+                  <th className={styles.colSection}>Sección</th>
+                  <th className={styles.colAccount}>Estado cuenta</th>
+                  <th className={styles.colStatus}>Validación</th>
+                  <th className={styles.colAction}>Acción</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredRecords.map((row) => (
+                {visibleRecords.map((row) => (
                   <tr
                     key={row.id}
                     className={
@@ -505,104 +630,28 @@ export const UserImportPreviewPage: React.FC = () => {
               </tbody>
             </table>
           </div>
+          {hasMoreRows && (
+            <div className={styles.expandRowsBar}>
+              <button
+                type="button"
+                className={styles.expandRowsBtn}
+                onClick={() => setShowAllRows((prev) => !prev)}
+              >
+                {showAllRows ? (
+                  <>
+                    <ChevronUp size={16} />
+                    Mostrar menos ({PREVIEW_VISIBLE_ROWS} de {filteredRecords.length})
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown size={16} />
+                    Ver todos los registros ({filteredRecords.length})
+                  </>
+                )}
+              </button>
+            </div>
+          )}
         </div>
-
-        {/* Panel Lateral: Resumen de Validación */}
-        <aside className={styles.summaryPanel}>
-          <h3 className={styles.summaryTitle}>
-            <AlertCircle size={18} color="var(--status-error-text)" />
-            Resumen de inconsistencias
-          </h3>
-
-          <ul className={styles.errorBreakdownList}>
-            {hasAnyDuplicateInconsistency(currentBreakdown) ? (
-              <>
-                {currentBreakdown.duplicateNationalIdInFile > 0 && (
-                  <li className={styles.errorBreakdownItem}>
-                    <div className={styles.errorBreakdownName}>
-                      Cédulas duplicadas en archivo ({currentBreakdown.duplicateNationalIdInFile})
-                    </div>
-                    <div className={styles.errorBreakdownDesc}>
-                      El mismo número de cédula aparece más de una vez en el archivo.
-                    </div>
-                  </li>
-                )}
-                {currentBreakdown.duplicateNationalIdInDb > 0 && (
-                  <li className={styles.errorBreakdownItem}>
-                    <div className={styles.errorBreakdownName}>
-                      Cédulas ya existentes en BD ({currentBreakdown.duplicateNationalIdInDb})
-                    </div>
-                    <div className={styles.errorBreakdownDesc}>
-                      La cédula ya está registrada en el sistema.
-                    </div>
-                  </li>
-                )}
-                {currentBreakdown.duplicateEmailInFile > 0 && (
-                  <li className={styles.errorBreakdownItem}>
-                    <div className={styles.errorBreakdownName}>
-                      Correos duplicados en archivo ({currentBreakdown.duplicateEmailInFile})
-                    </div>
-                    <div className={styles.errorBreakdownDesc}>
-                      El mismo correo aparece más de una vez en el archivo.
-                    </div>
-                  </li>
-                )}
-                {currentBreakdown.duplicateEmailInDb > 0 && (
-                  <li className={styles.errorBreakdownItem}>
-                    <div className={styles.errorBreakdownName}>
-                      Correos ya existentes en BD ({currentBreakdown.duplicateEmailInDb})
-                    </div>
-                    <div className={styles.errorBreakdownDesc}>
-                      El correo ya se encuentra registrado en el sistema.
-                    </div>
-                  </li>
-                )}
-              </>
-            ) : (
-              <li className={styles.errorBreakdownItem}>
-                <div className={styles.errorBreakdownName}>Sin duplicados detectados</div>
-                <div className={styles.errorBreakdownDesc}>
-                  No hay cédulas ni correos duplicados en archivo o BD en el lote actual.
-                </div>
-              </li>
-            )}
-            {currentBreakdown.invalidEmail > 0 && (
-              <li className={styles.errorBreakdownItem}>
-                <div className={styles.errorBreakdownName}>
-                  Correos inválidos ({currentBreakdown.invalidEmail})
-                </div>
-                <div className={styles.errorBreakdownDesc}>
-                  Estructura no cumple con el formato estándar de correo.
-                </div>
-              </li>
-            )}
-            {currentBreakdown.invalidRole > 0 && (
-              <li className={styles.errorBreakdownItem}>
-                <div className={styles.errorBreakdownName}>
-                  Roles no permitidos ({currentBreakdown.invalidRole})
-                </div>
-                <div className={styles.errorBreakdownDesc}>
-                  La importación masiva solo admite registros con rol ESTUDIANTE.
-                </div>
-              </li>
-            )}
-            {currentBreakdown.requiredFieldsMissing > 0 && (
-              <li className={styles.errorBreakdownItem}>
-                <div className={styles.errorBreakdownName}>
-                  Campos vacíos ({currentBreakdown.requiredFieldsMissing})
-                </div>
-                <div className={styles.errorBreakdownDesc}>
-                  Faltan datos obligatorios en identificación, nombres o apellidos.
-                </div>
-              </li>
-            )}
-          </ul>
-
-          <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-            <HelpCircle size={15} />
-            Edite las celdas directamente en la tabla para resolver los errores antes de confirmar.
-          </div>
-        </aside>
       </div>
 
       {/* 4. Barra Inferior de Acciones */}
@@ -675,8 +724,8 @@ export const UserImportPreviewPage: React.FC = () => {
                 width: '64px',
                 height: '64px',
                 borderRadius: '50%',
-                background: '#e6f4ea',
-                color: '#107c41',
+                background: 'var(--brand-green-light)',
+                color: 'var(--brand-green)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -685,10 +734,10 @@ export const UserImportPreviewPage: React.FC = () => {
             >
               <ShieldCheck size={36} />
             </div>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#081e48', margin: '0 0 0.5rem 0' }}>
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--brand-navy)', margin: '0 0 0.5rem 0' }}>
               ¡Importación Exitosa en MySQL!
             </h2>
-            <p style={{ fontSize: '0.9rem', color: '#64748b', lineHeight: 1.5, margin: '0 0 1.5rem 0' }}>
+            <p style={{ fontSize: '0.9rem', color: 'var(--brand-muted)', lineHeight: 1.5, margin: '0 0 1.5rem 0' }}>
               Se han registrado correctamente los {importedCount || currentKPIs.validRows} usuarios en la base de datos del C.T.P. de Hojancha.
             </p>
             <button

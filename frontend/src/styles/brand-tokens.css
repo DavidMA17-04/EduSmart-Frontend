@@ -1,17 +1,33 @@
 :root {
-  /* C.T.P. de Hojancha — paleta institucional (manual + escudo) */
-  --brand-navy: #0b2340;
-  --brand-navy-soft: #12345c;
-  --brand-gold: #c5a028;
-  --brand-gold-light: #f5ecd3;
-  --brand-yellow: #f4c430;
-  --brand-yellow-light: #fff8dc;
-  --brand-green: #1e7a3a;
-  --brand-green-hover: #166530;
+  /* C.T.P. de Hojancha — paleta institucional oficial (UI admin/login) */
+  --brand-navy: #021a53;
+  --brand-navy-deep: #01133d;
+  --brand-navy-soft: #164687;
+  --brand-primary: #002e7a;
+  --brand-primary-hover: #164687;
+  --brand-primary-light: #eff4fb;
+
+  --brand-gold: #cfac65;
+  --brand-gold-dark: #9b7d2e;
+  --brand-gold-light: #f8f1e3;
+
+  --brand-green: #168750;
+  --brand-green-hover: #147445;
   --brand-green-light: #e8f5ec;
+
+  --brand-nav-muted: #dbe8ff;
+  --brand-nav-accent: #7eb6ff;
+
+  --brand-warning: #b86800;
+  --brand-danger: #d32f2f;
   --brand-orange: #e65100;
 
-  /* Tipografía institucional (serif formal; fallback hasta fuentes oficiales .woff2) */
+  --brand-background: #f5f6f8;
+  --brand-surface: #ffffff;
+  --brand-border: #c1c5c8;
+  --brand-muted: #6b7280;
+
+  /* Tipografía institucional */
   --brand-font-serif: 'Merriweather', 'Georgia', 'Times New Roman', serif;
   --brand-font-sans: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
 }

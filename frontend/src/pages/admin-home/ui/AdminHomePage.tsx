@@ -17,6 +17,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { dashboardApi } from '@/features/dashboard';
 import type { DashboardSummary } from '@/features/dashboard';
 import { getSessionUser } from '@/shared/auth';
+import { brandColors } from '@/styles/brandColors';
 import styles from './AdminHomePage.module.css';
 
 function getGreeting(date: Date): string {
@@ -50,12 +51,17 @@ function formatTime(date: Date): string {
 }
 
 const ROLE_COLORS: Record<string, string> = {
-  Administrador: '#CFAC65',
-  Docente: '#164687',
-  Estudiante: '#002E7A',
+  Administrador: brandColors.gold,
+  Docente: brandColors.primaryHover,
+  Estudiante: brandColors.primary,
 };
 
-const FALLBACK_COLORS = ['#021A53', '#6B7280', '#168750', '#9B7D2E'];
+const FALLBACK_COLORS = [
+  brandColors.navy,
+  brandColors.muted,
+  brandColors.green,
+  brandColors.goldDark,
+];
 
 function colorForRole(role: string, index: number): string {
   return ROLE_COLORS[role] ?? FALLBACK_COLORS[index % FALLBACK_COLORS.length];
@@ -239,8 +245,8 @@ export const AdminHomePage = () => {
     if (!data) return [];
     const inactive = Math.max(0, data.totalUsers - data.activeUsers);
     return [
-      { name: 'Activos', shortName: 'Activos', count: data.activeUsers, color: '#168750' },
-      { name: 'Inactivos', shortName: 'Inactivos', count: inactive, color: '#6B7280' },
+      { name: 'Activos', shortName: 'Activos', count: data.activeUsers, color: brandColors.green },
+      { name: 'Inactivos', shortName: 'Inactivos', count: inactive, color: brandColors.muted },
     ];
   }, [data]);
 
@@ -257,7 +263,7 @@ export const AdminHomePage = () => {
         name: 'Especialidades técnicas',
         shortName: 'Especialidades',
         count: data.totalSpecialties,
-        color: '#9B7D2E',
+        color: brandColors.goldDark,
       },
     ];
   }, [data]);
