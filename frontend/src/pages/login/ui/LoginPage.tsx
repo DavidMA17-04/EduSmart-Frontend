@@ -9,8 +9,8 @@ import {
   Lock,
   LogIn,
   Shield,
+  TrendingUp,
   User,
-  UserCheck,
   Users,
 } from 'lucide-react';
 import { authApi } from '@/features/auth';
@@ -19,9 +19,13 @@ import { AuthLoginError, getAccessToken } from '@/shared/auth';
 import { Button, Checkbox, Input } from '@/shared/ui';
 import styles from './LoginPage.module.css';
 
-function formatCount(value: number | null): string {
-  if (value === null) return '—';
+function formatCount(value: number): string {
   return value.toLocaleString('es-CR');
+}
+
+function prefersReducedMotion(): boolean {
+  return typeof window !== 'undefined'
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
 export const LoginPage = () => {
@@ -36,6 +40,7 @@ export const LoginPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [snapshot, setSnapshot] = useState<CampusSnapshot | null>(null);
   const [snapshotLoading, setSnapshotLoading] = useState(true);
+  const [displayCount, setDisplayCount] = useState<number | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -54,6 +59,40 @@ export const LoginPage = () => {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (snapshotLoading) {
+      setDisplayCount(null);
+      return;
+    }
+
+    const target = snapshot?.totalUsers;
+    if (target == null) {
+      setDisplayCount(null);
+      return;
+    }
+
+    if (prefersReducedMotion()) {
+      setDisplayCount(target);
+      return;
+    }
+
+    let frameId = 0;
+    const durationMs = 800;
+    const start = performance.now();
+
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - start) / durationMs);
+      const eased = 1 - (1 - progress) ** 3;
+      setDisplayCount(Math.round(target * eased));
+      if (progress < 1) {
+        frameId = requestAnimationFrame(tick);
+      }
+    };
+
+    frameId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frameId);
+  }, [snapshot, snapshotLoading]);
 
   if (getAccessToken()) {
     return <Navigate replace to="/admin" />;
@@ -83,13 +122,12 @@ export const LoginPage = () => {
     }
   };
 
-  const activeUsers = snapshotLoading ? null : (snapshot?.activeUsers ?? null);
-  const totalUsers = snapshotLoading ? null : (snapshot?.totalUsers ?? null);
-
   return (
     <div className={`admin-shell ${styles.layout}`}>
       <aside className={styles.hero}>
+        <div className={styles.heroAura} aria-hidden="true" />
         <div className={styles.heroGlow} aria-hidden="true" />
+        <div className={styles.heroGlowSecondary} aria-hidden="true" />
         <div className={styles.heroWatermark} aria-hidden="true">
           <GraduationCap size={180} strokeWidth={1} />
           <BookOpen size={120} strokeWidth={1} />
@@ -111,25 +149,20 @@ export const LoginPage = () => {
           </p>
         </div>
 
-        <div className={styles.metricGrid} aria-live="polite">
-          <div className={styles.metricCard}>
-            <span className={styles.metricIcon}>
-              <UserCheck size={18} aria-hidden="true" />
-            </span>
-            <div>
-              <strong className={styles.metricValue}>{formatCount(activeUsers)}</strong>
-              <span className={styles.metricLabel}>Usuarios activos</span>
-            </div>
+        <div className={styles.sellCard} aria-live="polite">
+          <span className={styles.sellIcon}>
+            <Users size={16} aria-hidden="true" />
+          </span>
+          <div className={styles.sellBody}>
+            <strong className={styles.sellValue}>
+              {displayCount === null ? '—' : formatCount(displayCount)}
+            </strong>
+            <span className={styles.sellLabel}>Usuarios en la plataforma</span>
+            <p className={styles.sellHint}>Comunidad institucional en crecimiento</p>
           </div>
-          <div className={styles.metricCard}>
-            <span className={styles.metricIcon}>
-              <Users size={18} aria-hidden="true" />
-            </span>
-            <div>
-              <strong className={styles.metricValue}>{formatCount(totalUsers)}</strong>
-              <span className={styles.metricLabel}>Usuarios registrados</span>
-            </div>
-          </div>
+          <span className={styles.trendBadge} aria-hidden="true">
+            <TrendingUp className={styles.trendArrow} size={14} strokeWidth={2.4} />
+          </span>
         </div>
       </aside>
 

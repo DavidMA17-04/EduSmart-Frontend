@@ -1,4 +1,4 @@
-export { specialtyApi } from './api/specialtyApi';
+export { specialtyApi, resolveUploadUrl } from './api/specialtyApi';
 export { useManageSpecialty } from './model/useManageSpecialty';
 export { useSpecialties } from './model/useSpecialties';
 export type { SpecialtyStatusFilter } from './model/useSpecialties';
