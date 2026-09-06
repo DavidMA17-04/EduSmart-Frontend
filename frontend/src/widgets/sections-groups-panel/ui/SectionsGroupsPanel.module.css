@@ -1,8 +1,6 @@
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 360px);
   gap: 24px;
-  align-items: start;
 }
 
 .panelRoot {
@@ -31,6 +29,10 @@
   margin-top: 3px;
   color: var(--admin-muted);
   font-size: 13px;
+}
+
+.heading button {
+  white-space: nowrap;
 }
 
 .tableCard {
@@ -96,12 +98,6 @@
   align-self: start;
 }
 
-.detailPanel {
-  position: sticky;
-  top: 16px;
-  align-self: start;
-}
-
 .unassigned {
   background: #fff9f0;
 }
@@ -111,17 +107,11 @@
 }
 
 @media (max-width: 1000px) {
-  .layout,
   .groupsLayout {
     grid-template-columns: 1fr;
   }
 
-  .groupsLayout > :last-child,
-  .detailPanel {
+  .groupsLayout > :last-child {
     position: static;
   }
-}
-
-.heading button {
-  white-space: nowrap;
 }

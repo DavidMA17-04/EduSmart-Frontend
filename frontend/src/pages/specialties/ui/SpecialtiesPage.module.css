@@ -1,12 +1,1 @@
 .page { display: grid; gap: 24px; }
-.breadcrumb { color: var(--admin-muted); font-size: 13px; }
-.breadcrumb span { margin: 0 6px; }
-.crumbLink { color: var(--admin-primary); font-weight: 600; text-decoration: none; }
-.crumbLink:hover { text-decoration: underline; }
-.header { display: flex; align-items: center; gap: 12px; padding: 18px 20px; border: 1px solid var(--admin-border); border-radius: 8px; background: var(--admin-surface); flex-wrap: wrap; }
-.icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: rgba(0, 46, 122, 0.08); color: var(--admin-primary); }
-.header h1 { font-size: 20px; }
-.header p { margin-top: 2px; color: var(--admin-muted); font-size: 13px; }
-.header > div:nth-child(2) { flex: 1; min-width: 200px; }
-.backLink { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; color: var(--admin-primary); font-size: 13px; font-weight: 600; text-decoration: none; }
-.backLink:hover { text-decoration: underline; }

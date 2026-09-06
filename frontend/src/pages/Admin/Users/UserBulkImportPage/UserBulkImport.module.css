@@ -6,9 +6,9 @@
   max-width: 1200px;
   margin: 0 auto;
   font-family: var(--font-family-sans);
-  height: calc(100vh - 64px - 56px);
-  overflow: hidden;
+  height: auto;
   min-height: 0;
+  overflow: visible;
 }
 
 .topNavigation {
@@ -49,6 +49,9 @@
   color: var(--color-primary-dark);
   margin: 0 0 0.25rem 0;
   letter-spacing: -0.02em;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid var(--brand-gold);
+  display: inline-block;
 }
 
 .subtitle {
@@ -62,22 +65,19 @@
   display: grid;
   grid-template-columns: 1.3fr 1fr;
   gap: 1rem;
-  flex: 1;
-  min-height: 0;
-  align-items: stretch;
+  align-items: start;
 }
 
 .dropzoneCard {
   background: var(--color-bg-card);
   border: 1px solid var(--color-border-card);
+  border-top: 3px solid var(--brand-gold);
   border-radius: var(--radius-xl);
   padding: 1.15rem 1.25rem;
   box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  min-height: 0;
-  overflow: hidden;
 }
 
 .sectionTitle {
@@ -92,8 +92,12 @@
   flex-shrink: 0;
 }
 
+.sectionTitle svg {
+  color: var(--brand-gold-dark);
+}
+
 .dropzoneArea {
-  border: 2px dashed #60a5fa;
+  border: 2px dashed color-mix(in srgb, var(--brand-gold) 55%, var(--brand-primary));
   background: #ffffff;
   border-radius: var(--radius-lg);
   padding: 1.25rem 1rem;
@@ -104,14 +108,13 @@
   text-align: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  flex: 1;
-  min-height: 0;
+  min-height: 180px;
 }
 
 .dropzoneArea:hover,
 .dropzoneActive {
-  background: #eff6ff;
-  border-color: var(--color-primary-blue);
+  background: var(--brand-gold-light);
+  border-color: var(--brand-gold);
   transform: scale(1.01);
 }
 
@@ -119,8 +122,8 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: #dbeafe;
-  color: var(--color-primary-blue);
+  background: color-mix(in srgb, var(--brand-gold) 22%, #fff);
+  color: var(--brand-gold-dark);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -155,8 +158,9 @@
   transition: background-color 0.15s ease;
 }
 
-.browseBtn:hover {
+.browseBtn:hover:not(:disabled) {
   background: var(--color-primary-blue-hover);
+  filter: brightness(1.05);
 }
 
 .fileSelectedBadge {
@@ -192,19 +196,15 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  min-height: 0;
-  overflow: hidden;
 }
 
 .sideCard {
   background: var(--color-bg-card);
   border: 1px solid var(--color-border-card);
+  border-top: 3px solid var(--brand-gold);
   border-radius: var(--radius-xl);
   padding: 1rem 1.15rem;
   box-shadow: var(--shadow-card);
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
 }
 
 .downloadCard {
@@ -258,8 +258,9 @@
   flex-shrink: 0;
 }
 
-.downloadBtn:hover {
+.downloadBtn:hover:not(:disabled) {
   background: var(--color-primary-green-hover);
+  filter: brightness(1.05);
 }
 
 .checklist {
@@ -299,12 +300,12 @@
   border: none;
   cursor: pointer;
   box-shadow: 0 4px 6px -1px rgba(22, 93, 251, 0.2);
-  transition: background-color 0.15s ease, transform 0.1s ease;
+  transition: background-color 0.15s ease, filter 0.15s ease;
 }
 
 .validateBtn:hover:not(:disabled) {
   background: var(--color-primary-blue-hover);
-  transform: translateY(-1px);
+  filter: brightness(1.05);
 }
 
 .validateBtn:disabled {
@@ -315,24 +316,19 @@
 .schemaCard {
   background: var(--color-bg-card);
   border: 1px solid var(--color-border-card);
+  border-top: 3px solid var(--brand-gold);
   border-radius: var(--radius-xl);
   padding: 1rem 1.15rem;
   box-shadow: var(--shadow-card);
-  flex-shrink: 0;
-  max-height: 32%;
-  min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 .schemaTableWrapper {
   margin-top: 0.65rem;
-  overflow: auto;
+  overflow: visible;
   border: 1px solid var(--color-border-card);
   border-radius: var(--radius-md);
-  min-height: 0;
-  flex: 1;
 }
 
 .schemaTable {
@@ -347,10 +343,7 @@
   padding: 0.5rem 0.75rem;
   font-weight: 700;
   color: var(--color-primary-dark);
-  border-bottom: 1px solid var(--color-border-card);
-  position: sticky;
-  top: 0;
-  z-index: 1;
+  border-bottom: 2px solid var(--brand-gold);
 }
 
 .schemaTable td {
@@ -384,18 +377,7 @@
 }
 
 @media (max-width: 900px) {
-  .container {
-    height: auto;
-    overflow: visible;
-    max-height: none;
-  }
-
   .gridContent {
     grid-template-columns: 1fr;
-    flex: none;
-  }
-
-  .schemaCard {
-    max-height: none;
   }
 }

@@ -1,25 +1,25 @@
 :root {
-  /* Colores Institucionales EduSmart CTP Hojancha */
-  --color-primary-dark: #081e48;
-  --color-primary-blue: #165dfb;
-  --color-primary-blue-hover: #124ecf;
-  --color-primary-blue-light: #eff6ff;
-  --color-primary-green: #107c41;
-  --color-primary-green-hover: #0e6b37;
-  --color-primary-green-light: #e6f4ea;
+  /* Colores institucionales C.T.P. de Hojancha (alineados a brand-tokens) */
+  --color-primary-dark: var(--brand-navy);
+  --color-primary-blue: var(--brand-primary);
+  --color-primary-blue-hover: var(--brand-primary-hover);
+  --color-primary-blue-light: var(--brand-primary-light);
+  --color-primary-green: var(--brand-green);
+  --color-primary-green-hover: var(--brand-green-hover);
+  --color-primary-green-light: var(--brand-green-light);
 
   /* Superficies y Fondos */
-  --color-bg-page: #f8fafc;
-  --color-bg-card: #ffffff;
-  --color-border-card: #e2e8f0;
-  --color-surface-hover: #f1f5f9;
+  --color-bg-page: var(--brand-background);
+  --color-bg-card: var(--brand-surface);
+  --color-border-card: var(--brand-border);
+  --color-surface-hover: #eef1f4;
 
   /* Tipografía */
-  --color-text-main: #0f172a;
-  --color-text-muted: #64748b;
+  --color-text-main: var(--brand-navy);
+  --color-text-muted: var(--brand-muted);
   --color-text-white: #ffffff;
-  --font-family-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-family-heading: 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-family-sans: var(--brand-font-sans);
+  --font-family-heading: var(--brand-font-serif);
 
   /* Estados Semánticos (Chips y Badges) */
   --status-valid-bg: #ecfdf5;

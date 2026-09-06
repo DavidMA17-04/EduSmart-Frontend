@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { ArrowLeft, Bell, CalendarRange, ChevronDown, FileBarChart, GraduationCap, Layers, LayoutDashboard, LogOut, Settings, ShieldCheck, Users } from 'lucide-react';
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Bell, CalendarRange, ChevronDown, FileBarChart, GraduationCap, Layers, LayoutDashboard, LogOut, Settings, ShieldCheck, Users } from 'lucide-react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { authApi } from '@/features/auth';
 import { getSessionUser } from '@/shared/auth';
 import { Button, Modal } from '@/shared/ui';
@@ -19,8 +19,6 @@ const navigationItems = [
 
 export const AdminShell = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const isDashboard = location.pathname === '/admin' || location.pathname === '/admin/dashboard';
   const sessionUser = getSessionUser();
   const email = sessionUser?.email ?? 'Sesión activa';
   const displayName = sessionUser?.roles[0] ?? 'Usuario';
@@ -43,11 +41,15 @@ export const AdminShell = () => {
     <div className={`admin-shell ${styles.shell}`}>
       <aside className={styles.sidebar}>
         <div className={styles.brand}>
-          <GraduationCap aria-hidden="true" size={34} strokeWidth={1.8} />
-          <span>EduSmart</span>
-          <small>Gestión Académica Integral</small>
+          <img
+            alt="Escudo C.T.P. de Hojancha"
+            className={styles.brandLogo}
+            src="/brand/ctp-hojancha-logo.jpeg"
+          />
+          <span className={styles.brandTitle}>C.T.P. de Hojancha</span>
+          <small>Colegio Técnico Profesional</small>
+          <small className={styles.brandMotto}>Ciencia · Cultura · 1972</small>
         </div>
-        <p className={styles.institution}>CTP HOJANCHA</p>
         <nav aria-label="Navegación principal" className={styles.navigation}>
           {navigationItems.map(({ label, icon: Icon, to }) => (
             <NavLink
@@ -89,18 +91,6 @@ export const AdminShell = () => {
         </header>
         <main className={styles.content}>
           <Outlet />
-          {!isDashboard && (
-            <div className={styles.backWrap}>
-              <button
-                className={styles.backButton}
-                onClick={() => navigate('/admin')}
-                type="button"
-              >
-                <ArrowLeft size={18} />
-                Regresar al Dashboard Administrativo
-              </button>
-            </div>
-          )}
         </main>
       </section>
 

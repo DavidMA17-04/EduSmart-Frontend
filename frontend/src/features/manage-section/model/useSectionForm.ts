@@ -1,20 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { CreateSectionPayload, Section, SectionStatus } from '@/entities/section';
+import { type EmptyableNumber, toOptionalCount } from '@/shared/lib/number-input';
 
 export interface SectionFormValues {
   name: string;
-  gradeLevel: number;
+  gradeLevel: EmptyableNumber;
   academicPeriodId: string;
-  specialtyId: string;
   description: string;
   status: SectionStatus;
 }
 
 const defaultValues: SectionFormValues = {
   name: '',
-  gradeLevel: 7,
+  gradeLevel: '',
   academicPeriodId: '',
-  specialtyId: '',
   description: '',
   status: 'ACTIVE',
 };
@@ -27,7 +26,6 @@ export function useSectionForm(section?: Section) {
           name: section.name,
           gradeLevel: section.gradeLevel,
           academicPeriodId: String(section.academicPeriodId ?? ''),
-          specialtyId: section.specialtyId == null ? '' : String(section.specialtyId),
           description: section.description ?? '',
           status: section.status,
         }
@@ -36,9 +34,8 @@ export function useSectionForm(section?: Section) {
   const setField = useCallback(<K extends keyof SectionFormValues>(field: K, value: SectionFormValues[K]) => setValues((current) => ({ ...current, [field]: value })), []);
   const toPayload = useCallback((): CreateSectionPayload => ({
     name: values.name.trim(),
-    gradeLevel: Number(values.gradeLevel),
+    gradeLevel: toOptionalCount(values.gradeLevel, Number.NaN),
     academicPeriodId: Number(values.academicPeriodId),
-    specialtyId: values.specialtyId ? Number(values.specialtyId) : null,
     description: values.description.trim() || undefined,
     status: values.status,
   }), [values]);

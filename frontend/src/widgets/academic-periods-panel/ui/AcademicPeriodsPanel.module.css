@@ -1,8 +1,6 @@
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 360px);
   gap: 24px;
-  align-items: start;
 }
 
 .mainColumn {
@@ -36,6 +34,10 @@
   flex-shrink: 0;
 }
 
+.toolbarActions button {
+  white-space: nowrap;
+}
+
 .rowActions {
   display: flex;
   gap: 6px;
@@ -52,25 +54,5 @@
 }
 
 .tableCard :global(th) {
-  white-space: nowrap;
-}
-
-.sidePanel {
-  position: sticky;
-  top: 16px;
-  align-self: start;
-}
-
-@media (max-width: 1000px) {
-  .layout {
-    grid-template-columns: 1fr;
-  }
-
-  .sidePanel {
-    position: static;
-  }
-}
-
-.toolbarActions button {
   white-space: nowrap;
 }
