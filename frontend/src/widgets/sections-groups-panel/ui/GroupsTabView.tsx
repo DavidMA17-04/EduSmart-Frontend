@@ -44,6 +44,7 @@ export const GroupsTabView = ({ model }: GroupsTabViewProps) => (
               <th>Código</th>
               <th>Sección</th>
               <th>Nivel</th>
+              <th>Especialidad</th>
               <th>Cantidad de estudiantes</th>
               <th>Docente guía</th>
               <th>Acciones</th>
@@ -58,6 +59,7 @@ export const GroupsTabView = ({ model }: GroupsTabViewProps) => (
                 <td><strong>{model.getSectionCode(group.sectionId)}</strong></td>
                 <td><strong>{group.name}</strong></td>
                 <td>{model.getSectionName(group.sectionId)}</td>
+                <td>{group.specialty?.name ?? 'Sin especialidad'}</td>
                 <td>{formatStudentCount(group.studentCount)}</td>
                 <td>{group.guideTeacher?.name || 'Sin asignar'}</td>
                 <td>
@@ -86,7 +88,7 @@ export const GroupsTabView = ({ model }: GroupsTabViewProps) => (
             ))}
             {model.filteredGroups.length === 0 && (
               <tr>
-                <td className={styles.empty} colSpan={6}>
+                <td className={styles.empty} colSpan={7}>
                   No se encontraron secciones.
                 </td>
               </tr>

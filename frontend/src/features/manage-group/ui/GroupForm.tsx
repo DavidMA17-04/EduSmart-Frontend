@@ -1,6 +1,8 @@
 import type { FormEventHandler } from 'react';
 import type { GuideTeacher } from '@/entities/group';
 import type { Section } from '@/entities/section';
+import type { Specialty } from '@/entities/specialty';
+import { parseNumberField } from '@/shared/lib/number-input';
 import { FormActions, Input, Select } from '@/shared/ui';
 import type { GroupFormValues } from '../model/useGroupForm';
 import styles from './GroupForm.module.css';
@@ -8,6 +10,7 @@ import styles from './GroupForm.module.css';
 interface GroupFormProps {
   values: GroupFormValues;
   sections: Section[];
+  specialties: Specialty[];
   guideTeachers: GuideTeacher[];
   isSubmitting?: boolean;
   submitLabel?: string;
@@ -19,6 +22,7 @@ interface GroupFormProps {
 export const GroupForm = ({
   values,
   sections,
+  specialties,
   guideTeachers,
   isSubmitting = false,
   submitLabel = 'Guardar cambios',
@@ -51,11 +55,22 @@ export const GroupForm = ({
       </Select>
     </label>
     <label>
+      Especialidad
+      <Select onChange={(event) => onChange('specialtyId', event.target.value)} value={values.specialtyId}>
+        <option value="">Sin especialidad</option>
+        {specialties.map((specialty) => (
+          <option key={specialty.id} value={specialty.id}>{specialty.name}</option>
+        ))}
+      </Select>
+      <span className={styles.hint}>Indique si esta sección tiene especialidad. Puede quedar vacía.</span>
+    </label>
+    <label>
       Cantidad de estudiantes
       <Input
         max={100}
         min={0}
-        onChange={(event) => onChange('studentCount', Number(event.target.value))}
+        onChange={(event) => onChange('studentCount', parseNumberField(event.target.value))}
+        placeholder="0"
         required
         type="number"
         value={values.studentCount}

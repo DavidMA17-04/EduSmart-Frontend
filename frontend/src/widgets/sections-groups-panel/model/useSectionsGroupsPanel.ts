@@ -273,7 +273,7 @@ export function useSectionsGroupsPanel() {
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
       const payload = sectionForm.toPayload();
-      if (!payload.name || !payload.academicPeriodId) return;
+      if (!payload.name || !payload.academicPeriodId || !Number.isInteger(payload.gradeLevel)) return;
       try {
         if (sectionDialogMode === 'create') {
           const created = await createSection(payload);

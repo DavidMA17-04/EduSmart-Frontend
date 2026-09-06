@@ -56,7 +56,6 @@ export const SectionsGroupsPanel = () => {
                   <tr>
                     <th>Grado</th>
                     <th>Nivel</th>
-                    <th>Especialidad</th>
                     <th>Cantidad de secciones</th>
                     <th>Estado</th>
                     <th>Acciones</th>
@@ -95,7 +94,7 @@ export const SectionsGroupsPanel = () => {
                   ))}
                   {model.sections.length === 0 && (
                     <tr>
-                      <td className={styles.empty} colSpan={6}>
+                      <td className={styles.empty} colSpan={5}>
                         No se encontraron niveles académicos.
                       </td>
                     </tr>
@@ -129,7 +128,6 @@ export const SectionsGroupsPanel = () => {
           onCancel={model.closeSectionDialog}
           onChange={model.sectionForm.setField}
           onSubmit={model.sectionForm.submit}
-          specialties={model.specialties}
           submitLabel={sectionSubmitLabel}
           values={model.sectionForm.values}
         />
@@ -148,6 +146,7 @@ export const SectionsGroupsPanel = () => {
           onChange={model.groupForm.setField}
           onSubmit={model.groupForm.submit}
           sections={model.sections}
+          specialties={model.specialties}
           submitLabel={groupSubmitLabel}
           values={model.groupForm.values}
         />

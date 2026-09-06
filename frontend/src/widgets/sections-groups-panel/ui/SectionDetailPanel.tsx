@@ -38,6 +38,7 @@ export const SectionDetailPanel = ({ model, onGoToTeachersTab }: SectionDetailPa
           <thead>
             <tr>
               <th>Sección</th>
+              <th>Especialidad</th>
               <th>Cantidad de estudiantes</th>
               <th>Docente guía</th>
               <th>Acciones</th>
@@ -76,7 +77,7 @@ export const SectionDetailPanel = ({ model, onGoToTeachersTab }: SectionDetailPa
             ))}
             {model.groupsForSelectedSection.length === 0 && (
               <tr>
-                <td className={styles.empty} colSpan={4}>
+                <td className={styles.empty} colSpan={5}>
                   Este nivel no tiene secciones registradas.
                 </td>
               </tr>

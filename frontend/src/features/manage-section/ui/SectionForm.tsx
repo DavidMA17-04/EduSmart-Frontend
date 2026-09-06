@@ -1,13 +1,12 @@
 import type { FormEventHandler } from 'react';
 import type { AcademicPeriod, SectionStatus } from '@/entities/section';
-import type { Specialty } from '@/entities/specialty';
+import { parseNumberField } from '@/shared/lib/number-input';
 import { FormActions, Input, Select, Textarea } from '@/shared/ui';
 import type { SectionFormValues } from '../model/useSectionForm';
 import styles from './SectionForm.module.css';
 
 interface SectionFormProps {
   values: SectionFormValues;
-  specialties: Specialty[];
   academicPeriods: AcademicPeriod[];
   isSubmitting?: boolean;
   submitLabel: string;
@@ -18,7 +17,6 @@ interface SectionFormProps {
 
 export const SectionForm = ({
   values,
-  specialties,
   academicPeriods,
   isSubmitting = false,
   submitLabel,
@@ -33,7 +31,15 @@ export const SectionForm = ({
     </label>
     <label>
       Grado
-      <Input max={12} min={1} onChange={(event) => onChange('gradeLevel', Number(event.target.value))} required type="number" value={values.gradeLevel} />
+      <Input
+        max={12}
+        min={1}
+        onChange={(event) => onChange('gradeLevel', parseNumberField(event.target.value))}
+        placeholder="7"
+        required
+        type="number"
+        value={values.gradeLevel}
+      />
     </label>
     <label>
       Período académico
@@ -43,16 +49,6 @@ export const SectionForm = ({
           <option key={period.id} value={period.id}>{period.name}</option>
         ))}
       </Select>
-    </label>
-    <label>
-      Especialidad
-      <Select onChange={(event) => onChange('specialtyId', event.target.value)} value={values.specialtyId}>
-        <option value="">Sin especialidad (grados inferiores)</option>
-        {specialties.map((specialty) => (
-          <option key={specialty.id} value={specialty.id}>{specialty.name}</option>
-        ))}
-      </Select>
-      <span className={styles.hint}>Las especialidades aplican a últimos años; puede quedar vacía en grados inferiores.</span>
     </label>
     <label>
       Descripción
