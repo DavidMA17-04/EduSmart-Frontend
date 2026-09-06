@@ -7,13 +7,36 @@ import styles from './SpecialtyFilters.module.css';
 interface SpecialtyFiltersProps {
   search: string;
   status: SpecialtyStatusFilter;
+  searchPlaceholder?: string;
   onSearchChange: (value: string) => void;
   onStatusChange: (value: SpecialtyStatusFilter) => void;
 }
 
-export const SpecialtyFilters = ({ search, status, onSearchChange, onStatusChange }: SpecialtyFiltersProps) => (
+export const SpecialtyFilters = ({
+  search,
+  status,
+  searchPlaceholder = 'Buscar…',
+  onSearchChange,
+  onStatusChange,
+}: SpecialtyFiltersProps) => (
   <div className={styles.filters}>
-    <label className={styles.search}><Search size={16} /><Input aria-label="Buscar especialidad" onChange={(event) => onSearchChange(event.target.value)} placeholder="Buscar especialidad…" value={search} /></label>
-    <Select aria-label="Filtrar por estado" onChange={(event) => onStatusChange(event.target.value as SpecialtyStatusFilter)} value={status}><option value="ALL">Estado: Todas</option><option value={'ACTIVE' satisfies SpecialtyStatus}>Activas</option><option value={'INACTIVE' satisfies SpecialtyStatus}>Inactivas</option></Select>
+    <label className={styles.search}>
+      <Search size={16} />
+      <Input
+        aria-label={searchPlaceholder}
+        onChange={(event) => onSearchChange(event.target.value)}
+        placeholder={searchPlaceholder}
+        value={search}
+      />
+    </label>
+    <Select
+      aria-label="Filtrar por estado"
+      onChange={(event) => onStatusChange(event.target.value as SpecialtyStatusFilter)}
+      value={status}
+    >
+      <option value="ALL">Estado: Todas</option>
+      <option value={'ACTIVE' satisfies SpecialtyStatus}>Activas</option>
+      <option value={'INACTIVE' satisfies SpecialtyStatus}>Inactivas</option>
+    </Select>
   </div>
 );

@@ -6,6 +6,7 @@ import { AdminHomePage } from '@/pages/admin-home';
 import { LoginPage } from '@/pages/login';
 import { RolesPermissionsPage } from '@/pages/roles-permissions';
 import { SpecialtiesPage } from '@/pages/specialties';
+import { SpecialtyKindPage } from '@/pages/specialty-kind';
 import { AcademicPeriodsPage } from '@/pages/academic-periods';
 import { SectionsGroupsPage } from '@/pages/sections-groups';
 import { UserCreatePage } from '@/pages/user-create';
@@ -34,6 +35,14 @@ export const AppRouter = () => (
         <Route element={<UserDetailPage />} path="users/:userId" />
         <Route element={<RolesPermissionsPage />} path="roles-permissions" />
         <Route element={<SpecialtiesPage />} path="specialties" />
+        <Route
+          element={<SpecialtyKindPage kind="EXPLORATORY_WORKSHOP" />}
+          path="specialties/workshops"
+        />
+        <Route
+          element={<SpecialtyKindPage kind="TECHNICAL_SPECIALTY" />}
+          path="specialties/technical"
+        />
         <Route element={<AcademicPeriodsPage />} path="academic-periods" />
         <Route element={<SectionsGroupsPage />} path="sections-groups" />
         <Route element={<AdministrativeReportsPage />} path="reports" />

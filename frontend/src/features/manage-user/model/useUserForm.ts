@@ -58,12 +58,24 @@ export function validateUserForm(values: UserFormValues): Partial<Record<keyof U
   return errors;
 }
 
+export function splitLastNames(lastName: string): { first_lastname: string; second_lastname?: string } {
+  const parts = lastName.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return { first_lastname: '' };
+  if (parts.length === 1) return { first_lastname: parts[0] };
+  return {
+    first_lastname: parts[0],
+    second_lastname: parts.slice(1).join(' '),
+  };
+}
+
 export function toCreatePayload(values: UserFormValues): CreateUserPayload {
   const password = values.password.trim();
+  const { first_lastname, second_lastname } = splitLastNames(values.lastName);
   return {
     nationalId: digitsOnly(values.nationalId),
-    firstName: values.firstName.trim(),
-    lastName: values.lastName.trim(),
+    name: values.firstName.trim(),
+    first_lastname,
+    second_lastname,
     email: values.email.trim().toLowerCase(),
     phone: values.phone.trim() || undefined,
     password: password || undefined,

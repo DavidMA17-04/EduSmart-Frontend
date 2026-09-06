@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { ArrowLeft, Bell, CalendarRange, ChevronDown, FileBarChart, GraduationCap, Layers, LayoutDashboard, LogOut, Settings, ShieldCheck, Users } from 'lucide-react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { authApi } from '@/features/auth';
 import { getSessionUser } from '@/shared/auth';
+import { Button, Modal } from '@/shared/ui';
 import styles from './AdminShell.module.css';
 
 const navigationItems = [
@@ -23,10 +25,18 @@ export const AdminShell = () => {
   const email = sessionUser?.email ?? 'Sesión activa';
   const displayName = sessionUser?.roles[0] ?? 'Usuario';
   const avatarLetter = (email[0] ?? 'U').toUpperCase();
+  const [logoutOpen, setLogoutOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const onLogout = async () => {
-    await authApi.logout();
-    navigate('/login', { replace: true });
+    setIsLoggingOut(true);
+    try {
+      await authApi.logout();
+      navigate('/login', { replace: true });
+    } finally {
+      setIsLoggingOut(false);
+      setLogoutOpen(false);
+    }
   };
 
   return (
@@ -72,7 +82,7 @@ export const AdminShell = () => {
             </span>
             <ChevronDown size={16} />
           </button>
-          <button className={styles.logout} onClick={onLogout} type="button">
+          <button className={styles.logout} onClick={() => setLogoutOpen(true)} type="button">
             <LogOut aria-hidden="true" size={16} />
             Cerrar sesión
           </button>
@@ -93,6 +103,32 @@ export const AdminShell = () => {
           )}
         </main>
       </section>
+
+      <Modal
+        isOpen={logoutOpen}
+        onClose={() => {
+          if (!isLoggingOut) setLogoutOpen(false);
+        }}
+        title="Cerrar sesión"
+      >
+        <div className={styles.logoutModal}>
+          <p className={styles.logoutMessage}>¿Seguro que desea salir del sistema?</p>
+          <p className={styles.logoutSecondary}>Se cerrará la sesión de EduSmart.</p>
+          <div className={styles.logoutActions}>
+            <Button
+              disabled={isLoggingOut}
+              onClick={() => setLogoutOpen(false)}
+              type="button"
+              variant="secondary"
+            >
+              Cancelar
+            </Button>
+            <Button disabled={isLoggingOut} onClick={onLogout} type="button" variant="danger">
+              {isLoggingOut ? 'Saliendo…' : 'Salir'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

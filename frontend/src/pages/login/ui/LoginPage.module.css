@@ -1,7 +1,7 @@
 .layout {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: minmax(280px, 32%) 1fr;
+  grid-template-columns: minmax(300px, 38%) 1fr;
 }
 
 .hero {
@@ -10,15 +10,72 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 48px 36px;
+  gap: 28px;
+  padding: 48px 40px;
   color: #fff;
-  background: linear-gradient(180deg, #002E7A 0%, #021A53 100%);
+  background:
+    radial-gradient(ellipse 80% 50% at 10% 0%, rgba(207, 172, 101, 0.22), transparent 55%),
+    linear-gradient(165deg, #002E7A 0%, #021A53 55%, #01133d 100%);
+  background-size: 100% 100%, 140% 140%;
+  background-position: center, 40% 40%;
+  animation: heroBreathe 18s ease-in-out infinite;
+  transition: filter 0.7s ease;
+}
+
+.hero:hover {
+  filter: brightness(1.04);
+}
+
+.heroAura {
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(207, 172, 101, 0.12), transparent 42%),
+    radial-gradient(circle at 80% 70%, rgba(22, 70, 135, 0.35), transparent 48%);
+  animation: auraDrift 22s ease-in-out infinite alternate;
+}
+
+.heroGlow {
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  right: -80px;
+  bottom: 12%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(207, 172, 101, 0.18), transparent 70%);
+  pointer-events: none;
+  animation: glowPulse 7s ease-in-out infinite;
+  transition: transform 0.8s ease, opacity 0.8s ease;
+}
+
+.heroGlowSecondary {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  left: -70px;
+  top: 18%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent 68%);
+  pointer-events: none;
+  animation: glowPulseSoft 9s ease-in-out infinite;
+  transition: transform 0.8s ease, opacity 0.8s ease;
+}
+
+.hero:hover .heroGlow {
+  opacity: 1;
+  transform: scale(1.08) translate(-8px, -6px);
+}
+
+.hero:hover .heroGlowSecondary {
+  opacity: 0.95;
+  transform: scale(1.06) translate(6px, 4px);
 }
 
 .heroWatermark {
   position: absolute;
   inset: 0;
-  opacity: 0.08;
+  opacity: 0.1;
   pointer-events: none;
 }
 
@@ -26,42 +83,51 @@
   position: absolute;
   top: 24px;
   right: -24px;
+  animation: watermarkFloatA 14s ease-in-out infinite;
 }
 
 .heroWatermark svg:nth-child(2) {
   position: absolute;
   top: 42%;
   left: -18px;
+  animation: watermarkFloatB 17s ease-in-out infinite;
 }
 
 .heroWatermark svg:nth-child(3) {
   position: absolute;
   right: -20px;
   bottom: 24px;
+  animation: watermarkFloatC 16s ease-in-out infinite;
 }
 
+.heroTop,
 .heroBrand,
 .heroSchool,
-.heroCopy {
+.heroCopy,
+.sellCard {
   position: relative;
+  z-index: 1;
 }
 
 .heroBrand h1 {
-  margin: 12px 0 4px;
-  font-size: 34px;
-  font-family: var(--font-heading, inherit);
+  margin: 14px 0 6px;
+  font-size: clamp(32px, 4vw, 42px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-family: var(--font-heading, Georgia, 'Times New Roman', serif);
 }
 
 .heroBrand p,
 .heroSchool,
 .heroCopy {
-  opacity: 0.86;
+  opacity: 0.9;
 }
 
 .heroLogo,
 .cardLogo {
   display: inline-grid;
   place-items: center;
+  color: var(--admin-accent, #CFAC65);
 }
 
 .heroLogo svg:first-child,
@@ -77,17 +143,215 @@
 }
 
 .heroSchool {
-  margin: 28px 0 0;
-  font-size: 13px;
-  letter-spacing: 0.08em;
+  margin: 24px 0 0;
+  font-size: 12px;
+  letter-spacing: 0.12em;
   font-weight: 700;
+  color: var(--admin-accent, #CFAC65);
 }
 
 .heroCopy {
-  margin: 0;
-  max-width: 280px;
-  font-size: 13px;
-  line-height: 1.55;
+  margin: 10px 0 0;
+  max-width: 320px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.sellCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 320px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 14px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04));
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 28px rgba(1, 12, 40, 0.22);
+  animation: sellCardIn 0.7s ease-out both;
+  transition: transform 0.55s ease, box-shadow 0.55s ease, border-color 0.55s ease;
+}
+
+.hero:hover .sellCard {
+  transform: translateY(-3px);
+  border-color: rgba(207, 172, 101, 0.38);
+  box-shadow: 0 14px 32px rgba(1, 12, 40, 0.28);
+}
+
+.sellBody {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.sellIcon,
+.trendBadge {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: rgba(207, 172, 101, 0.2);
+  color: var(--admin-accent, #CFAC65);
+}
+
+.trendBadge {
+  margin-top: 2px;
+  background: rgba(207, 172, 101, 0.26);
+}
+
+.trendArrow {
+  animation: trendFloat 3.8s ease-in-out infinite;
+}
+
+.sellValue {
+  display: block;
+  font-size: clamp(22px, 2.6vw, 26px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.sellLabel {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  opacity: 0.95;
+}
+
+.sellHint {
+  margin: 1px 0 0;
+  font-size: 11px;
+  opacity: 0.72;
+  line-height: 1.35;
+}
+
+@keyframes glowPulse {
+  0%,
+  100% {
+    opacity: 0.65;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes glowPulseSoft {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1) translate(0, 0);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.06) translate(8px, -6px);
+  }
+}
+
+@keyframes heroBreathe {
+  0%,
+  100% {
+    background-position: center, 38% 42%;
+  }
+  50% {
+    background-position: center, 58% 48%;
+  }
+}
+
+@keyframes auraDrift {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(12px, -10px) scale(1.04);
+    opacity: 1;
+  }
+}
+
+@keyframes watermarkFloatA {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(-8px, 10px) rotate(-2deg);
+  }
+}
+
+@keyframes watermarkFloatB {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(10px, -8px) rotate(2deg);
+  }
+}
+
+@keyframes watermarkFloatC {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-6px, -10px);
+  }
+}
+
+@keyframes trendFloat {
+  0%,
+  100% {
+    transform: translateY(2px);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes sellCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero,
+  .heroAura,
+  .heroGlow,
+  .heroGlowSecondary,
+  .heroWatermark svg,
+  .trendArrow,
+  .sellCard {
+    animation: none !important;
+  }
+
+  .hero,
+  .heroGlow,
+  .heroGlowSecondary,
+  .sellCard {
+    transition: none !important;
+  }
+
+  .hero:hover,
+  .hero:hover .heroGlow,
+  .hero:hover .heroGlowSecondary,
+  .hero:hover .sellCard {
+    filter: none;
+    transform: none;
+  }
 }
 
 .panel {
@@ -95,34 +359,48 @@
   align-content: center;
   justify-items: center;
   gap: 18px;
-  padding: 36px 24px 20px;
-  background: var(--admin-background);
+  padding: 40px 28px 24px;
+  background:
+    linear-gradient(180deg, #eef2f8 0%, var(--admin-background, #F5F6F8) 40%);
 }
 
 .welcome {
   text-align: center;
+  max-width: 420px;
+}
+
+.welcomeEyebrow {
+  margin: 0 0 8px;
+  color: var(--admin-primary);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .welcome h2 {
   margin: 0;
-  font-size: 28px;
+  font-size: clamp(26px, 3vw, 32px);
   color: var(--admin-text);
+  letter-spacing: -0.02em;
+  font-family: var(--font-heading, Georgia, 'Times New Roman', serif);
 }
 
 .welcome p {
-  margin: 6px 0 0;
+  margin: 8px 0 0;
   color: var(--admin-muted);
+  line-height: 1.45;
 }
 
 .card {
   width: min(100%, 440px);
   display: grid;
   gap: 16px;
-  padding: 28px;
+  padding: 30px 28px;
   border: 1px solid var(--admin-border);
-  border-radius: 16px;
+  border-radius: 18px;
   background: var(--admin-surface);
-  box-shadow: 0 18px 40px #12203a14;
+  box-shadow: 0 22px 50px rgba(2, 26, 83, 0.08);
 }
 
 .cardBrand {
@@ -180,6 +458,9 @@
 
 .formError {
   margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(211, 47, 47, 0.08);
 }
 
 .togglePassword {
@@ -227,7 +508,7 @@
 
 .submit {
   width: 100%;
-  min-height: 42px;
+  min-height: 44px;
 }
 
 .divider {
@@ -287,11 +568,24 @@
   }
 
   .hero {
-    min-height: 220px;
-    padding: 28px 24px;
+    min-height: auto;
+    padding: 28px 24px 24px;
+    gap: 20px;
   }
 
   .heroCopy {
     max-width: none;
+  }
+
+  .welcome h2 {
+    font-size: 26px;
+  }
+
+  .sellCard {
+    max-width: none;
+  }
+
+  .sellValue {
+    font-size: 24px;
   }
 }
