@@ -14,10 +14,16 @@ import {
 } from '@/features/manage-group';
 import { academicPeriodApi, useManageSection, useSectionForm, useSections } from '@/features/manage-section';
 import { specialtyApi } from '@/features/manage-specialty';
+import { useToast } from '@/shared/ui';
 
 export type PanelTab = 'niveles' | 'grupos' | 'docentes';
 type FormMode = 'create' | 'edit';
 type TeacherFilter = 'all' | 'unassigned' | string;
+
+export type PendingConfirm =
+  | { type: 'deactivate-section'; section: Section }
+  | { type: 'remove-group'; group: AcademicGroup }
+  | { type: 'remove-teacher'; teacher: GuideTeacher };
 
 function parsePanelTab(value: string | null): PanelTab {
   if (value === 'grupos' || value === 'docentes' || value === 'niveles') return value;
@@ -25,6 +31,7 @@ function parsePanelTab(value: string | null): PanelTab {
 }
 
 export function useSectionsGroupsPanel() {
+  const toast = useToast();
   const {
     sections,
     reload: reloadSections,
@@ -91,6 +98,7 @@ export function useSectionsGroupsPanel() {
   const [savingGroupId, setSavingGroupId] = useState<number | null>(null);
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
   const [academicPeriods, setAcademicPeriods] = useState<AcademicPeriod[]>([]);
+  const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm | null>(null);
 
   useEffect(() => {
     void specialtyApi.list().then(setSpecialties).catch(() => setSpecialties([]));
@@ -279,15 +287,17 @@ export function useSectionsGroupsPanel() {
           const created = await createSection(payload);
           setSelectedSectionId(created.id);
           setSectionDialogMode(null);
+          toast.push('Nivel creado.');
         } else if (selectedSection) {
           await updateSection(selectedSection.id, payload);
           setSectionDialogMode(null);
+          toast.push('Nivel actualizado.');
         }
       } catch {
         // El hook de mutaciones expone el error para la interfaz.
       }
     },
-    [createSection, sectionDialogMode, sectionForm, selectedSection, updateSection],
+    [createSection, sectionDialogMode, sectionForm, selectedSection, toast, updateSection],
   );
 
   const submitGroup = useCallback(
@@ -301,50 +311,82 @@ export function useSectionsGroupsPanel() {
           setSelectedGroupId(created.id);
           setSelectedSectionId(created.sectionId);
           setGroupFormMode(null);
+          toast.push('Grupo creado.');
         } else if (selectedGroup) {
           await updateGroup(selectedGroup.id, payload);
           setGroupFormMode(null);
+          toast.push('Grupo actualizado.');
         }
       } catch {
         // El hook de mutaciones expone el error para la interfaz.
       }
     },
-    [createGroup, groupForm, groupFormMode, selectedGroup, updateGroup],
+    [createGroup, groupForm, groupFormMode, selectedGroup, toast, updateGroup],
   );
 
-  const deactivateSelectedSection = useCallback(
-    async (section: Section) => {
-      if (!window.confirm(`¿Inactivar el nivel ${section.name}?`)) return;
-      try {
+  const deactivateSelectedSection = useCallback((section: Section) => {
+    setPendingConfirm({ type: 'deactivate-section', section });
+  }, []);
+
+  const removeSelectedGroup = useCallback((group: AcademicGroup) => {
+    setPendingConfirm({ type: 'remove-group', group });
+  }, []);
+
+  const cancelPendingConfirm = useCallback(() => {
+    setPendingConfirm(null);
+  }, []);
+
+  const confirmPendingAction = useCallback(async () => {
+    if (!pendingConfirm) return;
+    try {
+      if (pendingConfirm.type === 'deactivate-section') {
+        const { section } = pendingConfirm;
         await deactivateSection(section.id);
         removeSection(section.id);
         if (selectedSectionId === section.id) {
           setSelectedSectionId(null);
           setSectionDialogMode(null);
         }
-      } catch {
-        // El error se expone desde el hook.
-      }
-    },
-    [deactivateSection, removeSection, selectedSectionId],
-  );
-
-  const removeSelectedGroup = useCallback(
-    async (group: AcademicGroup) => {
-      if (!window.confirm(`¿Eliminar la sección ${group.name}?`)) return;
-      try {
+        toast.push('Nivel inactivado.');
+      } else if (pendingConfirm.type === 'remove-group') {
+        const { group } = pendingConfirm;
         await removeGroup(group.id);
         removeGroupFromState(group.id);
         if (selectedGroupId === group.id) {
           setSelectedGroupId(null);
           setGroupFormMode(null);
         }
-      } catch {
-        // El error se expone desde el hook.
+        toast.push('Grupo eliminado.');
+      } else {
+        const { teacher } = pendingConfirm;
+        await removeGuideTeacherRecord(teacher.id);
+        guideTeachersState.remove(teacher.id);
+        await reloadGroups(true);
+        if (selectedTeacherId === teacher.id) {
+          setSelectedTeacherId(null);
+          setTeacherFormMode(null);
+        }
+        toast.push('Docente eliminado.');
       }
-    },
-    [removeGroup, removeGroupFromState, selectedGroupId],
-  );
+      setPendingConfirm(null);
+    } catch {
+      setPendingConfirm(null);
+      // El error se expone desde el hook.
+    }
+  }, [
+    deactivateSection,
+    guideTeachersState,
+    pendingConfirm,
+    reloadGroups,
+    removeGroup,
+    removeGroupFromState,
+    removeGuideTeacherRecord,
+    removeSection,
+    selectedGroupId,
+    selectedSectionId,
+    selectedTeacherId,
+    toast,
+  ]);
 
   const createTeacherMode = useCallback(() => {
     setSelectedTeacherId(null);
@@ -378,35 +420,31 @@ export function useSectionsGroupsPanel() {
           guideTeachersState.upsert(created);
           setSelectedTeacherId(created.id);
           setTeacherFormMode(null);
+          toast.push('Docente creado.');
         } else if (selectedTeacher) {
           const updated = await updateGuideTeacherRecord(selectedTeacher.id, payload);
           guideTeachersState.upsert(updated);
           setTeacherFormMode(null);
+          toast.push('Docente actualizado.');
         }
       } catch {
         // El hook de mutaciones expone el error para la interfaz.
       }
     },
-    [createGuideTeacher, guideTeachersState, selectedTeacher, teacherForm, teacherFormMode, updateGuideTeacherRecord],
+    [
+      createGuideTeacher,
+      guideTeachersState,
+      selectedTeacher,
+      teacherForm,
+      teacherFormMode,
+      toast,
+      updateGuideTeacherRecord,
+    ],
   );
 
-  const removeSelectedTeacher = useCallback(
-    async (teacher: GuideTeacher) => {
-      if (!window.confirm(`¿Eliminar al docente ${teacher.name}? Se inactivará y se quitará de las secciones asignadas.`)) return;
-      try {
-        await removeGuideTeacherRecord(teacher.id);
-        guideTeachersState.remove(teacher.id);
-        await reloadGroups(true);
-        if (selectedTeacherId === teacher.id) {
-          setSelectedTeacherId(null);
-          setTeacherFormMode(null);
-        }
-      } catch {
-        // El error se expone desde el hook.
-      }
-    },
-    [guideTeachersState, reloadGroups, removeGuideTeacherRecord, selectedTeacherId],
-  );
+  const removeSelectedTeacher = useCallback((teacher: GuideTeacher) => {
+    setPendingConfirm({ type: 'remove-teacher', teacher });
+  }, []);
 
   const setPendingTeacher = useCallback((groupId: number, teacherId: string) => {
     setPendingTeachers((current) => ({ ...current, [groupId]: teacherId }));
@@ -505,6 +543,9 @@ export function useSectionsGroupsPanel() {
     toggleSectionExpanded,
     deactivateSelectedSection,
     removeSelectedGroup,
+    pendingConfirm,
+    cancelPendingConfirm,
+    confirmPendingAction,
     setPendingTeacher,
     submitGuideTeacher,
     handlePrimaryAction,

@@ -1,13 +1,30 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { UserPlus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Eye, UserPlus } from 'lucide-react';
 import { roleApi } from '@/features/manage-role';
 import { UserForm, emptyUserForm, toCreatePayload, useUserForm, userApi } from '@/features/manage-user';
 import type { Role } from '@/entities/role';
 import type { AdministrativeUser } from '@/entities/user';
-import { Button, Card } from '@/shared/ui';
+import { Card, FeedbackCard, PageHeader } from '@/shared/ui';
 import { HttpError } from '@/shared/api';
 import styles from './UserPages.module.css';
+
+function formatCreatedUserName(user: AdministrativeUser) {
+  return (
+    user.name ||
+    [user.firstName, user.lastName].filter(Boolean).join(' ') ||
+    user.email ||
+    `#${user.id}`
+  );
+}
+
+function initialsFromUser(user: AdministrativeUser): string {
+  const label = formatCreatedUserName(user);
+  const parts = label.split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) return parts[0].slice(0, 2).toLocaleUpperCase('es');
+  return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toLocaleUpperCase('es');
+}
 
 export const UserCreatePage = () => {
   const navigate = useNavigate();
@@ -19,10 +36,17 @@ export const UserCreatePage = () => {
 
   useEffect(() => {
     let active = true;
-    roleApi.list()
-      .then((items) => { if (active) setRoles(items.filter((role) => role.status === 'ACTIVE')); })
-      .catch(() => { if (active) setRoles([]); });
-    return () => { active = false; };
+    roleApi
+      .list()
+      .then((items) => {
+        if (active) setRoles(items.filter((role) => role.status === 'ACTIVE'));
+      })
+      .catch(() => {
+        if (active) setRoles([]);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -42,37 +66,82 @@ export const UserCreatePage = () => {
   };
 
   if (createdUser) {
+    const fullName = formatCreatedUserName(createdUser);
+    const primaryRole = createdUser.roles[0]?.name ?? 'Sin rol';
+    const accessEnabled = createdUser.status === 'ACTIVE';
+
     return (
-      <section className={styles.page}>
-        <p className={styles.breadcrumb}>Administrativo <span>›</span> Usuarios <span>›</span> Registro</p>
-        <Card className={styles.confirmation}>
-          <h1>Usuario registrado</h1>
-          <p>El registro de {createdUser.name ?? createdUser.email} se completó correctamente.</p>
-          <div className={styles.actions}>
-            <Button type="button" onClick={() => navigate(`/admin/users/${createdUser.id}`)}>
-              Ver ficha
-            </Button>
-            <Button type="button" variant="secondary" onClick={() => { setCreatedUser(null); form.setValues(emptyUserForm); }}>
-              Registrar otro
-            </Button>
-          </div>
-        </Card>
+      <section className={`${styles.page} ${styles.successPage}`}>
+        <PageHeader
+          breadcrumbs={[
+            { label: 'Administrativo' },
+            { label: 'Usuarios', to: '/admin/users' },
+            { label: 'Registro' },
+            { label: 'Confirmación' },
+          ]}
+          title="Confirmación"
+          subtitle="Resultado del registro manual"
+        />
+        <FeedbackCard
+          description="La cuenta ha sido creada y configurada en el sistema institucional."
+          links={[
+            { label: '← Volver a la lista de usuarios', to: '/admin/users' },
+            { label: 'Ir al Dashboard', to: '/admin' },
+          ]}
+          primaryAction={{
+            label: 'Ver ficha del usuario',
+            icon: Eye,
+            onClick: () => navigate(`/admin/users/${createdUser.id}`),
+          }}
+          secondaryAction={{
+            label: 'Registrar otro usuario',
+            icon: UserPlus,
+            onClick: () => {
+              setCreatedUser(null);
+              form.setValues(emptyUserForm);
+            },
+          }}
+          summary={
+            <div className={styles.summaryTicket}>
+              <span className={styles.summaryAvatar} aria-hidden="true">
+                {initialsFromUser(createdUser)}
+              </span>
+              <div className={styles.summaryBody}>
+                <strong className={styles.summaryName}>{fullName}</strong>
+                <span className={styles.summaryEmail}>
+                  {createdUser.email ?? 'Sin correo registrado'}
+                </span>
+                <div className={styles.summaryMeta}>
+                  <span className={styles.rolePill}>{primaryRole}</span>
+                  <span
+                    className={`${styles.accessChip} ${accessEnabled ? styles.accessOn : styles.accessOff}`}
+                  >
+                    <i aria-hidden="true" />
+                    {accessEnabled ? 'Acceso habilitado' : 'Acceso pendiente'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          }
+          title="¡Usuario registrado con éxito!"
+        />
       </section>
     );
   }
 
   return (
     <section className={styles.page}>
-      <p className={styles.breadcrumb}>Administrativo <span>›</span> Usuarios <span>›</span> Registro manual</p>
-      <header className={styles.header}>
-        <div className={styles.headerLead}>
-          <span className={styles.icon}><UserPlus size={22} /></span>
-          <div>
-            <h1>Registro manual de usuario</h1>
-            <p>Complete los datos institucionales. El sistema valida cédula, correo y duplicados.</p>
-          </div>
-        </div>
-      </header>
+      <PageHeader
+        back={{ label: 'Volver a incorporación', to: '/admin/users' }}
+        breadcrumbs={[
+          { label: 'Administrativo' },
+          { label: 'Usuarios', to: '/admin/users' },
+          { label: 'Registro manual' },
+        ]}
+        icon={UserPlus}
+        subtitle="Complete los datos institucionales. El sistema valida cédula, correo y duplicados."
+        title="Registro manual de usuario"
+      />
 
       <div className={styles.layout}>
         <Card className={styles.formCard} padded={false}>
@@ -106,8 +175,6 @@ export const UserCreatePage = () => {
           </Card>
         </aside>
       </div>
-
-      <Link className={styles.backLink} to="/admin/users">Volver a incorporación</Link>
     </section>
   );
 };

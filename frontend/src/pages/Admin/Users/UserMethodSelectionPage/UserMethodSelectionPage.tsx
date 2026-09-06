@@ -13,6 +13,7 @@ import {
   Users,
   Eye,
 } from 'lucide-react';
+import { PageHeader } from '@/shared/ui';
 import styles from './UserMethodSelection.module.css';
 
 interface RecentImportItem {
@@ -69,12 +70,17 @@ export const UserMethodSelectionPage: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <header className={styles.header}>
-        <h1 className={styles.title}>Incorporación de Usuarios</h1>
-        <p className={styles.subtitle}>
-          Seleccione el método que desea utilizar para incorporar nuevos usuarios a la plataforma del CTP de Hojancha.
-        </p>
-      </header>
+      <PageHeader
+        back={{ label: 'Volver al Dashboard', to: '/admin' }}
+        breadcrumbs={[
+          { label: 'Administrativo' },
+          { label: 'Usuarios' },
+          { label: 'Incorporación' },
+        ]}
+        icon={Users}
+        subtitle="Seleccione el método para incorporar nuevos usuarios a la plataforma del CTP de Hojancha."
+        title="Incorporación de Usuarios"
+      />
 
       {/* Grid de tarjetas (WF-13 + WF-18) */}
       <section className={styles.cardsGrid}>

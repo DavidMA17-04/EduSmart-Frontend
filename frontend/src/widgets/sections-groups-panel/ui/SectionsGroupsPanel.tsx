@@ -1,5 +1,16 @@
-import { Edit3, Plus, Trash2 } from 'lucide-react';
-import { Alert, Button, Card, Modal, Table, Tabs } from '@/shared/ui';
+import { Edit3, Layers, Plus, Trash2 } from 'lucide-react';
+import {
+  Alert,
+  Button,
+  Card,
+  ConfirmDialog,
+  EmptyState,
+  ModalCrud,
+  RowActionButton,
+  RowActions,
+  SegmentedTabs,
+  Table,
+} from '@/shared/ui';
 import { SectionTableRow } from '@/entities/section';
 import { GroupForm, GuideTeacherForm } from '@/features/manage-group';
 import { SectionForm } from '@/features/manage-section';
@@ -19,9 +30,34 @@ export const SectionsGroupsPanel = () => {
   const teacherDialogTitle = model.teacherFormMode === 'create' ? 'Nuevo docente guía' : 'Editar docente guía';
   const teacherSubmitLabel = model.teacherFormMode === 'create' ? 'Crear docente' : 'Guardar cambios';
 
+  const pending = model.pendingConfirm;
+  const confirmBusy =
+    model.isSectionSubmitting || model.isGroupSubmitting || model.isTeacherSubmitting;
+
+  let confirmTitle = '';
+  let confirmMessage = '';
+  let confirmSecondary: string | undefined;
+  let confirmLabel = 'Confirmar';
+  if (pending?.type === 'deactivate-section') {
+    confirmTitle = 'Inactivar nivel';
+    confirmMessage = `¿Inactivar el nivel ${pending.section.name}?`;
+    confirmSecondary = 'El nivel dejará de estar disponible para nuevas asignaciones.';
+    confirmLabel = 'Inactivar';
+  } else if (pending?.type === 'remove-group') {
+    confirmTitle = 'Eliminar sección';
+    confirmMessage = `¿Eliminar la sección ${pending.group.name}?`;
+    confirmLabel = 'Eliminar';
+  } else if (pending?.type === 'remove-teacher') {
+    confirmTitle = 'Eliminar docente guía';
+    confirmMessage = `¿Eliminar al docente ${pending.teacher.name}?`;
+    confirmSecondary = 'Se inactivará y se quitará de las secciones asignadas.';
+    confirmLabel = 'Eliminar';
+  }
+
   return (
     <section className={styles.panelRoot}>
-      <Tabs
+      <SegmentedTabs
+        aria-label="Secciones del panel"
         items={[
           { id: 'niveles', label: 'Niveles' },
           { id: 'grupos', label: 'Secciones' },
@@ -50,6 +86,17 @@ export const SectionsGroupsPanel = () => {
           <Card className={styles.tableCard}>
             {model.isLoading ? (
               <p className={styles.muted}>Cargando niveles…</p>
+            ) : model.sections.length === 0 ? (
+              <EmptyState
+                action={{
+                  label: 'Nuevo nivel',
+                  onClick: model.openCreateSectionDialog,
+                  icon: Plus,
+                }}
+                description="Aún no hay niveles académicos registrados."
+                icon={Layers}
+                title="Sin niveles académicos"
+              />
             ) : (
               <Table>
                 <thead>
@@ -65,26 +112,24 @@ export const SectionsGroupsPanel = () => {
                   {model.sections.map((section) => (
                     <SectionTableRow
                       actions={
-                        <span className={styles.rowActions}>
-                          <Button
+                        <RowActions>
+                          <RowActionButton
                             aria-label={`Editar ${section.name}`}
                             onClick={() => model.openEditSectionDialog(section.id)}
-                            size="icon"
-                            type="button"
-                            variant="secondary"
+                            title="Editar"
+                            tone="primary"
                           >
-                            <Edit3 />
-                          </Button>
-                          <Button
+                            <Edit3 size={16} />
+                          </RowActionButton>
+                          <RowActionButton
                             aria-label={`Inactivar ${section.name}`}
-                            onClick={() => void model.deactivateSelectedSection(section)}
-                            size="icon"
-                            type="button"
-                            variant="danger"
+                            onClick={() => model.deactivateSelectedSection(section)}
+                            title="Inactivar"
+                            tone="danger"
                           >
-                            <Trash2 />
-                          </Button>
-                        </span>
+                            <Trash2 size={16} />
+                          </RowActionButton>
+                        </RowActions>
                       }
                       isSelected={section.id === model.selectedSectionId}
                       key={section.id}
@@ -92,13 +137,6 @@ export const SectionsGroupsPanel = () => {
                       section={section}
                     />
                   ))}
-                  {model.sections.length === 0 && (
-                    <tr>
-                      <td className={styles.empty} colSpan={5}>
-                        No se encontraron niveles académicos.
-                      </td>
-                    </tr>
-                  )}
                 </tbody>
               </Table>
             )}
@@ -116,7 +154,7 @@ export const SectionsGroupsPanel = () => {
       {model.activeTab === 'grupos' && <GroupsTabView model={model} />}
       {model.activeTab === 'docentes' && <GuideTeacherTabView model={model} />}
 
-      <Modal
+      <ModalCrud
         isOpen={model.sectionDialogMode !== null}
         onClose={model.closeSectionDialog}
         title={sectionDialogTitle}
@@ -131,9 +169,9 @@ export const SectionsGroupsPanel = () => {
           submitLabel={sectionSubmitLabel}
           values={model.sectionForm.values}
         />
-      </Modal>
+      </ModalCrud>
 
-      <Modal
+      <ModalCrud
         isOpen={model.groupFormMode !== null}
         onClose={model.closeGroupDialog}
         title={groupDialogTitle}
@@ -150,9 +188,9 @@ export const SectionsGroupsPanel = () => {
           submitLabel={groupSubmitLabel}
           values={model.groupForm.values}
         />
-      </Modal>
+      </ModalCrud>
 
-      <Modal
+      <ModalCrud
         isOpen={model.teacherFormMode !== null}
         onClose={model.closeTeacherDialog}
         title={teacherDialogTitle}
@@ -167,7 +205,20 @@ export const SectionsGroupsPanel = () => {
           submitLabel={teacherSubmitLabel}
           values={model.teacherForm.values}
         />
-      </Modal>
+      </ModalCrud>
+
+      <ConfirmDialog
+        confirmLabel={confirmLabel}
+        icon={Trash2}
+        isOpen={pending !== null}
+        isSubmitting={confirmBusy}
+        message={confirmMessage}
+        onCancel={model.cancelPendingConfirm}
+        onConfirm={() => void model.confirmPendingAction()}
+        secondary={confirmSecondary}
+        title={confirmTitle}
+        tone="danger"
+      />
     </section>
   );
 };

@@ -6,6 +6,7 @@ import {
   useAcademicPeriods,
   useManageAcademicPeriod,
 } from '@/features/manage-academic-period';
+import { useToast } from '@/shared/ui';
 
 type DialogMode = 'create' | 'edit' | null;
 
@@ -18,6 +19,7 @@ interface PendingPeriodTransition {
 
 export function useAcademicPeriodsPanel() {
   const periods = useAcademicPeriods();
+  const toast = useToast();
   const [selectedPeriodId, setSelectedPeriodId] = useState<string | null>(null);
   const [dialogMode, setDialogMode] = useState<DialogMode>(null);
   const [formError, setFormError] = useState<string | null>(null);
@@ -79,14 +81,16 @@ export function useAcademicPeriodsPanel() {
         const created = await create(payload);
         setSelectedPeriodId(created.id);
         setDialogMode(null);
+        toast.push('Período académico creado.');
       } else if (selectedPeriod) {
         await update(selectedPeriod.id, payload);
         setDialogMode(null);
+        toast.push('Cambios guardados.');
       }
     } catch {
       // El hook de mutaciones publica el error para la interfaz.
     }
-  }, [create, dialogMode, isReadOnly, selectedPeriod, toPayload, update]);
+  }, [create, dialogMode, isReadOnly, selectedPeriod, toPayload, toast, update]);
 
   const activatePeriod = useCallback((period: AcademicPeriod) => {
     setPendingTransition({ action: 'activate', period });

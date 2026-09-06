@@ -1,0 +1,35 @@
+.layout {
+  display: grid;
+  gap: 14px;
+}
+
+.head {
+  display: grid;
+  gap: 4px;
+}
+
+.title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--brand-navy, var(--admin-text));
+}
+
+.description {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--admin-muted, var(--brand-muted));
+}
+
+.fields {
+  display: grid;
+  gap: 12px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}

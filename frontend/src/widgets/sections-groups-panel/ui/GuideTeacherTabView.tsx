@@ -1,5 +1,5 @@
 import { Edit3, Plus, Trash2 } from 'lucide-react';
-import { Alert, Button, Card, Table } from '@/shared/ui';
+import { Alert, Button, Card, RowActionButton, RowActions, Table } from '@/shared/ui';
 import { formatStudentCount } from '@/entities/group';
 import type { SectionsGroupsPanelModel } from '../model/useSectionsGroupsPanel';
 import groupRowStyles from '@/entities/group/ui/GroupTableRow.module.css';
@@ -62,26 +62,24 @@ export const GuideTeacherTabView = ({ model }: GuideTeacherTabViewProps) => {
                     <td>{teacher.email || '—'}</td>
                     <td>{teacher.phone || '—'}</td>
                     <td onClick={(event) => event.stopPropagation()}>
-                      <span className={styles.rowActions}>
-                        <Button
+                      <RowActions>
+                        <RowActionButton
                           aria-label={`Editar ${teacher.name}`}
                           onClick={() => model.openEditTeacherDialog(teacher.id)}
-                          size="icon"
-                          type="button"
-                          variant="secondary"
+                          title="Editar"
+                          tone="primary"
                         >
-                          <Edit3 />
-                        </Button>
-                        <Button
+                          <Edit3 size={16} />
+                        </RowActionButton>
+                        <RowActionButton
                           aria-label={`Eliminar ${teacher.name}`}
-                          onClick={() => void model.removeSelectedTeacher(teacher)}
-                          size="icon"
-                          type="button"
-                          variant="danger"
+                          onClick={() => model.removeSelectedTeacher(teacher)}
+                          title="Eliminar"
+                          tone="danger"
                         >
-                          <Trash2 />
-                        </Button>
-                      </span>
+                          <Trash2 size={16} />
+                        </RowActionButton>
+                      </RowActions>
                     </td>
                   </tr>
                 );

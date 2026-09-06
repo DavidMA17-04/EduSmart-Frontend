@@ -1,5 +1,5 @@
 import { Edit3, Plus, Trash2 } from 'lucide-react';
-import { Alert, Button, Table } from '@/shared/ui';
+import { Alert, Button, RowActionButton, RowActions, Table } from '@/shared/ui';
 import { GroupTableRow } from '@/entities/group';
 import type { SectionsGroupsPanelModel } from '../model/useSectionsGroupsPanel';
 import styles from './SectionDetailPanel.module.css';
@@ -48,26 +48,24 @@ export const SectionDetailPanel = ({ model, onGoToTeachersTab }: SectionDetailPa
             {model.groupsForSelectedSection.map((group) => (
               <GroupTableRow
                 actions={
-                  <span className={styles.rowActions}>
-                    <Button
+                  <RowActions>
+                    <RowActionButton
                       aria-label={`Editar ${group.name}`}
                       onClick={() => model.openEditGroupDialog(group.id)}
-                      size="icon"
-                      type="button"
-                      variant="secondary"
+                      title="Editar"
+                      tone="primary"
                     >
-                      <Edit3 />
-                    </Button>
-                    <Button
+                      <Edit3 size={16} />
+                    </RowActionButton>
+                    <RowActionButton
                       aria-label={`Eliminar ${group.name}`}
-                      onClick={() => void model.removeSelectedGroup(group)}
-                      size="icon"
-                      type="button"
-                      variant="danger"
+                      onClick={() => model.removeSelectedGroup(group)}
+                      title="Eliminar"
+                      tone="danger"
                     >
-                      <Trash2 />
-                    </Button>
-                  </span>
+                      <Trash2 size={16} />
+                    </RowActionButton>
+                  </RowActions>
                 }
                 group={group}
                 isSelected={group.id === model.selectedGroupId}

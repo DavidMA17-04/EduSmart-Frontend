@@ -1,5 +1,5 @@
 import { Edit3, Plus, Trash2 } from 'lucide-react';
-import { Alert, Button, Card, Select, Table } from '@/shared/ui';
+import { Alert, Button, Card, RowActionButton, RowActions, Select, Table } from '@/shared/ui';
 import { formatStudentCount } from '@/entities/group';
 import type { SectionsGroupsPanelModel } from '../model/useSectionsGroupsPanel';
 import groupRowStyles from '@/entities/group/ui/GroupTableRow.module.css';
@@ -63,26 +63,24 @@ export const GroupsTabView = ({ model }: GroupsTabViewProps) => (
                 <td>{formatStudentCount(group.studentCount)}</td>
                 <td>{group.guideTeacher?.name || 'Sin asignar'}</td>
                 <td>
-                  <span className={styles.rowActions}>
-                    <Button
+                  <RowActions>
+                    <RowActionButton
                       aria-label={`Editar ${group.name}`}
                       onClick={() => model.openEditGroupDialog(group.id)}
-                      size="icon"
-                      type="button"
-                      variant="secondary"
+                      title="Editar"
+                      tone="primary"
                     >
-                      <Edit3 />
-                    </Button>
-                    <Button
+                      <Edit3 size={16} />
+                    </RowActionButton>
+                    <RowActionButton
                       aria-label={`Eliminar ${group.name}`}
-                      onClick={() => void model.removeSelectedGroup(group)}
-                      size="icon"
-                      type="button"
-                      variant="danger"
+                      onClick={() => model.removeSelectedGroup(group)}
+                      title="Eliminar"
+                      tone="danger"
                     >
-                      <Trash2 />
-                    </Button>
-                  </span>
+                      <Trash2 size={16} />
+                    </RowActionButton>
+                  </RowActions>
                 </td>
               </tr>
             ))}
