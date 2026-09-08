@@ -20,7 +20,7 @@
   align-items: center;
   gap: 0;
   margin: 0;
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: #64748b;
 }
 
@@ -74,7 +74,7 @@
 .title {
   margin: 0;
   font-family: var(--font-heading, var(--brand-font-serif));
-  font-size: clamp(1.25rem, 2vw, 1.4rem);
+  font-size: clamp(1.35rem, 2.2vw, 1.55rem);
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.25;
@@ -83,9 +83,9 @@
 
 .subtitle {
   margin: 4px 0 0;
-  max-width: 520px;
-  font-size: 0.9rem;
-  line-height: 1.45;
+  max-width: 560px;
+  font-size: 0.95rem;
+  line-height: 1.5;
   color: var(--admin-muted, var(--brand-muted));
 }
 
@@ -94,22 +94,32 @@
   flex-shrink: 0;
 }
 
-.back {
+.back,
+.backInline {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
-  margin-top: 2px;
-  padding: 0.4rem 0.75rem;
+  padding: 0.45rem 0.85rem;
   border-radius: 10px;
   color: var(--brand-primary, var(--admin-primary));
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   font-weight: 650;
   text-decoration: none;
   transition: background 0.15s ease, color 0.15s ease;
+  width: fit-content;
 }
 
-.back:hover {
+.back {
+  margin-top: 2px;
+}
+
+.backInline {
+  margin: 0;
+}
+
+.back:hover,
+.backInline:hover {
   background: #f1f5f9;
   color: var(--brand-navy, var(--admin-text));
 }

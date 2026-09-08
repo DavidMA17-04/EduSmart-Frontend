@@ -13,6 +13,7 @@ import {
   Users,
   Eye,
 } from 'lucide-react';
+import { downloadOfficialTemplateCsv } from '@/features/manage-user-import';
 import { PageHeader } from '@/shared/ui';
 import styles from './UserMethodSelection.module.css';
 
@@ -57,15 +58,7 @@ export const UserMethodSelectionPage: React.FC = () => {
   });
 
   const handleDownloadTemplate = () => {
-    const headers = 'identificacion,nombres,apellidos,correo,rol,seccion,telefono,estado\n';
-    const sampleRow = '504120893,Aaron Jose,Solano Mendoza,asolano@ctphojancha.ed.cr,ESTUDIANTE,11-B,87441234,Activo\n';
-    const blob = new Blob([headers + sampleRow], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'Plantilla_Usuarios_CTP_Hojancha.csv';
-    link.click();
-    URL.revokeObjectURL(url);
+    downloadOfficialTemplateCsv();
   };
 
   return (

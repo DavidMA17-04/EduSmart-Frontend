@@ -1,38 +1,47 @@
-import React, { useState, useRef } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft,
-  UploadCloud,
-  FileSpreadsheet,
-  Download,
-  CheckCircle2,
-  AlertCircle,
-  FileCheck,
-  Play,
-  Loader2,
   AlertTriangle,
+  ArrowLeft,
+  CheckCircle2,
+  Download,
+  Eye,
+  FileCheck,
+  FileSpreadsheet,
+  FileText,
+  Loader2,
+  Play,
+  UploadCloud,
 } from 'lucide-react';
-import { userImportApi } from '@/features/manage-user-import';
+import {
+  downloadOfficialTemplateCsv,
+  downloadOfficialTemplateXlsx,
+  userImportApi,
+  validateBulkImportFile,
+  type ValidateBulkImportResponse,
+} from '@/features/manage-user-import';
+import { PageHeader } from '@/shared/ui';
+import { BulkImportDictionaryModal } from './BulkImportDictionaryModal';
+import { BulkImportWizardModal } from './BulkImportWizardModal';
 import styles from './UserBulkImport.module.css';
 
-const MAX_BULK_IMPORT_BYTES = 10 * 1024 * 1024;
-const ALLOWED_BULK_IMPORT_EXTENSIONS = ['.xlsx', '.xls', '.csv'] as const;
+type RecentImportItem = {
+  id: string;
+  name: string;
+  date: string;
+  status: string;
+};
 
-function getBulkImportExtension(fileName: string): string {
-  const lower = fileName.toLowerCase();
-  const dot = lower.lastIndexOf('.');
-  return dot >= 0 ? lower.slice(dot) : '';
-}
-
-function validateBulkImportFile(file: File): string | null {
-  const extension = getBulkImportExtension(file.name);
-  if (!(ALLOWED_BULK_IMPORT_EXTENSIONS as readonly string[]).includes(extension)) {
-    return 'Solo se permiten archivos con extensión .xlsx, .xls o .csv.';
+function readLastImport(): RecentImportItem | null {
+  try {
+    const stored = localStorage.getItem('edusmart_recent_imports');
+    if (!stored) return null;
+    const parsed = JSON.parse(stored) as RecentImportItem[];
+    if (!Array.isArray(parsed) || parsed.length === 0) return null;
+    return parsed[0];
+  } catch {
+    return null;
   }
-  if (file.size > MAX_BULK_IMPORT_BYTES) {
-    return 'El archivo supera el límite máximo de 10 MB.';
-  }
-  return null;
 }
 
 export const UserBulkImportPage: React.FC = () => {
@@ -42,17 +51,23 @@ export const UserBulkImportPage: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isDictionaryOpen, setIsDictionaryOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [importData, setImportData] = useState<ValidateBulkImportResponse | null>(null);
+  const [fileName, setFileName] = useState('');
 
-  const handleDownloadTemplate = () => {
-    const headers = 'identificacion,nombres,apellidos,correo,rol,seccion,telefono,estado\n';
-    const sampleRow = '504120893,Aaron Jose,Solano Mendoza,asolano@ctphojancha.ed.cr,ESTUDIANTE,11-B,87441234,Activo\n';
-    const blob = new Blob([headers + sampleRow], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'Plantilla_Usuarios_CTP_Hojancha.csv';
-    link.click();
-    URL.revokeObjectURL(url);
+  const lastImport = useMemo(() => readLastImport(), [isPreviewOpen]);
+
+  const acceptSelectedFile = (file: File) => {
+    const validationError = validateBulkImportFile(file);
+    if (validationError) {
+      setSelectedFile(null);
+      setErrorMessage(validationError);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+    setErrorMessage(null);
+    setSelectedFile(file);
   };
 
   const onDragOver = (e: React.DragEvent) => {
@@ -60,41 +75,23 @@ export const UserBulkImportPage: React.FC = () => {
     setIsDragOver(true);
   };
 
-  const onDragLeave = () => {
-    setIsDragOver(false);
-  };
-
-  const acceptSelectedFile = (file: File) => {
-    const validationError = validateBulkImportFile(file);
-    if (validationError) {
-      setSelectedFile(null);
-      setErrorMessage(validationError);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-      return;
-    }
-    setErrorMessage(null);
-    setSelectedFile(file);
-  };
+  const onDragLeave = () => setIsDragOver(false);
 
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      acceptSelectedFile(e.dataTransfer.files[0]);
-    }
+    if (e.dataTransfer.files?.[0]) acceptSelectedFile(e.dataTransfer.files[0]);
   };
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      acceptSelectedFile(e.target.files[0]);
-    }
+    if (e.target.files?.[0]) acceptSelectedFile(e.target.files[0]);
   };
 
   const handleValidateFile = async () => {
     if (!selectedFile) {
-      setErrorMessage('Por favor seleccione o arrastre un archivo Excel (.xlsx, .xls) o CSV antes de continuar.');
+      setErrorMessage(
+        'Por favor seleccione o arrastre un archivo Excel (.xlsx, .xls) o CSV antes de continuar.',
+      );
       return;
     }
 
@@ -109,260 +106,217 @@ export const UserBulkImportPage: React.FC = () => {
 
     try {
       const response = await userImportApi.validateFile(selectedFile);
-      navigate('/admin/users/import/preview', {
-        state: { importData: response, fileName: selectedFile.name },
-      });
-    } catch (err: any) {
-      setErrorMessage(
-        err.message || 'No se pudo validar el archivo con el servidor. Verifique que el backend esté activo.',
-      );
+      setImportData(response);
+      setFileName(selectedFile.name);
+      setIsPreviewOpen(true);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'No se pudo validar el archivo con el servidor. Verifique que el backend esté activo.';
+      setErrorMessage(message);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const closePreview = () => {
+    setIsPreviewOpen(false);
+    setImportData(null);
+  };
+
+  const backToFileSelect = () => {
+    setIsPreviewOpen(false);
+    setImportData(null);
+  };
+
   return (
     <div className={styles.container}>
-      {/* Botón de retroceso */}
-      <div className={styles.topNavigation}>
+      <PageHeader
+        back={{ label: 'Volver a selección de método', to: '/admin/users' }}
+        icon={FileSpreadsheet}
+        subtitle="Cargue y sincronice la nómina estudiantil mediante archivo Excel o CSV estructurado."
+        title="Importación Masiva de Estudiantes"
+        primaryAction={
+          <span className={styles.cycleBadge}>
+            <span className={styles.cycleDot} />
+            Ciclo Lectivo Activo
+          </span>
+        }
+      />
+
+      <section className={styles.heroCard}>
+        <div className={styles.templateBar}>
+          <div className={styles.templateInfo}>
+            <div className={styles.templateIcon}>
+              <FileText size={16} />
+            </div>
+            <div>
+              <div className={styles.templateTitleRow}>
+                <h2 className={styles.templateTitle}>Plantillas Oficiales de Registro</h2>
+                <span className={styles.formatBadge}>Formato oficial</span>
+              </div>
+              <p className={styles.templateSub}>
+                Use estos archivos para asegurar compatibilidad sin errores de validación.
+              </p>
+            </div>
+          </div>
+          <div className={styles.templateActions}>
+            <button
+              type="button"
+              className={styles.btnGreen}
+              onClick={downloadOfficialTemplateXlsx}
+              disabled={isLoading}
+            >
+              <Download size={14} />
+              Descargar .xlsx
+            </button>
+            <button
+              type="button"
+              className={styles.btnOutline}
+              onClick={downloadOfficialTemplateCsv}
+              disabled={isLoading}
+            >
+              <Download size={14} />
+              Descargar .csv
+            </button>
+          </div>
+        </div>
+
+        {errorMessage && (
+          <div className={styles.errorBanner} role="alert">
+            <AlertTriangle size={18} />
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
+        <div
+          className={`${styles.dropzone} ${isDragOver ? styles.dropzoneActive : ''}`}
+          onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
+          onDrop={onDrop}
+          onClick={() => !isLoading && fileInputRef.current?.click()}
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv,.xlsx,.xls"
+            className={styles.hiddenInput}
+            onChange={onFileChange}
+            disabled={isLoading}
+          />
+          <div className={styles.dropzoneIcon}>
+            <UploadCloud size={20} />
+          </div>
+          <h3 className={styles.dropzoneMain}>Arrastre y suelte su archivo aquí</h3>
+          <p className={styles.dropzoneSub}>
+            Admite formatos <strong>.xlsx</strong> o <strong>.csv</strong> hasta 10 MB
+          </p>
+          <button type="button" className={styles.btnBlue} disabled={isLoading}>
+            <UploadCloud size={14} />
+            Seleccionar archivo desde el equipo
+          </button>
+        </div>
+
+        {selectedFile && (
+          <div className={styles.fileBadge}>
+            <FileCheck size={20} color="var(--color-primary-green)" />
+            <div>
+              <div className={styles.fileName}>{selectedFile.name}</div>
+              <div className={styles.fileSize}>
+                {(selectedFile.size / 1024).toFixed(1)} KB · Listo para procesar
+              </div>
+            </div>
+          </div>
+        )}
+
         <button
           type="button"
-          className={styles.backBtn}
-          onClick={() => navigate('/admin/users')}
-          disabled={isLoading}
+          className={styles.validateBtn}
+          onClick={handleValidateFile}
+          disabled={isLoading || !selectedFile}
         >
-          <ArrowLeft size={18} /> Volver a selección de método
+          {isLoading ? (
+            <>
+              <Loader2 size={18} className={styles.spin} />
+              Validando con el servidor...
+            </>
+          ) : (
+            <>
+              <Play size={18} />
+              Validar y procesar archivo
+            </>
+          )}
+        </button>
+
+        <div className={styles.heroFooter}>
+          <div className={styles.lastImport}>
+            <CheckCircle2 size={14} className={styles.lastImportIcon} />
+            {lastImport ? (
+              <span>
+                <strong>Última importación:</strong> {lastImport.name} · {lastImport.date}
+              </span>
+            ) : (
+              <span>Aún no hay importaciones recientes registradas en este equipo.</span>
+            )}
+          </div>
+          <span className={styles.heroHint}>Verificación automática al validar el archivo</span>
+        </div>
+      </section>
+
+      <section className={styles.guideCard}>
+        <div className={styles.guideInfo}>
+          <div className={styles.guideIcon}>
+            <FileText size={20} />
+          </div>
+          <div>
+            <div className={styles.guideTitleRow}>
+              <h2 className={styles.guideTitle}>Especificaciones y Guía de Columnas</h2>
+              <span className={styles.fieldsBadge}>8 campos soportados</span>
+            </div>
+            <p className={styles.guideSub}>
+              Consulte el diccionario de datos, formato de celdas y reglas para evitar
+              inconsistencias de carga.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          className={styles.btnNavy}
+          onClick={() => setIsDictionaryOpen(true)}
+        >
+          <Eye size={16} />
+          Ver requisitos y diccionario de campos
+        </button>
+      </section>
+
+      <div className={styles.dashboardWrap}>
+        <button
+          type="button"
+          className={styles.dashboardBtn}
+          onClick={() => navigate('/admin')}
+        >
+          <ArrowLeft size={16} />
+          Regresar al Dashboard Administrativo
         </button>
       </div>
 
-      <header className={styles.header}>
-        <h1 className={styles.title}>Importación Masiva de Usuarios</h1>
-        <p className={styles.subtitle}>
-          Cargue su archivo Excel (.xlsx, .xls) o CSV con el formato estandarizado para registrar usuarios masivamente.
-        </p>
-      </header>
+      <BulkImportDictionaryModal
+        isOpen={isDictionaryOpen}
+        onClose={() => setIsDictionaryOpen(false)}
+      />
 
-      {errorMessage && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            padding: '1rem 1.25rem',
-            background: 'var(--status-error-bg)',
-            border: '1px solid var(--status-error-border)',
-            borderRadius: '12px',
-            color: 'var(--status-error-text)',
-            marginBottom: '1.5rem',
-            fontSize: '0.9rem',
-            fontWeight: 500,
-          }}
-        >
-          <AlertTriangle size={20} />
-          <span>{errorMessage}</span>
-        </div>
-      )}
-
-      {/* Grid Principal: Dropzone (Izq) y Checklist/Validación (Der) */}
-      <div className={styles.gridContent}>
-        {/* Panel 1: Drag & Drop Dropzone */}
-        <section className={styles.dropzoneCard}>
-          <h2 className={styles.sectionTitle}>
-            <UploadCloud size={20} color="var(--color-primary-blue)" />
-            1. Seleccionar archivo
-          </h2>
-
-          <div
-            className={`${styles.dropzoneArea} ${isDragOver ? styles.dropzoneActive : ''}`}
-            onDragOver={onDragOver}
-            onDragLeave={onDragLeave}
-            onDrop={onDrop}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv, .xlsx, .xls"
-              style={{ display: 'none' }}
-              onChange={onFileChange}
-              disabled={isLoading}
-            />
-
-            <div className={styles.dropzoneIconCircle}>
-              <FileSpreadsheet size={32} />
-            </div>
-
-            <div className={styles.dropzoneMainText}>
-              Arrastra y suelta tu archivo aquí
-            </div>
-            <div className={styles.dropzoneSubText}>
-              Formatos soportados: Excel (.xlsx, .xls) o CSV (.csv) hasta 10 MB
-            </div>
-
-            <button type="button" className={styles.browseBtn} disabled={isLoading}>
-              <UploadCloud size={16} />
-              Seleccionar desde mi equipo
-            </button>
-          </div>
-
-          {selectedFile && (
-            <div className={styles.fileSelectedBadge}>
-              <div className={styles.fileSelectedInfo}>
-                <FileCheck size={20} color="var(--color-primary-green)" />
-                <div>
-                  <div className={styles.fileName}>{selectedFile.name}</div>
-                  <div className={styles.fileSize}>
-                    {(selectedFile.size / 1024).toFixed(1)} KB • Listo para procesar
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* Panel 2: Requisitos y Validación */}
-        <aside className={styles.sidePanel}>
-          {/* Card Descarga de Plantilla */}
-          <div className={styles.downloadCard}>
-            <div className={styles.downloadInfo}>
-              <FileSpreadsheet size={28} className={styles.downloadIcon} />
-              <div>
-                <div className={styles.downloadTitle}>Plantilla oficial C.T.P. de Hojancha</div>
-                <div className={styles.downloadSub}>Estructura pre-configurada (.xlsx / .csv)</div>
-              </div>
-            </div>
-            <button
-              type="button"
-              className={styles.downloadBtn}
-              onClick={handleDownloadTemplate}
-              disabled={isLoading}
-            >
-              <Download size={15} />
-              Descargar
-            </button>
-          </div>
-
-          {/* Card Checklist de Requisitos */}
-          <div className={styles.sideCard}>
-            <h3 className={styles.sectionTitle}>
-              <CheckCircle2 size={18} color="var(--color-primary-green)" />
-              2. Requisitos de importación
-            </h3>
-            <ul className={styles.checklist}>
-              <li className={styles.checklistItem}>
-                <CheckCircle2 size={16} color="var(--color-primary-green)" />
-                No alterar el nombre de los encabezados.
-              </li>
-              <li className={styles.checklistItem}>
-                <CheckCircle2 size={16} color="var(--color-primary-green)" />
-                Cédulas sin guiones ni espacios (9 dígitos).
-              </li>
-              <li className={styles.checklistItem}>
-                <CheckCircle2 size={16} color="var(--color-primary-green)" />
-                Correos institucionales (@ctphojancha.ed.cr).
-              </li>
-              <li className={styles.checklistItem}>
-                <CheckCircle2 size={16} color="var(--color-primary-green)" />
-                Roles válidos: únicamente ESTUDIANTE (por defecto si se omite).
-              </li>
-            </ul>
-          </div>
-
-          {/* Bloque de Validación y Paso al WF-15 */}
-          <div className={styles.validateCard}>
-            <button
-              type="button"
-              className={styles.validateBtn}
-              onClick={handleValidateFile}
-              disabled={isLoading}
-              style={{ opacity: isLoading ? 0.7 : 1, cursor: isLoading ? 'not-allowed' : 'pointer' }}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />
-                  Validando con el servidor...
-                </>
-              ) : (
-                <>
-                  <Play size={18} />
-                  Validar y procesar archivo
-                </>
-              )}
-            </button>
-          </div>
-        </aside>
-      </div>
-
-      {/* Sección 3: Tabla Explicativa con las 8 Columnas Oficiales */}
-      <section className={styles.schemaCard}>
-        <h2 className={styles.sectionTitle}>
-          <AlertCircle size={20} color="var(--color-primary-blue)" />
-          3. Estructura requerida del archivo
-        </h2>
-
-        <div className={styles.schemaTableWrapper}>
-          <table className={styles.schemaTable}>
-            <thead>
-              <tr>
-                <th>Columna</th>
-                <th>Obligatorio</th>
-                <th>Tipo de Dato</th>
-                <th>Valores Permitidos / Ejemplo</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>identificacion*</strong></td>
-                <td><span className={styles.badgeRequiredYes}>Sí</span></td>
-                <td>Texto / Numérico</td>
-                <td>504120893 (9 dígitos exactos)</td>
-              </tr>
-              <tr>
-                <td><strong>nombres*</strong></td>
-                <td><span className={styles.badgeRequiredYes}>Sí</span></td>
-                <td>Texto (50 chars)</td>
-                <td>Aaron José</td>
-              </tr>
-              <tr>
-                <td><strong>apellidos*</strong></td>
-                <td><span className={styles.badgeRequiredYes}>Sí</span></td>
-                <td>Texto (50 chars)</td>
-                <td>Solano Mendoza</td>
-              </tr>
-              <tr>
-                <td><strong>correo*</strong></td>
-                <td><span className={styles.badgeRequiredYes}>Sí</span></td>
-                <td>Email válido</td>
-                <td>asolano@ctphojancha.ed.cr</td>
-              </tr>
-              <tr>
-                <td><strong>rol</strong></td>
-                <td><span className={styles.badgeRequiredNo}>No / Por defecto</span></td>
-                <td>Enum</td>
-                <td>Opcional. Si se omite, se asigna ESTUDIANTE automáticamente</td>
-              </tr>
-              <tr>
-                <td><strong>seccion</strong></td>
-                <td><span className={styles.badgeRequiredNo}>No</span></td>
-                <td>Texto</td>
-                <td>10-A, 11-B Informática, Depto. Ciencias</td>
-              </tr>
-              <tr>
-                <td><strong>telefono</strong></td>
-                <td><span className={styles.badgeRequiredNo}>No</span></td>
-                <td>Texto (15 chars)</td>
-                <td>8744-1234</td>
-              </tr>
-              <tr>
-                <td><strong>estado</strong></td>
-                <td><span className={styles.badgeRequiredNo}>No / Por defecto</span></td>
-                <td>Enum</td>
-                <td>Opcional. Si se omite, se asigna Activo automáticamente (Activo, Inactivo, Bloqueado)</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <BulkImportWizardModal
+        isOpen={isPreviewOpen}
+        importData={importData}
+        fileName={fileName}
+        onClose={closePreview}
+        onBackToFileSelect={backToFileSelect}
+        onImportSuccess={() => {
+          closePreview();
+          navigate('/admin/users');
+        }}
+      />
     </div>
   );
 };
