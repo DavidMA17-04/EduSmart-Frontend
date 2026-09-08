@@ -1,228 +1,319 @@
-import React, { useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  AlertTriangle,
   ArrowLeft,
   CheckCircle2,
-  AlertCircle,
   Download,
+  Eye,
+  FileCheck,
   FileSpreadsheet,
-  Upload,
+  FileText,
+  Loader2,
+  Play,
+  UploadCloud,
 } from 'lucide-react';
 import {
   downloadOfficialTemplateCsv,
   downloadOfficialTemplateXlsx,
+  userImportApi,
+  validateBulkImportFile,
+  type ValidateBulkImportResponse,
 } from '@/features/manage-user-import';
+import { PageHeader } from '@/shared/ui';
+import { BulkImportDictionaryModal } from './BulkImportDictionaryModal';
 import { BulkImportWizardModal } from './BulkImportWizardModal';
 import styles from './UserBulkImport.module.css';
 
+type RecentImportItem = {
+  id: string;
+  name: string;
+  date: string;
+  status: string;
+};
+
+function readLastImport(): RecentImportItem | null {
+  try {
+    const stored = localStorage.getItem('edusmart_recent_imports');
+    if (!stored) return null;
+    const parsed = JSON.parse(stored) as RecentImportItem[];
+    if (!Array.isArray(parsed) || parsed.length === 0) return null;
+    return parsed[0];
+  } catch {
+    return null;
+  }
+}
+
 export const UserBulkImportPage: React.FC = () => {
   const navigate = useNavigate();
-  const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isDictionaryOpen, setIsDictionaryOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [importData, setImportData] = useState<ValidateBulkImportResponse | null>(null);
+  const [fileName, setFileName] = useState('');
+
+  const lastImport = useMemo(() => readLastImport(), [isPreviewOpen]);
+
+  const acceptSelectedFile = (file: File) => {
+    const validationError = validateBulkImportFile(file);
+    if (validationError) {
+      setSelectedFile(null);
+      setErrorMessage(validationError);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+    setErrorMessage(null);
+    setSelectedFile(file);
+  };
+
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const onDragLeave = () => setIsDragOver(false);
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    if (e.dataTransfer.files?.[0]) acceptSelectedFile(e.dataTransfer.files[0]);
+  };
+
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) acceptSelectedFile(e.target.files[0]);
+  };
+
+  const handleValidateFile = async () => {
+    if (!selectedFile) {
+      setErrorMessage(
+        'Por favor seleccione o arrastre un archivo Excel (.xlsx, .xls) o CSV antes de continuar.',
+      );
+      return;
+    }
+
+    const validationError = validateBulkImportFile(selectedFile);
+    if (validationError) {
+      setErrorMessage(validationError);
+      return;
+    }
+
+    setErrorMessage(null);
+    setIsLoading(true);
+
+    try {
+      const response = await userImportApi.validateFile(selectedFile);
+      setImportData(response);
+      setFileName(selectedFile.name);
+      setIsPreviewOpen(true);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'No se pudo validar el archivo con el servidor. Verifique que el backend esté activo.';
+      setErrorMessage(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const closePreview = () => {
+    setIsPreviewOpen(false);
+    setImportData(null);
+  };
+
+  const backToFileSelect = () => {
+    setIsPreviewOpen(false);
+    setImportData(null);
+  };
 
   return (
     <div className={styles.container}>
-      <div className={styles.topNavigation}>
+      <PageHeader
+        back={{ label: 'Volver a selección de método', to: '/admin/users' }}
+        icon={FileSpreadsheet}
+        subtitle="Cargue y sincronice la nómina estudiantil mediante archivo Excel o CSV estructurado."
+        title="Importación Masiva de Estudiantes"
+        primaryAction={
+          <span className={styles.cycleBadge}>
+            <span className={styles.cycleDot} />
+            Ciclo Lectivo Activo
+          </span>
+        }
+      />
+
+      <section className={styles.heroCard}>
+        <div className={styles.templateBar}>
+          <div className={styles.templateInfo}>
+            <div className={styles.templateIcon}>
+              <FileText size={16} />
+            </div>
+            <div>
+              <div className={styles.templateTitleRow}>
+                <h2 className={styles.templateTitle}>Plantillas Oficiales de Registro</h2>
+                <span className={styles.formatBadge}>Formato oficial</span>
+              </div>
+              <p className={styles.templateSub}>
+                Use estos archivos para asegurar compatibilidad sin errores de validación.
+              </p>
+            </div>
+          </div>
+          <div className={styles.templateActions}>
+            <button
+              type="button"
+              className={styles.btnGreen}
+              onClick={downloadOfficialTemplateXlsx}
+              disabled={isLoading}
+            >
+              <Download size={14} />
+              Descargar .xlsx
+            </button>
+            <button
+              type="button"
+              className={styles.btnOutline}
+              onClick={downloadOfficialTemplateCsv}
+              disabled={isLoading}
+            >
+              <Download size={14} />
+              Descargar .csv
+            </button>
+          </div>
+        </div>
+
+        {errorMessage && (
+          <div className={styles.errorBanner} role="alert">
+            <AlertTriangle size={18} />
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
+        <div
+          className={`${styles.dropzone} ${isDragOver ? styles.dropzoneActive : ''}`}
+          onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
+          onDrop={onDrop}
+          onClick={() => !isLoading && fileInputRef.current?.click()}
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv,.xlsx,.xls"
+            className={styles.hiddenInput}
+            onChange={onFileChange}
+            disabled={isLoading}
+          />
+          <div className={styles.dropzoneIcon}>
+            <UploadCloud size={20} />
+          </div>
+          <h3 className={styles.dropzoneMain}>Arrastre y suelte su archivo aquí</h3>
+          <p className={styles.dropzoneSub}>
+            Admite formatos <strong>.xlsx</strong> o <strong>.csv</strong> hasta 10 MB
+          </p>
+          <button type="button" className={styles.btnBlue} disabled={isLoading}>
+            <UploadCloud size={14} />
+            Seleccionar archivo desde el equipo
+          </button>
+        </div>
+
+        {selectedFile && (
+          <div className={styles.fileBadge}>
+            <FileCheck size={20} color="var(--color-primary-green)" />
+            <div>
+              <div className={styles.fileName}>{selectedFile.name}</div>
+              <div className={styles.fileSize}>
+                {(selectedFile.size / 1024).toFixed(1)} KB · Listo para procesar
+              </div>
+            </div>
+          </div>
+        )}
+
         <button
           type="button"
-          className={styles.backBtn}
-          onClick={() => navigate('/admin/users')}
+          className={styles.validateBtn}
+          onClick={handleValidateFile}
+          disabled={isLoading || !selectedFile}
         >
-          <ArrowLeft size={18} /> Volver a selección de método
+          {isLoading ? (
+            <>
+              <Loader2 size={18} className={styles.spin} />
+              Validando con el servidor...
+            </>
+          ) : (
+            <>
+              <Play size={18} />
+              Validar y procesar archivo
+            </>
+          )}
+        </button>
+
+        <div className={styles.heroFooter}>
+          <div className={styles.lastImport}>
+            <CheckCircle2 size={14} className={styles.lastImportIcon} />
+            {lastImport ? (
+              <span>
+                <strong>Última importación:</strong> {lastImport.name} · {lastImport.date}
+              </span>
+            ) : (
+              <span>Aún no hay importaciones recientes registradas en este equipo.</span>
+            )}
+          </div>
+          <span className={styles.heroHint}>Verificación automática al validar el archivo</span>
+        </div>
+      </section>
+
+      <section className={styles.guideCard}>
+        <div className={styles.guideInfo}>
+          <div className={styles.guideIcon}>
+            <FileText size={20} />
+          </div>
+          <div>
+            <div className={styles.guideTitleRow}>
+              <h2 className={styles.guideTitle}>Especificaciones y Guía de Columnas</h2>
+              <span className={styles.fieldsBadge}>8 campos soportados</span>
+            </div>
+            <p className={styles.guideSub}>
+              Consulte el diccionario de datos, formato de celdas y reglas para evitar
+              inconsistencias de carga.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          className={styles.btnNavy}
+          onClick={() => setIsDictionaryOpen(true)}
+        >
+          <Eye size={16} />
+          Ver requisitos y diccionario de campos
+        </button>
+      </section>
+
+      <div className={styles.dashboardWrap}>
+        <button
+          type="button"
+          className={styles.dashboardBtn}
+          onClick={() => navigate('/admin')}
+        >
+          <ArrowLeft size={16} />
+          Regresar al Dashboard Administrativo
         </button>
       </div>
 
-      <header className={styles.header}>
-        <h1 className={styles.title}>Importación Masiva de Usuarios</h1>
-        <p className={styles.subtitle}>
-          Revise los requisitos y la estructura oficial, descargue la plantilla y luego cargue su
-          archivo Excel o CSV en el asistente.
-        </p>
-      </header>
-
-      <div className={styles.orientationGrid}>
-        <aside className={styles.sidePanel}>
-          <div className={styles.downloadCard}>
-            <div className={styles.downloadInfo}>
-              <FileSpreadsheet size={28} className={styles.downloadIcon} />
-              <div>
-                <div className={styles.downloadTitle}>Plantilla Oficial EduSmart</div>
-                <div className={styles.downloadSub}>
-                  Estructura pre-configurada (.xlsx / .csv)
-                </div>
-              </div>
-            </div>
-            <div className={styles.downloadActions}>
-              <button
-                type="button"
-                className={styles.downloadBtn}
-                onClick={downloadOfficialTemplateXlsx}
-              >
-                <Download size={15} />
-                Excel
-              </button>
-              <button
-                type="button"
-                className={styles.downloadBtnOutline}
-                onClick={downloadOfficialTemplateCsv}
-              >
-                <Download size={15} />
-                CSV
-              </button>
-            </div>
-          </div>
-
-          <div className={styles.sideCard}>
-            <h2 className={styles.sectionTitle}>
-              <CheckCircle2 size={18} color="var(--color-primary-green)" />
-              Requisitos de importación
-            </h2>
-            <ul className={styles.checklist}>
-              <li className={styles.checklistItem}>
-                <CheckCircle2 size={16} color="var(--color-primary-green)" />
-                No alterar el nombre de los encabezados.
-              </li>
-              <li className={styles.checklistItem}>
-                <CheckCircle2 size={16} color="var(--color-primary-green)" />
-                Cédulas sin guiones ni espacios (9 dígitos).
-              </li>
-              <li className={styles.checklistItem}>
-                <CheckCircle2 size={16} color="var(--color-primary-green)" />
-                Correos institucionales (@ctphojancha.ed.cr).
-              </li>
-              <li className={styles.checklistItem}>
-                <CheckCircle2 size={16} color="var(--color-primary-green)" />
-                Roles válidos: únicamente ESTUDIANTE (por defecto si se omite).
-              </li>
-            </ul>
-          </div>
-
-          <div className={styles.ctaCard}>
-            <p className={styles.ctaText}>
-              Cuando tenga el archivo listo con la plantilla oficial, inicie la carga en el
-              asistente.
-            </p>
-            <button
-              type="button"
-              className={styles.ctaBtn}
-              onClick={() => setIsWizardOpen(true)}
-            >
-              <Upload size={18} />
-              Seleccionar archivo
-            </button>
-          </div>
-        </aside>
-
-        <section className={styles.schemaCard}>
-          <h2 className={styles.sectionTitle}>
-            <AlertCircle size={20} color="var(--color-primary-blue)" />
-            Estructura requerida del archivo
-          </h2>
-
-          <div className={styles.schemaTableWrapper}>
-            <table className={styles.schemaTable}>
-              <thead>
-                <tr>
-                  <th>Columna</th>
-                  <th>Obligatorio</th>
-                  <th>Tipo de Dato</th>
-                  <th>Valores Permitidos / Ejemplo</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <strong>identificacion*</strong>
-                  </td>
-                  <td>
-                    <span className={styles.badgeRequiredYes}>Sí</span>
-                  </td>
-                  <td>Texto / Numérico</td>
-                  <td>504120893 (9 dígitos exactos)</td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>nombres*</strong>
-                  </td>
-                  <td>
-                    <span className={styles.badgeRequiredYes}>Sí</span>
-                  </td>
-                  <td>Texto (50 chars)</td>
-                  <td>Aaron José</td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>apellidos*</strong>
-                  </td>
-                  <td>
-                    <span className={styles.badgeRequiredYes}>Sí</span>
-                  </td>
-                  <td>Texto (50 chars)</td>
-                  <td>Solano Mendoza</td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>correo*</strong>
-                  </td>
-                  <td>
-                    <span className={styles.badgeRequiredYes}>Sí</span>
-                  </td>
-                  <td>Email válido</td>
-                  <td>asolano@ctphojancha.ed.cr</td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>rol</strong>
-                  </td>
-                  <td>
-                    <span className={styles.badgeRequiredNo}>No / Por defecto</span>
-                  </td>
-                  <td>Enum</td>
-                  <td>Opcional. Si se omite, se asigna ESTUDIANTE automáticamente</td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>seccion</strong>
-                  </td>
-                  <td>
-                    <span className={styles.badgeRequiredNo}>No</span>
-                  </td>
-                  <td>Texto</td>
-                  <td>10-A, 11-B Informática, Depto. Ciencias</td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>telefono</strong>
-                  </td>
-                  <td>
-                    <span className={styles.badgeRequiredNo}>No</span>
-                  </td>
-                  <td>Texto (15 chars)</td>
-                  <td>8744-1234</td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong>estado</strong>
-                  </td>
-                  <td>
-                    <span className={styles.badgeRequiredNo}>No / Por defecto</span>
-                  </td>
-                  <td>Enum</td>
-                  <td>
-                    Opcional. Si se omite, se asigna Activo automáticamente (Activo, Inactivo,
-                    Bloqueado)
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </div>
+      <BulkImportDictionaryModal
+        isOpen={isDictionaryOpen}
+        onClose={() => setIsDictionaryOpen(false)}
+      />
 
       <BulkImportWizardModal
-        isOpen={isWizardOpen}
-        onClose={() => setIsWizardOpen(false)}
+        isOpen={isPreviewOpen}
+        importData={importData}
+        fileName={fileName}
+        onClose={closePreview}
+        onBackToFileSelect={backToFileSelect}
         onImportSuccess={() => {
-          setIsWizardOpen(false);
+          closePreview();
           navigate('/admin/users');
         }}
       />

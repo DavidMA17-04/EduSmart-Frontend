@@ -9,9 +9,11 @@ import {
   XCircle,
   Save,
   ShieldCheck,
-  HelpCircle,
   Download,
   Loader2,
+  ChevronDown,
+  IdCard,
+  Mail,
 } from 'lucide-react';
 import {
   downloadValidationReportXlsx,
@@ -26,6 +28,8 @@ import {
 } from '@/features/manage-user-import/lib/validateImportPreviewRow';
 import { ImportedUserRecord } from '../mocks/importedUsersMock';
 import styles from '../UserImportPreviewPage/UserImportPreview.module.css';
+
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;
 
 export interface UserImportPreviewPanelProps {
   importData: ValidateBulkImportResponse;
@@ -55,6 +59,9 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'VALID' | 'WARNING' | 'ERROR'>('ALL');
   const [showErrorsOnly, setShowErrorsOnly] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<(typeof PAGE_SIZE_OPTIONS)[number]>(10);
+  const [drawerOpen, setDrawerOpen] = useState(true);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -62,11 +69,17 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
 
   useEffect(() => {
     setRecords(mapValidateResponseToRecords(importData));
+    setPage(1);
+    setDrawerOpen(true);
   }, [importData]);
 
   useEffect(() => {
     onBusyChange?.(isSaving);
   }, [isSaving, onBusyChange]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, statusFilter, showErrorsOnly, pageSize]);
 
   const currentBreakdown = useMemo(
     () => computeImportPreviewBreakdown(records),
@@ -90,24 +103,43 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
     };
   }, [records]);
 
-  const filteredRecords = records.filter((row) => {
-    const matchesSearch =
-      searchTerm === '' ||
-      row.identification.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      row.names.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      row.firstLastname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      row.email.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredRecords = useMemo(() => {
+    return records.filter((row) => {
+      const matchesSearch =
+        searchTerm === '' ||
+        row.identification.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        row.names.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        row.firstLastname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        row.email.toLowerCase().includes(searchTerm.toLowerCase());
 
-    if (showErrorsOnly && row.status !== 'ERROR') {
-      return false;
+      if (showErrorsOnly && row.status !== 'ERROR') {
+        return false;
+      }
+
+      if (statusFilter !== 'ALL' && row.status !== statusFilter) {
+        return false;
+      }
+
+      return matchesSearch;
+    });
+  }, [records, searchTerm, showErrorsOnly, statusFilter]);
+
+  const totalFiltered = filteredRecords.length;
+  const totalPages = Math.max(1, Math.ceil(totalFiltered / pageSize) || 1);
+  const safePage = Math.min(page, totalPages);
+  const pageStart = totalFiltered === 0 ? 0 : (safePage - 1) * pageSize + 1;
+  const pageEnd = Math.min(safePage * pageSize, totalFiltered);
+  const paginatedRecords = filteredRecords.slice((safePage - 1) * pageSize, safePage * pageSize);
+
+  const pageNumbers = useMemo(() => {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
-
-    if (statusFilter !== 'ALL' && row.status !== statusFilter) {
-      return false;
-    }
-
-    return matchesSearch;
-  });
+    const pages = new Set<number>([1, totalPages, safePage, safePage - 1, safePage + 1]);
+    return Array.from(pages)
+      .filter((p) => p >= 1 && p <= totalPages)
+      .sort((a, b) => a - b);
+  }, [safePage, totalPages]);
 
   const handleDownloadReport = () => {
     downloadValidationReportXlsx(filteredRecords);
@@ -197,6 +229,78 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
   const rootClass =
     variant === 'modal' ? `${styles.container} ${styles.containerModal}` : styles.container;
 
+  const breakdownItems: Array<{
+    key: string;
+    title: string;
+    desc: string;
+    tag: string;
+    icon: 'id' | 'mail' | 'alert';
+  }> = [];
+
+  if (currentBreakdown.duplicateNationalIdInFile > 0) {
+    breakdownItems.push({
+      key: 'dup-id-file',
+      title: `Cédulas duplicadas en archivo (${currentBreakdown.duplicateNationalIdInFile})`,
+      desc: 'El mismo número de cédula aparece más de una vez en el archivo.',
+      tag: 'Duplicado',
+      icon: 'id',
+    });
+  }
+  if (currentBreakdown.duplicateNationalIdInDb > 0) {
+    breakdownItems.push({
+      key: 'dup-id-db',
+      title: `Cédulas ya existentes en BD (${currentBreakdown.duplicateNationalIdInDb})`,
+      desc: 'La cédula ya está registrada en el sistema escolar.',
+      tag: 'Duplicado',
+      icon: 'id',
+    });
+  }
+  if (currentBreakdown.duplicateEmailInFile > 0) {
+    breakdownItems.push({
+      key: 'dup-email-file',
+      title: `Correos duplicados en archivo (${currentBreakdown.duplicateEmailInFile})`,
+      desc: 'El mismo correo aparece más de una vez en el archivo.',
+      tag: 'Conflicto',
+      icon: 'mail',
+    });
+  }
+  if (currentBreakdown.duplicateEmailInDb > 0) {
+    breakdownItems.push({
+      key: 'dup-email-db',
+      title: `Correos ya existentes en BD (${currentBreakdown.duplicateEmailInDb})`,
+      desc: 'El correo institucional ya se encuentra registrado en el sistema.',
+      tag: 'Conflicto',
+      icon: 'mail',
+    });
+  }
+  if (currentBreakdown.invalidEmail > 0) {
+    breakdownItems.push({
+      key: 'invalid-email',
+      title: `Correos inválidos (${currentBreakdown.invalidEmail})`,
+      desc: 'Estructura no cumple con el formato estándar de correo.',
+      tag: 'Formato',
+      icon: 'mail',
+    });
+  }
+  if (currentBreakdown.invalidRole > 0) {
+    breakdownItems.push({
+      key: 'invalid-role',
+      title: `Roles no permitidos (${currentBreakdown.invalidRole})`,
+      desc: 'La importación masiva solo admite registros con rol ESTUDIANTE.',
+      tag: 'Rol',
+      icon: 'alert',
+    });
+  }
+  if (currentBreakdown.requiredFieldsMissing > 0) {
+    breakdownItems.push({
+      key: 'required',
+      title: `Campos vacíos (${currentBreakdown.requiredFieldsMissing})`,
+      desc: 'Faltan datos obligatorios en identificación, nombres o apellidos.',
+      tag: 'Obligatorio',
+      icon: 'alert',
+    });
+  }
+
   return (
     <div className={rootClass}>
       {variant === 'page' && (
@@ -213,9 +317,9 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
       )}
 
       <header className={styles.header}>
-        <h2 className={variant === 'modal' ? styles.titleModal : styles.title}>
-          Vista Previa y Validación de Usuarios
-        </h2>
+        {variant === 'page' && (
+          <h2 className={styles.title}>Vista previa y validación</h2>
+        )}
         <p className={styles.subtitle}>
           Revise los registros detectados antes de incorporarlos. Puede corregir inconsistencias
           directamente en la tabla.
@@ -224,45 +328,118 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
 
       {saveError && (
         <div className={styles.inlineErrorBanner} role="alert">
-          <AlertTriangle size={20} />
+          <AlertTriangle size={18} />
           <span>{saveError}</span>
         </div>
       )}
 
-      <section className={styles.kpiGrid}>
+      <section className={styles.kpiGrid} aria-label="Resumen de validación">
         <div className={`${styles.kpiCard} ${styles.kpiTotal}`}>
           <span className={styles.kpiLabel}>Total Registros</span>
-          <h3 className={styles.kpiValue}>{currentKPIs.totalRows}</h3>
-          <span className={styles.kpiSubText}>100% procesados</span>
+          <p className={styles.kpiValue}>{currentKPIs.totalRows}</p>
+          <span className={styles.kpiSubText}>
+            <span className={`${styles.kpiDot} ${styles.kpiDotNeutral}`} />
+            100% procesados
+          </span>
         </div>
         <div className={`${styles.kpiCard} ${styles.kpiValid}`}>
           <span className={styles.kpiLabel}>Registros Válidos</span>
-          <h3 className={styles.kpiValue}>{currentKPIs.validRows}</h3>
+          <p className={styles.kpiValue}>{currentKPIs.validRows}</p>
           <span className={`${styles.kpiSubText} ${styles.textGreen}`}>
+            <span className={`${styles.kpiDot} ${styles.kpiDotGreen}`} />
             {currentKPIs.validPercentage}% aptos para importar
           </span>
         </div>
         <div className={`${styles.kpiCard} ${styles.kpiWarning}`}>
           <span className={styles.kpiLabel}>Advertencias</span>
-          <h3 className={styles.kpiValue}>{currentKPIs.warningRows}</h3>
+          <p className={styles.kpiValue}>{currentKPIs.warningRows}</p>
           <span className={`${styles.kpiSubText} ${styles.textAmber}`}>
+            <span className={`${styles.kpiDot} ${styles.kpiDotAmber}`} />
             {currentKPIs.warningPercentage}% requieren atención
           </span>
         </div>
         <div className={`${styles.kpiCard} ${styles.kpiError}`}>
           <span className={styles.kpiLabel}>Con Errores</span>
-          <h3 className={styles.kpiValue}>{currentKPIs.errorRows}</h3>
+          <p className={styles.kpiValue}>{currentKPIs.errorRows}</p>
           <span className={`${styles.kpiSubText} ${styles.textRed}`}>
+            <span className={`${styles.kpiDot} ${styles.kpiDotRed}`} />
             {currentKPIs.errorPercentage}% bloquean importación
           </span>
         </div>
       </section>
 
-      <section className={styles.toolbarCard}>
+      <details
+        className={styles.inconsistenciesDrawer}
+        open={drawerOpen}
+        onToggle={(e) => setDrawerOpen((e.currentTarget as HTMLDetailsElement).open)}
+      >
+        <summary className={styles.inconsistenciesSummary}>
+          <div className={styles.inconsistenciesHeading}>
+            <span className={styles.inconsistenciesIcon} aria-hidden>
+              !
+            </span>
+            <div>
+              <h3 className={styles.inconsistenciesTitle}>
+                Resumen de inconsistencias detectadas
+                {currentKPIs.errorRows > 0 && (
+                  <span className={styles.inconsistenciesBadge}>
+                    {currentKPIs.errorRows} bloqueos
+                  </span>
+                )}
+              </h3>
+              <p className={styles.inconsistenciesHint}>
+                Edite las celdas directamente en la tabla para resolver los errores antes de confirmar.
+              </p>
+            </div>
+          </div>
+          <span className={styles.inconsistenciesToggle}>
+            <span className={styles.toggleShow}>Ver detalles</span>
+            <span className={styles.toggleHide}>Ocultar detalles</span>
+            <ChevronDown size={16} className={styles.toggleChevron} aria-hidden />
+          </span>
+        </summary>
+
+        <div className={styles.inconsistenciesBody}>
+          {breakdownItems.length === 0 && !hasAnyDuplicateInconsistency(currentBreakdown) ? (
+            <div className={styles.inconsistencyCard}>
+              <div className={styles.inconsistencyCardIcon}>
+                <CheckCircle2 size={16} />
+              </div>
+              <div className={styles.inconsistencyCardContent}>
+                <div className={styles.inconsistencyCardHeader}>
+                  <h4 className={styles.inconsistencyCardTitle}>Sin inconsistencias críticas</h4>
+                </div>
+                <p className={styles.inconsistencyCardDesc}>
+                  No hay cédulas ni correos duplicados, ni otros bloqueos catalogados en el lote actual.
+                </p>
+              </div>
+            </div>
+          ) : (
+            breakdownItems.map((item) => (
+              <div key={item.key} className={styles.inconsistencyCard}>
+                <div className={styles.inconsistencyCardIcon}>
+                  {item.icon === 'id' && <IdCard size={16} />}
+                  {item.icon === 'mail' && <Mail size={16} />}
+                  {item.icon === 'alert' && <AlertCircle size={16} />}
+                </div>
+                <div className={styles.inconsistencyCardContent}>
+                  <div className={styles.inconsistencyCardHeader}>
+                    <h4 className={styles.inconsistencyCardTitle}>{item.title}</h4>
+                    <span className={styles.inconsistencyTag}>{item.tag}</span>
+                  </div>
+                  <p className={styles.inconsistencyCardDesc}>{item.desc}</p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </details>
+
+      <section className={styles.toolbarCard} aria-label="Filtros de vista previa">
         <div className={styles.searchBox}>
-          <Search size={18} className={styles.searchIcon} />
+          <Search size={16} className={styles.searchIcon} />
           <input
-            type="text"
+            type="search"
             className={styles.searchInput}
             placeholder="Buscar por cédula, nombre o correo..."
             value={searchTerm}
@@ -277,6 +454,7 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
             onChange={(e) =>
               setStatusFilter(e.target.value as 'ALL' | 'VALID' | 'WARNING' | 'ERROR')
             }
+            aria-label="Filtrar por estado de validación"
           >
             <option value="ALL">Todos los Estados</option>
             <option value="VALID">Solo Válidos</option>
@@ -305,27 +483,33 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
         </div>
       </section>
 
-      <div className={styles.mainLayout}>
-        <div className={styles.tableContainer}>
-          <div className={styles.tableWrapper}>
-            <table className={styles.previewTable}>
-              <thead>
+      <section className={styles.tableContainer}>
+        <div className={styles.tableWrapper}>
+          <table className={styles.previewTable}>
+            <thead>
+              <tr>
+                <th className={styles.colRow}># Fila</th>
+                <th className={styles.colId}>Identificación</th>
+                <th>Nombres</th>
+                <th>Primer Apellido</th>
+                <th>Segundo Apellido</th>
+                <th className={styles.colEmail}>Correo Institucional</th>
+                <th className={styles.colRole}>Rol</th>
+                <th className={styles.colSection}>Sección</th>
+                <th className={styles.colStatus}>Estado cuenta</th>
+                <th className={styles.colValidation}>Validación</th>
+                <th className={styles.colAction}>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedRecords.length === 0 ? (
                 <tr>
-                  <th style={{ width: '50px' }}># Fila</th>
-                  <th style={{ width: '130px' }}>Identificación</th>
-                  <th>Nombres</th>
-                  <th>Primer Apellido</th>
-                  <th>Segundo Apellido</th>
-                  <th>Correo Institucional</th>
-                  <th style={{ width: '130px' }}>Rol</th>
-                  <th>Sección</th>
-                  <th style={{ width: '130px' }}>Estado cuenta</th>
-                  <th style={{ width: '120px' }}>Validación</th>
-                  <th style={{ width: '50px' }}>Acción</th>
+                  <td colSpan={11} className={styles.emptyTableCell}>
+                    No hay registros que coincidan con los filtros actuales.
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {filteredRecords.map((row) => (
+              ) : (
+                paginatedRecords.map((row) => (
                   <tr
                     key={row.id}
                     className={
@@ -336,9 +520,7 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
                           : styles.rowValid
                     }
                   >
-                    <td style={{ color: 'var(--color-text-muted)', fontWeight: 600 }}>
-                      #{row.rowNumber}
-                    </td>
+                    <td className={styles.rowNumberCell}>#{row.rowNumber}</td>
                     <td>
                       <input
                         type="text"
@@ -404,7 +586,7 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
                     <td>
                       <input
                         type="text"
-                        className={`${styles.cellInput} ${
+                        className={`${styles.cellInput} ${styles.cellInputCenter} ${
                           row.invalidFields?.includes('section') ? styles.cellInputError : ''
                         }`}
                         value={row.section || ''}
@@ -440,7 +622,7 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
                         </span>
                       )}
                     </td>
-                    <td>
+                    <td className={styles.actionCell}>
                       <button
                         type="button"
                         className={styles.deleteBtn}
@@ -451,108 +633,76 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
                       </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
 
-        <aside className={styles.summaryPanel}>
-          <h3 className={styles.summaryTitle}>
-            <AlertCircle size={18} color="var(--status-error-text)" />
-            Resumen de inconsistencias
-          </h3>
-
-          <ul className={styles.errorBreakdownList}>
-            {hasAnyDuplicateInconsistency(currentBreakdown) ? (
-              <>
-                {currentBreakdown.duplicateNationalIdInFile > 0 && (
-                  <li className={styles.errorBreakdownItem}>
-                    <div className={styles.errorBreakdownName}>
-                      Cédulas duplicadas en archivo ({currentBreakdown.duplicateNationalIdInFile})
-                    </div>
-                    <div className={styles.errorBreakdownDesc}>
-                      El mismo número de cédula aparece más de una vez en el archivo.
-                    </div>
-                  </li>
-                )}
-                {currentBreakdown.duplicateNationalIdInDb > 0 && (
-                  <li className={styles.errorBreakdownItem}>
-                    <div className={styles.errorBreakdownName}>
-                      Cédulas ya existentes en BD ({currentBreakdown.duplicateNationalIdInDb})
-                    </div>
-                    <div className={styles.errorBreakdownDesc}>
-                      La cédula ya está registrada en el sistema.
-                    </div>
-                  </li>
-                )}
-                {currentBreakdown.duplicateEmailInFile > 0 && (
-                  <li className={styles.errorBreakdownItem}>
-                    <div className={styles.errorBreakdownName}>
-                      Correos duplicados en archivo ({currentBreakdown.duplicateEmailInFile})
-                    </div>
-                    <div className={styles.errorBreakdownDesc}>
-                      El mismo correo aparece más de una vez en el archivo.
-                    </div>
-                  </li>
-                )}
-                {currentBreakdown.duplicateEmailInDb > 0 && (
-                  <li className={styles.errorBreakdownItem}>
-                    <div className={styles.errorBreakdownName}>
-                      Correos ya existentes en BD ({currentBreakdown.duplicateEmailInDb})
-                    </div>
-                    <div className={styles.errorBreakdownDesc}>
-                      El correo ya se encuentra registrado en el sistema.
-                    </div>
-                  </li>
-                )}
-              </>
-            ) : (
-              <li className={styles.errorBreakdownItem}>
-                <div className={styles.errorBreakdownName}>Sin duplicados detectados</div>
-                <div className={styles.errorBreakdownDesc}>
-                  No hay cédulas ni correos duplicados en archivo o BD en el lote actual.
-                </div>
-              </li>
-            )}
-            {currentBreakdown.invalidEmail > 0 && (
-              <li className={styles.errorBreakdownItem}>
-                <div className={styles.errorBreakdownName}>
-                  Correos inválidos ({currentBreakdown.invalidEmail})
-                </div>
-                <div className={styles.errorBreakdownDesc}>
-                  Estructura no cumple con el formato estándar de correo.
-                </div>
-              </li>
-            )}
-            {currentBreakdown.invalidRole > 0 && (
-              <li className={styles.errorBreakdownItem}>
-                <div className={styles.errorBreakdownName}>
-                  Roles no permitidos ({currentBreakdown.invalidRole})
-                </div>
-                <div className={styles.errorBreakdownDesc}>
-                  La importación masiva solo admite registros con rol ESTUDIANTE.
-                </div>
-              </li>
-            )}
-            {currentBreakdown.requiredFieldsMissing > 0 && (
-              <li className={styles.errorBreakdownItem}>
-                <div className={styles.errorBreakdownName}>
-                  Campos vacíos ({currentBreakdown.requiredFieldsMissing})
-                </div>
-                <div className={styles.errorBreakdownDesc}>
-                  Faltan datos obligatorios en identificación, nombres o apellidos.
-                </div>
-              </li>
-            )}
-          </ul>
-
-          <div className={styles.helpHint}>
-            <HelpCircle size={15} />
-            Edite las celdas directamente en la tabla para resolver los errores antes de confirmar.
+        <div className={styles.tablePagination}>
+          <div className={styles.paginationMeta}>
+            <span>
+              Mostrando <strong>{pageStart}</strong> a <strong>{pageEnd}</strong> de{' '}
+              <strong>{totalFiltered}</strong> registros
+            </span>
+            <span className={styles.paginationDivider} aria-hidden>
+              |
+            </span>
+            <label className={styles.pageSizeLabel}>
+              Mostrar:
+              <select
+                className={styles.pageSizeSelect}
+                value={pageSize}
+                onChange={(e) =>
+                  setPageSize(Number(e.target.value) as (typeof PAGE_SIZE_OPTIONS)[number])
+                }
+              >
+                {PAGE_SIZE_OPTIONS.map((size) => (
+                  <option key={size} value={size}>
+                    {size} por página
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
-        </aside>
-      </div>
+
+          <nav className={styles.paginationNav} aria-label="Paginación de registros">
+            <button
+              type="button"
+              className={styles.pageBtn}
+              disabled={safePage <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              Anterior
+            </button>
+            {pageNumbers.map((num, idx) => {
+              const prev = pageNumbers[idx - 1];
+              const showEllipsis = prev !== undefined && num - prev > 1;
+              return (
+                <React.Fragment key={num}>
+                  {showEllipsis && <span className={styles.pageEllipsis}>…</span>}
+                  <button
+                    type="button"
+                    className={`${styles.pageBtn} ${num === safePage ? styles.pageBtnActive : ''}`}
+                    aria-current={num === safePage ? 'page' : undefined}
+                    onClick={() => setPage(num)}
+                  >
+                    {num}
+                  </button>
+                </React.Fragment>
+              );
+            })}
+            <button
+              type="button"
+              className={styles.pageBtn}
+              disabled={safePage >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            >
+              Siguiente
+            </button>
+          </nav>
+        </div>
+      </section>
 
       <footer className={styles.actionBar}>
         <button
@@ -560,16 +710,20 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
           className={styles.btnPrimaryGreen}
           onClick={handleConfirmImport}
           disabled={isSaving || currentKPIs.validRows === 0}
-          style={{ opacity: isSaving ? 0.7 : 1, cursor: isSaving ? 'not-allowed' : 'pointer' }}
+          title={
+            currentKPIs.validRows === 0
+              ? 'No se pueden importar registros con inconsistencias'
+              : undefined
+          }
         >
           {isSaving ? (
             <>
-              <Loader2 size={18} className={styles.spinIcon} />
+              <Loader2 size={16} className={styles.spinIcon} />
               Guardando en base de datos...
             </>
           ) : (
             <>
-              <Save size={18} />
+              <Save size={16} />
               Continuar e importar {currentKPIs.validRows} registros válidos
             </>
           )}
@@ -584,7 +738,12 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
           >
             <RefreshCw size={16} /> Volver a cargar archivo
           </button>
-          <button type="button" className={styles.btnOutline} onClick={onCancel} disabled={isSaving}>
+          <button
+            type="button"
+            className={`${styles.btnOutline} ${styles.btnOutlineDanger}`}
+            onClick={onCancel}
+            disabled={isSaving}
+          >
             <XCircle size={16} /> Cancelar importación
           </button>
         </div>
