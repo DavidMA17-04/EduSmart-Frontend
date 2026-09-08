@@ -470,6 +470,103 @@
   cursor: not-allowed;
 }
 
+.containerModal {
+  max-width: none;
+  height: auto;
+  max-height: none;
+  margin: 0;
+  overflow: visible;
+}
+
+.titleModal {
+  font-family: var(--font-family-heading);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  margin: 0 0 0.25rem 0;
+  letter-spacing: -0.02em;
+}
+
+.inlineErrorBanner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: var(--status-error-bg);
+  border: 1px solid var(--status-error-border);
+  border-radius: 12px;
+  color: var(--status-error-text);
+  margin-bottom: 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.helpHint {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.spinIcon {
+  animation: previewSpin 1s linear infinite;
+}
+
+@keyframes previewSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.successOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.successCard {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 2.5rem;
+  max-width: 460px;
+  text-align: center;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.successIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #e6f4ea;
+  color: #107c41;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.25rem;
+}
+
+.successTitle {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #081e48;
+  margin: 0 0 0.5rem 0;
+}
+
+.successText {
+  font-size: 0.9rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0 0 1.5rem 0;
+}
+
 @media (max-width: 1000px) {
   .container {
     height: auto;
