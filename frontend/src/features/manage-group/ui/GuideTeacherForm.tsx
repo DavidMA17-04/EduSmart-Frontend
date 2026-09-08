@@ -4,78 +4,84 @@ import type { GuideTeacherFormValues } from '../model/useGuideTeacherForm';
 import styles from './GroupForm.module.css';
 
 interface GuideTeacherFormProps {
-  title: string;
   values: GuideTeacherFormValues;
   errors: Partial<Record<keyof GuideTeacherFormValues, string>>;
   isSubmitting?: boolean;
+  submitLabel?: string;
   onChange: <K extends keyof GuideTeacherFormValues>(field: K, value: GuideTeacherFormValues[K]) => void;
   onSubmit: FormEventHandler<HTMLFormElement>;
   onCancel: () => void;
 }
 
 export const GuideTeacherForm = ({
-  title,
   values,
   errors,
   isSubmitting = false,
+  submitLabel = 'Guardar cambios',
   onChange,
   onSubmit,
   onCancel,
 }: GuideTeacherFormProps) => (
-  <aside className={styles.panel}>
-    <h2>{title}</h2>
-    <form onSubmit={onSubmit} noValidate>
-      <label>
-        Cédula
-        <Input
-          required
-          maxLength={12}
-          value={values.nationalId}
-          onChange={(event) => onChange('nationalId', event.target.value)}
-        />
-        {errors.nationalId && <span className={styles.error}>{errors.nationalId}</span>}
-      </label>
-      <label>
-        Nombre
-        <Input
-          required
-          maxLength={80}
-          value={values.firstName}
-          onChange={(event) => onChange('firstName', event.target.value)}
-        />
-        {errors.firstName && <span className={styles.error}>{errors.firstName}</span>}
-      </label>
-      <label>
-        Apellidos
-        <Input
-          required
-          maxLength={120}
-          value={values.lastName}
-          onChange={(event) => onChange('lastName', event.target.value)}
-        />
-        {errors.lastName && <span className={styles.error}>{errors.lastName}</span>}
-      </label>
-      <label>
-        Correo
-        <Input
-          required
-          type="email"
-          maxLength={150}
-          value={values.email}
-          onChange={(event) => onChange('email', event.target.value)}
-        />
-        {errors.email && <span className={styles.error}>{errors.email}</span>}
-      </label>
-      <label>
-        Teléfono
-        <Input
-          maxLength={30}
-          value={values.phone}
-          onChange={(event) => onChange('phone', event.target.value)}
-        />
-      </label>
-      <span className={styles.hint}>El docente queda con rol Docente y podrá asignarse a una sección.</span>
-      <FormActions isSubmitting={isSubmitting} onCancel={onCancel} submitLabel="Guardar cambios" />
-    </form>
-  </aside>
+  <form className={styles.form} onSubmit={onSubmit} noValidate>
+    <label>
+      Cédula
+      <Input
+        maxLength={12}
+        onChange={(event) => onChange('nationalId', event.target.value)}
+        required
+        value={values.nationalId}
+      />
+      {errors.nationalId && <span className={styles.error}>{errors.nationalId}</span>}
+    </label>
+    <label>
+      Nombre
+      <Input
+        maxLength={80}
+        onChange={(event) => onChange('firstName', event.target.value)}
+        required
+        value={values.firstName}
+      />
+      {errors.firstName && <span className={styles.error}>{errors.firstName}</span>}
+    </label>
+    <label>
+      Apellido 1
+      <Input
+        maxLength={100}
+        onChange={(event) => onChange('firstLastname', event.target.value)}
+        required
+        value={values.firstLastname}
+      />
+      {errors.firstLastname && <span className={styles.error}>{errors.firstLastname}</span>}
+    </label>
+    <label>
+      Apellido 2
+      <Input
+        maxLength={100}
+        onChange={(event) => onChange('secondLastname', event.target.value)}
+        value={values.secondLastname}
+      />
+      {errors.secondLastname && <span className={styles.error}>{errors.secondLastname}</span>}
+    </label>
+    <label>
+      Correo
+      <Input
+        maxLength={150}
+        onChange={(event) => onChange('email', event.target.value)}
+        required
+        type="email"
+        value={values.email}
+      />
+      {errors.email && <span className={styles.error}>{errors.email}</span>}
+    </label>
+    <label>
+      Teléfono
+      <Input
+        maxLength={30}
+        onChange={(event) => onChange('phone', event.target.value)}
+        value={values.phone}
+      />
+    </label>
+    <span className={styles.hint}>El docente queda con rol Docente y podrá asignarse a una sección.</span>
+    <FormActions isSubmitting={isSubmitting} onCancel={onCancel} submitLabel={submitLabel} />
+  </form>
 );

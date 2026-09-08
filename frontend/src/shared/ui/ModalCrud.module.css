@@ -1,0 +1,15 @@
+.wrap :global([class*='modal']) {
+  /* size hooks via CSS variables on wrapper if needed later */
+}
+
+.sm :global(section) {
+  max-width: 420px;
+}
+
+.md :global(section) {
+  max-width: 560px;
+}
+
+.lg :global(section) {
+  max-width: 720px;
+}

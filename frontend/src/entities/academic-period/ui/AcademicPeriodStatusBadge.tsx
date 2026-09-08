@@ -1,13 +1,15 @@
-import { Badge } from '@/shared/ui';
+import { StatusBadge, type StatusTone } from '@/shared/ui';
 import { ACADEMIC_PERIOD_STATUS_LABELS } from '../model/formatters';
 import type { AcademicPeriodStatus } from '../model/types';
 
-const tones: Record<AcademicPeriodStatus, 'success' | 'neutral' | 'warning'> = {
+const tones: Record<AcademicPeriodStatus, StatusTone> = {
   PLANNED: 'warning',
-  ACTIVE: 'success',
-  CLOSED: 'neutral',
+  ACTIVE: 'active',
+  CLOSED: 'closed',
 };
 
 export const AcademicPeriodStatusBadge = ({ status }: { status: AcademicPeriodStatus }) => (
-  <Badge tone={tones[status]}>{ACADEMIC_PERIOD_STATUS_LABELS[status]}</Badge>
+  <StatusBadge tone={tones[status]} withDot={status === 'ACTIVE'}>
+    {ACADEMIC_PERIOD_STATUS_LABELS[status]}
+  </StatusBadge>
 );

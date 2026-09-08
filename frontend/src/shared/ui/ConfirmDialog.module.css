@@ -10,22 +10,28 @@
   height: 38px;
   border-radius: 50%;
   background: rgba(0, 46, 122, 0.08);
-  color: var(--admin-primary);
+  color: var(--admin-primary, var(--brand-primary));
 }
 
 .iconDanger {
   background: #ffebeb;
-  color: var(--admin-danger);
+  color: var(--admin-danger, #d32f2f);
+}
+
+.iconWarning {
+  background: #fff7ed;
+  color: #c2410c;
 }
 
 .message {
-  color: var(--admin-text);
+  color: var(--admin-text, var(--brand-navy));
   font-size: 14px;
   font-weight: 600;
 }
 
 .secondary {
-  color: var(--admin-muted);
+  margin: 0;
+  color: var(--admin-muted, var(--brand-muted));
   font-size: 13px;
 }
 
@@ -34,4 +40,5 @@
   justify-content: flex-end;
   gap: 10px;
   margin-top: 8px;
+  flex-wrap: wrap;
 }

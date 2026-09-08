@@ -14,8 +14,8 @@
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(ellipse 70% 60% at 20% 0%, rgba(207, 172, 101, 0.28), transparent 55%),
-    linear-gradient(155deg, #002E7A 0%, #021A53 60%, #011033 100%);
+    radial-gradient(ellipse 70% 60% at 20% 0%, color-mix(in srgb, var(--brand-gold) 28%, transparent), transparent 55%),
+    linear-gradient(155deg, var(--brand-primary) 0%, var(--brand-navy) 60%, var(--brand-navy-deep) 100%);
   color: #fff;
 }
 
@@ -33,7 +33,7 @@
 
 .card:hover {
   transform: translateY(-6px) scale(1.01);
-  border-color: rgba(207, 172, 101, 0.55);
+  border-color: color-mix(in srgb, var(--brand-gold) 55%, transparent);
   box-shadow: 0 26px 48px rgba(2, 26, 83, 0.28);
 }
 
@@ -51,7 +51,7 @@
 }
 
 .card:hover .cardIcon {
-  background: rgba(207, 172, 101, 0.4);
+  background: color-mix(in srgb, var(--brand-gold) 40%, transparent);
   transform: translateY(-2px);
 }
 
@@ -87,8 +87,8 @@
   width: 42px;
   height: 42px;
   border-radius: 12px;
-  background: rgba(207, 172, 101, 0.28);
-  color: var(--admin-accent, #CFAC65);
+  background: color-mix(in srgb, var(--brand-gold) 28%, transparent);
+  color: var(--brand-gold);
   transition: background 0.28s ease, transform 0.28s ease;
 }
 

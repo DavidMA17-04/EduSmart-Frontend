@@ -9,7 +9,6 @@ export const SectionTableRow = ({ section, isSelected = false, onSelect, actions
   <tr className={`${styles.row} ${isSelected ? styles.selected : ''}`} onClick={() => onSelect?.(section.id)}>
     <td><strong>{section.gradeLevel}</strong></td>
     <td>{section.name}</td>
-    <td>{section.specialty?.name ?? 'Sin especialidad'}</td>
     <td>{section.groups?.length ?? 0}</td>
     <td><SectionStatusBadge status={section.status} /></td>
     {actions && <td onClick={(event) => event.stopPropagation()}>{actions}</td>}

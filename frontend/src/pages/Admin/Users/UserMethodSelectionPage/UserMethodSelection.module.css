@@ -11,27 +11,6 @@
   min-height: 0;
 }
 
-.header {
-  flex-shrink: 0;
-  margin-bottom: 0;
-}
-
-.title {
-  font-family: var(--font-family-heading);
-  font-size: 1.55rem;
-  font-weight: 700;
-  color: var(--color-primary-dark);
-  margin: 0 0 0.25rem 0;
-  letter-spacing: -0.02em;
-}
-
-.subtitle {
-  color: var(--color-text-muted);
-  font-size: 0.875rem;
-  margin: 0;
-  line-height: 1.4;
-}
-
 .cardsGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

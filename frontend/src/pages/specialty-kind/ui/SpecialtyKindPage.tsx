@@ -1,7 +1,7 @@
-import { ArrowLeft, Layers, Wrench } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Layers, Wrench } from 'lucide-react';
 import type { SpecialtyKind } from '@/entities/specialty';
 import { SpecialtiesPanel } from '@/widgets/specialties-panel';
+import { PageHeader } from '@/shared/ui';
 import styles from '../../specialties/ui/SpecialtiesPage.module.css';
 
 interface SpecialtyKindPageProps {
@@ -32,26 +32,18 @@ export const SpecialtyKindPage = ({ kind }: SpecialtyKindPageProps) => {
 
   return (
     <section className={styles.page}>
-      <p className={styles.breadcrumb}>
-        Administrativo <span>›</span> Estructura académica <span>›</span>{' '}
-        <Link className={styles.crumbLink} to="/admin/specialties">
-          Oferta académica
-        </Link>{' '}
-        <span>›</span> {meta.crumb}
-      </p>
-      <header className={styles.header}>
-        <span className={styles.icon}>
-          <Icon size={22} />
-        </span>
-        <div>
-          <h1>{meta.title}</h1>
-          <p>{meta.description}</p>
-        </div>
-        <Link className={styles.backLink} to="/admin/specialties">
-          <ArrowLeft size={16} />
-          Volver al hub
-        </Link>
-      </header>
+      <PageHeader
+        back={{ label: 'Volver al hub', to: '/admin/specialties' }}
+        breadcrumbs={[
+          { label: 'Administrativo' },
+          { label: 'Estructura académica' },
+          { label: 'Oferta académica', to: '/admin/specialties' },
+          { label: meta.crumb },
+        ]}
+        icon={Icon}
+        subtitle={meta.description}
+        title={meta.title}
+      />
       <SpecialtiesPanel kind={kind} />
     </section>
   );

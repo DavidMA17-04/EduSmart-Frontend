@@ -198,13 +198,6 @@
   margin-top: 16px;
 }
 
-.successMessage {
-  margin-bottom: 12px;
-  color: #1f7a43;
-  font-size: 12px;
-  font-weight: 600;
-}
-
 @media (max-width: 960px) {
   .panel {
     grid-template-columns: 1fr;

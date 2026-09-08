@@ -106,15 +106,11 @@ export const UsersDirectoryFilters = ({
           value={search}
         />
       </label>
-      <span className={styles.searchHint}>Escribir es opcional</span>
-      <Button
-        type="button"
-        variant="secondary"
-        disabled={!hasActiveFilters}
-        onClick={onClear}
-      >
-        Limpiar filtros
-      </Button>
+      {hasActiveFilters && (
+        <Button type="button" variant="secondary" onClick={onClear}>
+          Limpiar filtros
+        </Button>
+      )}
     </div>
   </div>
 );

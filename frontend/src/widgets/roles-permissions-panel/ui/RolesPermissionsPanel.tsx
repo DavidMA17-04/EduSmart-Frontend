@@ -1,5 +1,6 @@
-import { Edit3, Plus, Search, Trash2 } from 'lucide-react';
-import { Alert, Button, Card, Input, Modal } from '@/shared/ui';
+import { useEffect, useState } from 'react';
+import { Edit3, Plus, Search, ShieldCheck, Trash2 } from 'lucide-react';
+import { Alert, Button, Card, ConfirmDialog, EmptyState, Input, ModalCrud, useToast } from '@/shared/ui';
 import { RoleListItem, RoleStatusBadge } from '@/entities/role';
 import { DuplicateRoleAction, RoleForm } from '@/features/manage-role';
 import { PermissionMatrix } from '@/features/manage-role-permissions';
@@ -8,7 +9,20 @@ import styles from './RolesPermissionsPanel.module.css';
 
 export const RolesPermissionsPanel = () => {
   const model = useRolesPermissionsPanel();
+  const toast = useToast();
+  const [confirmDeactivateOpen, setConfirmDeactivateOpen] = useState(false);
   const dialogTitle = model.dialogMode === 'create' ? 'Nuevo rol' : model.dialogMode === 'duplicate' ? 'Duplicar rol' : 'Editar rol';
+
+  useEffect(() => {
+    if (model.saveMessage) {
+      toast.push(model.saveMessage, 'success');
+    }
+  }, [model.saveMessage, toast]);
+
+  const handleConfirmDeactivate = async () => {
+    await model.deactivateSelectedRole();
+    setConfirmDeactivateOpen(false);
+  };
 
   return (
     <section className={styles.panel}>
@@ -44,7 +58,20 @@ export const RolesPermissionsPanel = () => {
               />
             ))}
             {!model.isLoadingRoles && !model.rolesError && model.roles.length === 0 && (
-              <p className={styles.muted}>No hay roles que coincidan.</p>
+              <EmptyState
+                action={
+                  model.search.trim()
+                    ? { label: 'Limpiar búsqueda', onClick: () => model.setSearch('') }
+                    : { label: 'Nuevo rol', onClick: () => model.openDialog('create'), icon: Plus }
+                }
+                description={
+                  model.search.trim()
+                    ? 'No hay roles que coincidan con la búsqueda.'
+                    : 'Aún no hay roles activos en la plataforma.'
+                }
+                icon={ShieldCheck}
+                title="Sin roles"
+              />
             )}
           </div>
         </Card>
@@ -79,7 +106,7 @@ export const RolesPermissionsPanel = () => {
                     <Edit3 size={14} /> Editar
                   </Button>
                   <DuplicateRoleAction onDuplicate={() => model.openDialog('duplicate')} />
-                  <Button onClick={() => void model.deactivateSelectedRole()} type="button" variant="danger">
+                  <Button onClick={() => setConfirmDeactivateOpen(true)} type="button" variant="danger">
                     <Trash2 size={14} /> Eliminar
                   </Button>
                 </div>
@@ -105,7 +132,6 @@ export const RolesPermissionsPanel = () => {
               <div className={styles.permissionsContent}>
                 {model.permissionsError && <Alert>{model.permissionsError}</Alert>}
                 {model.error && <Alert>{model.error}</Alert>}
-                {model.saveMessage && <p className={styles.successMessage}>{model.saveMessage}</p>}
                 <div className={styles.matrixHeader}>
                   <p className={styles.matrixIntro}>
                     {model.isEditing
@@ -148,7 +174,7 @@ export const RolesPermissionsPanel = () => {
         )}
       </div>
 
-      <Modal isOpen={model.dialogMode !== null} onClose={model.closeDialog} title={dialogTitle}>
+      <ModalCrud isOpen={model.dialogMode !== null} onClose={model.closeDialog} title={dialogTitle}>
         {model.mutationError && <Alert>{model.mutationError}</Alert>}
         <RoleForm
           isSubmitting={model.isSubmitting}
@@ -158,7 +184,25 @@ export const RolesPermissionsPanel = () => {
           submitLabel={model.dialogMode === 'create' ? 'Crear rol' : model.dialogMode === 'duplicate' ? 'Duplicar rol' : 'Guardar cambios'}
           values={model.roleForm.values}
         />
-      </Modal>
+      </ModalCrud>
+
+      <ConfirmDialog
+        cancelLabel="Cancelar"
+        confirmLabel="Inactivar"
+        icon={Trash2}
+        isOpen={confirmDeactivateOpen}
+        isSubmitting={model.isSubmitting}
+        message={
+          model.selectedRole
+            ? `¿Inactivar el rol ${model.selectedRole.name}?`
+            : '¿Inactivar este rol?'
+        }
+        onCancel={() => setConfirmDeactivateOpen(false)}
+        onConfirm={() => void handleConfirmDeactivate()}
+        secondary="El rol dejará de estar disponible para asignaciones."
+        title="Inactivar rol"
+        tone="danger"
+      />
     </section>
   );
 };

@@ -1,8 +1,19 @@
-import { Edit3, Plus, Trash2, X } from 'lucide-react';
+import { Edit3, Layers, Plus, Trash2, Wrench } from 'lucide-react';
 import type { SpecialtyKind } from '@/entities/specialty';
 import { SpecialtyTableRow } from '@/entities/specialty';
 import { SpecialtyFilters, SpecialtyFormPanel } from '@/features/manage-specialty';
-import { Alert, Button, Card, Modal, Pagination, Table } from '@/shared/ui';
+import {
+  Alert,
+  Button,
+  ConfirmDialog,
+  DataTableShell,
+  EmptyState,
+  ModalCrud,
+  Pagination,
+  RowActionButton,
+  RowActions,
+  Table,
+} from '@/shared/ui';
 import { useSpecialtiesPanel } from '../model/useSpecialtiesPanel';
 import styles from './SpecialtiesPanel.module.css';
 
@@ -13,52 +24,67 @@ interface SpecialtiesPanelProps {
 export const SpecialtiesPanel = ({ kind }: SpecialtiesPanelProps) => {
   const model = useSpecialtiesPanel(kind);
   const nameColumn = kind === 'EXPLORATORY_WORKSHOP' ? 'Taller' : 'Especialidad';
-  const editing = model.formMode === 'edit' && model.selectedSpecialty != null;
+  const EmptyIcon = kind === 'EXPLORATORY_WORKSHOP' ? Layers : Wrench;
+  const dialogTitle =
+    model.dialogMode === 'create' ? model.copy.createTitle : model.copy.editTitle;
+  const submitLabel = model.dialogMode === 'create' ? model.copy.createCta : 'Guardar cambios';
+  const hasFilters = Boolean(model.search.trim()) || model.status !== 'ALL';
 
   return (
-    <section className={`${styles.layout} ${editing ? styles.withSide : ''}`}>
-      {model.toast ? (
-        <div
-          className={`${styles.toast} ${model.toast.tone === 'success' ? styles.toastSuccess : styles.toastError}`}
-          role="status"
-        >
-          <span>{model.toast.message}</span>
-          <button
-            aria-label="Cerrar notificación"
-            className={styles.toastClose}
-            onClick={model.dismissToast}
-            type="button"
-          >
-            <X size={14} />
-          </button>
-        </div>
-      ) : null}
-
+    <section className={styles.layout}>
       <div className={styles.mainColumn}>
-        <Card className={styles.tableCard}>
-          <div className={styles.toolbar}>
-            <div className={styles.filtersWrap}>
-              <SpecialtyFilters
-                onSearchChange={model.setSearch}
-                onStatusChange={model.setStatus}
-                search={model.search}
-                searchPlaceholder={model.copy.searchPlaceholder}
-                status={model.status}
+        <DataTableShell
+          footer={
+            model.totalPages > 1 ? (
+              <Pagination
+                currentPage={model.currentPage}
+                onPageChange={model.setCurrentPage}
+                totalPages={model.totalPages}
               />
+            ) : null
+          }
+          toolbar={
+            <div className={styles.toolbar}>
+              <div className={styles.filtersWrap}>
+                <SpecialtyFilters
+                  onSearchChange={model.setSearch}
+                  onStatusChange={model.setStatus}
+                  search={model.search}
+                  searchPlaceholder={model.copy.searchPlaceholder}
+                  status={model.status}
+                />
+              </div>
+              <div className={styles.toolbarActions}>
+                <Button onClick={model.openCreateModal} type="button">
+                  <Plus size={16} />
+                  {model.copy.createCta}
+                </Button>
+              </div>
             </div>
-            <div className={styles.toolbarActions}>
-              <Button onClick={model.openCreateModal} type="button">
-                <Plus size={16} />
-                {model.copy.createCta}
-              </Button>
-            </div>
-          </div>
-
+          }
+        >
           {model.error ? <Alert>{model.error}</Alert> : null}
 
-          {model.isLoading ? (
-            <p className={styles.muted}>{model.copy.loading}</p>
-          ) : (
+          {model.isLoading ? <p className={styles.muted}>{model.copy.loading}</p> : null}
+
+          {!model.isLoading && model.specialties.length === 0 ? (
+            <EmptyState
+              action={
+                hasFilters
+                  ? undefined
+                  : { label: model.copy.createCta, onClick: model.openCreateModal, icon: Plus }
+              }
+              description={
+                hasFilters
+                  ? 'No hay resultados que coincidan con la búsqueda o el filtro de estado.'
+                  : model.copy.empty
+              }
+              icon={EmptyIcon}
+              title="Sin resultados"
+            />
+          ) : null}
+
+          {!model.isLoading && model.specialties.length > 0 ? (
             <Table>
               <thead>
                 <tr>
@@ -72,26 +98,24 @@ export const SpecialtiesPanel = ({ kind }: SpecialtiesPanelProps) => {
                 {model.specialties.map((specialty) => (
                   <SpecialtyTableRow
                     actions={
-                      <span className={styles.rowActions}>
-                        <Button
+                      <RowActions>
+                        <RowActionButton
                           aria-label={`Editar ${specialty.name}`}
-                          onClick={() => model.selectSpecialty(specialty.id)}
-                          size="icon"
-                          type="button"
-                          variant="secondary"
+                          onClick={() => model.openEditDialog(specialty.id)}
+                          title="Editar"
+                          tone="primary"
                         >
-                          <Edit3 />
-                        </Button>
-                        <Button
+                          <Edit3 size={16} />
+                        </RowActionButton>
+                        <RowActionButton
                           aria-label={`Inactivar ${specialty.name}`}
-                          onClick={() => void model.deactivateSpecialty(specialty)}
-                          size="icon"
-                          type="button"
-                          variant="danger"
+                          onClick={() => model.requestDeactivate(specialty)}
+                          title="Inactivar"
+                          tone="danger"
                         >
-                          <Trash2 />
-                        </Button>
-                      </span>
+                          <Trash2 size={16} />
+                        </RowActionButton>
+                      </RowActions>
                     }
                     isSelected={specialty.id === model.selectedSpecialtyId}
                     key={specialty.id}
@@ -99,71 +123,46 @@ export const SpecialtiesPanel = ({ kind }: SpecialtiesPanelProps) => {
                     specialty={specialty}
                   />
                 ))}
-                {model.specialties.length === 0 ? (
-                  <tr>
-                    <td className={styles.empty} colSpan={4}>
-                      {model.copy.empty}
-                    </td>
-                  </tr>
-                ) : null}
               </tbody>
             </Table>
-          )}
-          <Pagination
-            currentPage={model.currentPage}
-            onPageChange={model.setCurrentPage}
-            totalPages={model.totalPages}
-          />
-        </Card>
+          ) : null}
+        </DataTableShell>
         <Alert>{model.copy.alert}</Alert>
       </div>
 
-      {editing ? (
-        <div className={styles.sidePanel}>
+      <ModalCrud
+        isOpen={model.dialogMode !== null}
+        onClose={model.closeDialog}
+        title={dialogTitle}
+      >
+        <div className={styles.modalBody}>
+          {model.mutationError ? <Alert>{model.mutationError}</Alert> : null}
           <SpecialtyFormPanel
+            embedded
             isSubmitting={model.isSubmitting}
             nameFieldLabel={`Nombre del ${model.copy.noun}`}
             nameInputRef={model.specialtyForm.nameInputRef}
-            onCancel={model.closeEditPanel}
+            onCancel={model.closeDialog}
             onChange={model.specialtyForm.setField}
             onSubmit={model.specialtyForm.submit}
-            submitLabel="Guardar cambios"
-            title={model.copy.editTitle}
+            submitLabel={submitLabel}
             values={model.specialtyForm.values}
           />
         </div>
-      ) : null}
+      </ModalCrud>
 
-      <Modal
-        isOpen={model.createOpen}
-        onClose={model.closeCreateModal}
-        title={model.copy.createTitle}
-      >
-        <div className={styles.modalBody}>
-          {model.createNotice ? (
-            <div
-              className={`${styles.inlineNotice} ${
-                model.createNotice.tone === 'success' ? styles.toastSuccess : styles.toastError
-              }`}
-              role="status"
-            >
-              {model.createNotice.message}
-            </div>
-          ) : null}
-          {model.mutationError && !model.createNotice ? <Alert>{model.mutationError}</Alert> : null}
-          <SpecialtyFormPanel
-            embedded
-            isSubmitting={model.isSubmitting || model.createLocked}
-            nameFieldLabel={`Nombre del ${model.copy.noun}`}
-            nameInputRef={model.specialtyForm.nameInputRef}
-            onCancel={model.closeCreateModal}
-            onChange={model.specialtyForm.setField}
-            onSubmit={model.specialtyForm.submit}
-            submitLabel={model.createLocked ? 'Listo' : model.copy.createCta}
-            values={model.specialtyForm.values}
-          />
-        </div>
-      </Modal>
+      <ConfirmDialog
+        confirmLabel="Inactivar"
+        icon={Trash2}
+        isOpen={model.pendingDeactivate !== null}
+        isSubmitting={model.isSubmitting}
+        message={`¿Inactivar ${model.copy.noun} ${model.pendingDeactivate?.name ?? ''}?`}
+        onCancel={model.cancelDeactivate}
+        onConfirm={() => void model.confirmDeactivate()}
+        secondary="Dejará de estar disponible para asignación en períodos académicos."
+        title={`Inactivar ${model.copy.noun}`}
+        tone="danger"
+      />
     </section>
   );
 };

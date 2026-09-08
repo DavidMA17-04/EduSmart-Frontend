@@ -11,7 +11,7 @@
   gap: 12px;
   padding: 14px 18px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #021A53 0%, #002E7A 60%, #164687 100%);
+  background: linear-gradient(135deg, var(--brand-navy) 0%, var(--brand-primary) 60%, var(--brand-primary-hover) 100%);
   color: #fff;
 }
 
@@ -22,7 +22,7 @@
 }
 
 .nameHighlight {
-  color: #CFAC65;
+  color: var(--brand-gold);
 }
 
 .subtitle {
@@ -74,13 +74,13 @@
   transform: translateY(-1px);
 }
 
-.kpi1 { border-top-color: #002E7A; }
-.kpi2 { border-top-color: #168750; }
-.kpi3 { border-top-color: #CFAC65; }
-.kpi4 { border-top-color: #164687; }
-.kpi5 { border-top-color: #6B7280; }
+.kpi1 { border-top-color: var(--brand-primary); }
+.kpi2 { border-top-color: var(--brand-green); }
+.kpi3 { border-top-color: var(--brand-gold); }
+.kpi4 { border-top-color: var(--brand-primary-hover); }
+.kpi5 { border-top-color: var(--brand-muted); }
 .kpi6 { border-top-color: #0E7490; }
-.kpi7 { border-top-color: #9B7D2E; }
+.kpi7 { border-top-color: var(--brand-gold-dark); }
 
 .kpiIcon {
   display: grid;
@@ -91,13 +91,13 @@
   flex-shrink: 0;
 }
 
-.kpi1 .kpiIcon { background: rgba(0, 46, 122, 0.1); color: #002E7A; }
-.kpi2 .kpiIcon { background: rgba(22, 135, 80, 0.1); color: #168750; }
-.kpi3 .kpiIcon { background: rgba(207, 172, 101, 0.15); color: #9B7D2E; }
-.kpi4 .kpiIcon { background: rgba(22, 70, 135, 0.1); color: #164687; }
-.kpi5 .kpiIcon { background: rgba(107, 114, 128, 0.1); color: #6B7280; }
+.kpi1 .kpiIcon { background: color-mix(in srgb, var(--brand-primary) 10%, transparent); color: var(--brand-primary); }
+.kpi2 .kpiIcon { background: color-mix(in srgb, var(--brand-green) 10%, transparent); color: var(--brand-green); }
+.kpi3 .kpiIcon { background: color-mix(in srgb, var(--brand-gold) 15%, transparent); color: var(--brand-gold-dark); }
+.kpi4 .kpiIcon { background: color-mix(in srgb, var(--brand-primary-hover) 10%, transparent); color: var(--brand-primary-hover); }
+.kpi5 .kpiIcon { background: color-mix(in srgb, var(--brand-muted) 10%, transparent); color: var(--brand-muted); }
 .kpi6 .kpiIcon { background: rgba(14, 116, 144, 0.12); color: #0E7490; }
-.kpi7 .kpiIcon { background: rgba(155, 125, 46, 0.1); color: #9B7D2E; }
+.kpi7 .kpiIcon { background: color-mix(in srgb, var(--brand-gold-dark) 10%, transparent); color: var(--brand-gold-dark); }
 
 .kpiBody {
   display: grid;
@@ -138,7 +138,7 @@
   gap: 8px;
   margin-bottom: 10px;
   padding-bottom: 8px;
-  border-bottom: 2px solid #CFAC65;
+  border-bottom: 2px solid var(--brand-gold);
 }
 
 .cardHead svg {

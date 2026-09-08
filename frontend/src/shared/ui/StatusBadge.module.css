@@ -1,0 +1,45 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 650;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 22%, transparent);
+}
+
+.active {
+  background: var(--brand-green-light, #e8f5ec);
+  color: var(--brand-green, #168750);
+  border-color: color-mix(in srgb, var(--brand-green, #168750) 28%, transparent);
+}
+
+.inactive,
+.closed {
+  background: #f1f5f9;
+  color: #475569;
+  border-color: color-mix(in srgb, #94a3b8 30%, transparent);
+}
+
+.pending,
+.warning {
+  background: #fff7ed;
+  color: #c2410c;
+  border-color: color-mix(in srgb, #fb923c 35%, transparent);
+}
+
+.danger {
+  background: #fff1f2;
+  color: #e11d48;
+  border-color: color-mix(in srgb, #fb7185 35%, transparent);
+}

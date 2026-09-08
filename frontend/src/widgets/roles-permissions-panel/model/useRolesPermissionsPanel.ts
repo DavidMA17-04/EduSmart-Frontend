@@ -3,10 +3,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Role } from '@/entities/role';
 import { roleApi, useManageRole, useRoleForm } from '@/features/manage-role';
 import { usePermissions, useRolePermissions } from '@/features/manage-role-permissions';
+import { useToast } from '@/shared/ui';
 
 type DialogMode = 'create' | 'edit' | 'duplicate' | null;
 
 export function useRolesPermissionsPanel() {
+  const toast = useToast();
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedRoleId, setSelectedRoleId] = useState<number | null>(null);
   const [search, setSearch] = useState('');
@@ -58,17 +60,26 @@ export function useRolesPermissionsPanel() {
     const payload = toPayload();
     if (!payload.name) return;
     try {
-      if (dialogMode === 'create') await create(payload);
-      if (dialogMode === 'edit' && selectedRole) await update(selectedRole.id, payload);
-      if (dialogMode === 'duplicate' && selectedRole) await duplicate(selectedRole, payload);
+      if (dialogMode === 'create') {
+        await create(payload);
+        toast.push('Rol creado.');
+      }
+      if (dialogMode === 'edit' && selectedRole) {
+        await update(selectedRole.id, payload);
+        toast.push('Rol actualizado.');
+      }
+      if (dialogMode === 'duplicate' && selectedRole) {
+        await duplicate(selectedRole, payload);
+        toast.push('Rol duplicado.');
+      }
       setDialogMode(null);
     } catch {
       // El hook de mutaciones publica el mensaje para la interfaz.
     }
-  }, [create, dialogMode, duplicate, selectedRole, toPayload, update]);
+  }, [create, dialogMode, duplicate, selectedRole, toPayload, toast, update]);
 
   const deactivateSelectedRole = useCallback(async () => {
-    if (!selectedRole || !window.confirm(`¿Inactivar el rol ${selectedRole.name}?`)) return;
+    if (!selectedRole) return;
     const deactivatedRoleId = selectedRole.id;
     try {
       await deactivate(deactivatedRoleId);
@@ -82,10 +93,11 @@ export function useRolesPermissionsPanel() {
         });
         return next;
       });
+      toast.push('Rol inactivado.');
     } catch {
       // El error se expone desde el hook.
     }
-  }, [deactivate, selectedRole]);
+  }, [deactivate, selectedRole, toast]);
 
   return {
     roles: filteredRoles,

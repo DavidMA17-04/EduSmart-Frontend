@@ -3,59 +3,6 @@
   gap: 18px;
 }
 
-.breadcrumb {
-  color: var(--admin-muted);
-  font-size: 11px;
-}
-
-.breadcrumb span {
-  margin: 0 6px;
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 14px 16px;
-  border: 1px solid var(--admin-border);
-  border-radius: 8px;
-  background: var(--admin-surface);
-}
-
-.icon {
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: rgba(0, 46, 122, 0.08);
-  color: var(--admin-primary);
-  flex-shrink: 0;
-}
-
-.header h1 {
-  font-size: 18px;
-}
-
-.header p {
-  margin-top: 2px;
-  color: var(--admin-muted);
-  font-size: 11px;
-}
-
-.listCard {
-  overflow: hidden;
-}
-
-.listHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--admin-border);
-}
-
 .resultMeta {
   font-size: 13px;
   color: var(--admin-muted);
@@ -66,36 +13,68 @@
   font-size: 16px;
 }
 
-.paginationWrap {
-  display: flex;
-  justify-content: flex-end;
-  padding: 12px 16px 16px;
-  border-top: 1px solid var(--admin-border);
+.colUser {
+  width: 22%;
+}
+
+.colId {
+  width: 12%;
+}
+
+.colEmail {
+  width: 26%;
+}
+
+.colStatus {
+  width: 12%;
+}
+
+.colRoles {
+  width: 18%;
+}
+
+.colActions {
+  width: 10%;
+  text-align: center;
+}
+
+.userName {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--admin-text);
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.email {
+  display: block;
+  font-size: 14px;
+  color: var(--admin-text);
+  word-break: break-all;
+}
+
+.roles {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--admin-text);
 }
 
 .muted {
-  padding: 16px;
+  padding: 16px 20px;
   color: var(--admin-muted);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .alertWrap {
   padding: 0 16px 16px;
 }
 
-.backLink {
-  color: var(--admin-primary);
-  font-size: 13px;
-  font-weight: 600;
-}
-
 @media (max-width: 720px) {
-  .listHeader {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .paginationWrap {
-    justify-content: center;
+  :global(table) {
+    table-layout: auto;
   }
 }
