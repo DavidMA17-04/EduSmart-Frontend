@@ -88,7 +88,7 @@ export const UserDetailPage = () => {
     event.preventDefault();
     setFormError(null);
     setSaveMessage(null);
-    if (!validate()) return;
+    if (!validate('edit')) return;
     setIsSubmitting(true);
     try {
       const updated = await userApi.update(Number(userId), toCreatePayload(values));

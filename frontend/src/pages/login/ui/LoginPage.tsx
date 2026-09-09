@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, Link, useNavigate } from 'react-router-dom';
 import {
   CircleHelp,
   Eye,
@@ -238,6 +238,11 @@ export const LoginPage = () => {
             <LogIn aria-hidden="true" size={16} />
             {isSubmitting ? 'Ingresando…' : 'Iniciar sesión'}
           </Button>
+
+          <p className={styles.verifyPrompt}>
+            ¿Necesita verificar su cuenta?{' '}
+            <Link to="/verify-account">Ingresar código de verificación</Link>
+          </p>
 
           <div className={styles.divider}><span>o continúa con</span></div>
 

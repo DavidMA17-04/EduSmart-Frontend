@@ -144,11 +144,11 @@ export const UserMethodSelectionPage: React.FC = () => {
             </li>
             <li>
               <CheckCircle2 size={16} className={styles.checkBlue} />
-              Configuración personalizada de especialidad técnica y grupo
+              Datos personales, rol institucional, estado y acceso
             </li>
             <li>
               <CheckCircle2 size={16} className={styles.checkBlue} />
-              Activación inmediata de credenciales institucionales
+              Contraseña temporal y confirmación de registro exitoso
             </li>
           </ul>
 

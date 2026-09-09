@@ -4,6 +4,7 @@ import { UserBulkImportPage } from '@/pages/Admin/Users/UserBulkImportPage/UserB
 import { UserImportPreviewPage } from '@/pages/Admin/Users/UserImportPreviewPage/UserImportPreviewPage';
 import { AdminHomePage } from '@/pages/admin-home';
 import { LoginPage } from '@/pages/login';
+import { VerifyAccountPage } from '@/pages/verify-account';
 import { RolesPermissionsPage } from '@/pages/roles-permissions';
 import { SpecialtiesPage } from '@/pages/specialties';
 import { SpecialtyKindPage } from '@/pages/specialty-kind';
@@ -21,6 +22,7 @@ import { RootRedirect } from './RootRedirect';
 export const AppRouter = () => (
   <Routes>
     <Route element={<LoginPage />} path="/login" />
+    <Route element={<VerifyAccountPage />} path="/verify-account" />
 
     <Route element={<RequireAuth />}>
       <Route element={<AdminShell />} path="/admin">

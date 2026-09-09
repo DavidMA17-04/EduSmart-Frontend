@@ -7,6 +7,8 @@ import {
   isValidNationalId,
 } from './userFormRules';
 
+export type UserFormMode = 'create' | 'edit';
+
 export interface UserFormValues {
   nationalId: string;
   firstName: string;
@@ -14,6 +16,8 @@ export interface UserFormValues {
   email: string;
   phone: string;
   password: string;
+  /** Solo UI; nunca se envía al API. */
+  confirmPassword: string;
   status: UserAccountStatus;
   roleIds: number[];
 }
@@ -25,11 +29,15 @@ export const emptyUserForm: UserFormValues = {
   email: '',
   phone: '',
   password: '',
+  confirmPassword: '',
   status: 'ACTIVE',
   roleIds: [],
 };
 
-export function validateUserForm(values: UserFormValues): Partial<Record<keyof UserFormValues, string>> {
+export function validateUserForm(
+  values: UserFormValues,
+  mode: UserFormMode = 'create',
+): Partial<Record<keyof UserFormValues, string>> {
   const errors: Partial<Record<keyof UserFormValues, string>> = {};
 
   if (!values.nationalId.trim()) {
@@ -47,8 +55,20 @@ export function validateUserForm(values: UserFormValues): Partial<Record<keyof U
     errors.email = 'El formato de correo no es válido.';
   }
 
-  if (values.password.trim() && !isValidInitialPassword(values.password)) {
-    errors.password = 'La contraseña inicial debe tener entre 8 y 72 caracteres.';
+  if (mode === 'create') {
+    if (!values.password.trim()) {
+      errors.password = 'La contraseña temporal es requerida.';
+    } else if (!isValidInitialPassword(values.password)) {
+      errors.password = 'La contraseña temporal debe tener entre 8 y 72 caracteres.';
+    }
+
+    if (!values.confirmPassword.trim()) {
+      errors.confirmPassword = 'Confirme la contraseña temporal.';
+    } else if (values.password !== values.confirmPassword) {
+      errors.confirmPassword = 'Las contraseñas no coinciden.';
+    }
+  } else if (values.password.trim() && !isValidInitialPassword(values.password)) {
+    errors.password = 'La nueva contraseña debe tener entre 8 y 72 caracteres.';
   }
 
   if (values.roleIds.length === 0) {
@@ -92,8 +112,8 @@ export function useUserForm(initial: UserFormValues = emptyUserForm) {
     setValues((current) => ({ ...current, [field]: value }));
   };
 
-  const validate = () => {
-    const nextErrors = validateUserForm(values);
+  const validate = (mode: UserFormMode = 'create') => {
+    const nextErrors = validateUserForm(values, mode);
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   };

@@ -377,6 +377,24 @@
   cursor: not-allowed;
 }
 
+.verifyPrompt {
+  margin: 0;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--brand-muted);
+  line-height: 1.4;
+}
+
+.verifyPrompt a {
+  color: var(--brand-primary, #002e7a);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.verifyPrompt a:hover {
+  text-decoration: underline;
+}
+
 .help,
 .copyright {
   margin: 0;
@@ -390,6 +408,17 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
+  flex-wrap: wrap;
+}
+
+.help a {
+  color: var(--brand-primary, #002e7a);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.help a:hover {
+  text-decoration: underline;
 }
 
 @keyframes glowPulse {
