@@ -1,4 +1,5 @@
-import { clearAccessToken, getAccessToken } from '@/shared/auth';
+import { useAuthStore } from '@/features/auth';
+import { getAccessToken } from '@/shared/auth';
 
 const apiBaseUrl = (import.meta.env.VITE_API_URL ?? '/api/v1').replace(/\/$/, '');
 
@@ -32,9 +33,13 @@ async function parseErrorMessage(response: Response): Promise<string> {
     : rawMessage;
 
   if (response.status === 401) {
-    return message === 'Invalid credentials'
+    return message === 'Invalid credentials' || message === 'Credenciales inválidas'
       ? 'Credenciales inválidas.'
       : 'No autorizado. Inicie sesión para continuar.';
+  }
+
+  if (response.status === 403) {
+    return message ?? 'Cuenta inactiva o bloqueada.';
   }
 
   if (response.status === 409 && message) {
@@ -45,14 +50,14 @@ async function parseErrorMessage(response: Response): Promise<string> {
 }
 
 function redirectToLogin(): void {
-  clearAccessToken();
+  useAuthStore.getState().logout();
   if (window.location.pathname !== '/login') {
     window.location.assign('/login');
   }
 }
 
 export async function httpClient<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const token = getAccessToken();
+  const token = useAuthStore.getState().token ?? getAccessToken();
 
   let response: Response;
   try {

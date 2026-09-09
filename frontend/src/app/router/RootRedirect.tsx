@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router-dom';
-import { getAccessToken } from '@/shared/auth';
+import { useAuthStore } from '@/features/auth';
 
-export const RootRedirect = () => (
-  <Navigate replace to={getAccessToken() ? '/admin' : '/login'} />
-);
+export const RootRedirect = () => {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  return <Navigate replace to={isAuthenticated ? '/admin' : '/login'} />;
+};

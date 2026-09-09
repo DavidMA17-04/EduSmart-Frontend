@@ -332,6 +332,16 @@
   box-shadow: 0 8px 18px color-mix(in srgb, var(--brand-primary) 28%, transparent);
 }
 
+.spinner {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .divider {
   display: grid;
   grid-template-columns: 1fr auto 1fr;

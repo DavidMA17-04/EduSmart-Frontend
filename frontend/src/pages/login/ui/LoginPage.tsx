@@ -4,15 +4,20 @@ import {
   CircleHelp,
   Eye,
   EyeOff,
+  Loader2,
   Lock,
   LogIn,
   TrendingUp,
   User,
   Users,
 } from 'lucide-react';
-import { authApi } from '@/features/auth';
+import { authApi, useAuthStore } from '@/features/auth';
 import { publicApi, type CampusSnapshot } from '@/features/public';
-import { AuthLoginError, getAccessToken } from '@/shared/auth';
+import {
+  AuthLoginError,
+  getRememberedIdentifier,
+  getRememberMePreference,
+} from '@/shared/auth';
 import { Button, Checkbox, Input } from '@/shared/ui';
 import styles from './LoginPage.module.css';
 
@@ -27,17 +32,26 @@ function prefersReducedMotion(): boolean {
 
 export const LoginPage = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [emailError, setEmailError] = useState<string | null>(null);
+  const [identifierError, setIdentifierError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [snapshot, setSnapshot] = useState<CampusSnapshot | null>(null);
   const [snapshotLoading, setSnapshotLoading] = useState(true);
   const [displayCount, setDisplayCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    const remembered = getRememberedIdentifier();
+    if (remembered) {
+      setIdentifier(remembered);
+      setRememberMe(getRememberMePreference());
+    }
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -91,22 +105,22 @@ export const LoginPage = () => {
     return () => cancelAnimationFrame(frameId);
   }, [snapshot, snapshotLoading]);
 
-  if (getAccessToken()) {
+  if (isAuthenticated) {
     return <Navigate replace to="/admin" />;
   }
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const nextEmailError = email.trim() ? null : 'Este campo es obligatorio.';
+    const nextIdentifierError = identifier.trim() ? null : 'Este campo es obligatorio.';
     const nextPasswordError = password ? null : 'La contraseña es obligatoria.';
-    setEmailError(nextEmailError);
+    setIdentifierError(nextIdentifierError);
     setPasswordError(nextPasswordError);
     setFormError(null);
-    if (nextEmailError || nextPasswordError) return;
+    if (nextIdentifierError || nextPasswordError) return;
 
     setIsSubmitting(true);
     try {
-      await authApi.login(email, password, rememberMe);
+      await authApi.login(identifier, password, rememberMe);
       navigate('/admin', { replace: true });
     } catch (loginError) {
       if (loginError instanceof AuthLoginError) {
@@ -166,21 +180,21 @@ export const LoginPage = () => {
 
           <label className={styles.field}>
             Correo o identificación
-            <span className={`${styles.inputWrap} ${emailError ? styles.inputInvalid : ''}`}>
+            <span className={`${styles.inputWrap} ${identifierError ? styles.inputInvalid : ''}`}>
               <User aria-hidden="true" className={styles.inputIcon} size={16} />
               <Input
                 autoComplete="username"
                 className={styles.input}
                 onChange={(event) => {
-                  setEmail(event.target.value);
-                  if (emailError) setEmailError(null);
+                  setIdentifier(event.target.value);
+                  if (identifierError) setIdentifierError(null);
                 }}
-                placeholder="usuario@ctphojancha.ed.cr"
-                type="email"
-                value={email}
+                placeholder="usuario@ctphojancha.ed.cr o cédula"
+                type="text"
+                value={identifier}
               />
             </span>
-            {emailError ? <span className={styles.fieldError}>{emailError}</span> : null}
+            {identifierError ? <span className={styles.fieldError}>{identifierError}</span> : null}
           </label>
 
           <label className={styles.field}>
@@ -221,7 +235,7 @@ export const LoginPage = () => {
             </label>
             <button
               className={styles.forgot}
-              onClick={() => setFormError('La recuperación de contraseña aún no está disponible. Contacta al administrador del sistema.')}
+              onClick={() => navigate('/forgot-password')}
               type="button"
             >
               ¿Olvidó su contraseña?
@@ -235,7 +249,11 @@ export const LoginPage = () => {
           ) : null}
 
           <Button className={styles.submit} disabled={isSubmitting} type="submit">
-            <LogIn aria-hidden="true" size={16} />
+            {isSubmitting ? (
+              <Loader2 aria-hidden="true" className={styles.spinner} size={16} />
+            ) : (
+              <LogIn aria-hidden="true" size={16} />
+            )}
             {isSubmitting ? 'Ingresando…' : 'Iniciar sesión'}
           </Button>
 

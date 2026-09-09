@@ -1,4 +1,10 @@
-import { clearAccessToken, getAccessToken, loginWithCredentials } from '@/shared/auth';
+import {
+  clearAccessToken,
+  getAccessToken,
+  loginWithCredentials,
+  persistRememberPreference,
+} from '@/shared/auth';
+import { useAuthStore } from '../model/useAuthStore';
 
 const apiBaseUrl = (import.meta.env.VITE_API_URL ?? '/api/v1').replace(/\/$/, '');
 
@@ -28,8 +34,17 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
 }
 
 export const authApi = {
-  login: (email: string, password: string, remember = false) =>
-    loginWithCredentials(apiBaseUrl, email, password, remember),
+  login: async (identifier: string, password: string, rememberMe = false) => {
+    const result = await loginWithCredentials(apiBaseUrl, identifier, password, rememberMe);
+    useAuthStore.getState().setSession(
+      result.accessToken,
+      result.user,
+      rememberMe,
+      result.refreshToken,
+    );
+    persistRememberPreference(identifier, rememberMe);
+    return result;
+  },
   logout: async () => {
     const token = getAccessToken();
     if (token) {
@@ -45,6 +60,7 @@ export const authApi = {
         // El cierre de sesión del cliente no depende de que el backend responda.
       }
     }
+    useAuthStore.getState().logout();
     clearAccessToken();
   },
   verifyAccount: (email: string, code: string) =>
