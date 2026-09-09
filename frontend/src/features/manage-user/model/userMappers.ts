@@ -41,6 +41,7 @@ export function userToFormValues(user: AdministrativeUser) {
     email: user.email ?? '',
     phone: user.phone ?? '',
     password: '',
+    confirmPassword: '',
     status: user.status,
     roleIds: user.roles.map((role) => role.id),
   };

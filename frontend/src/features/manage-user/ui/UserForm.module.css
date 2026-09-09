@@ -1,6 +1,25 @@
 .form {
   display: grid;
+  gap: 16px;
+}
+
+.section {
+  display: grid;
   gap: 10px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.section:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--admin-primary);
 }
 
 .form label {
@@ -15,6 +34,14 @@
   display: grid;
   gap: 10px;
   grid-template-columns: 1fr 1fr;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
 }
 
 .error {

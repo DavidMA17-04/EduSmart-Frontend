@@ -5,6 +5,7 @@ import { UserImportPreviewPage } from '@/pages/Admin/Users/UserImportPreviewPage
 import { AdminHomePage } from '@/pages/admin-home';
 import { ForgotPasswordPage } from '@/pages/forgot-password';
 import { LoginPage } from '@/pages/login';
+import { VerifyAccountPage } from '@/pages/verify-account';
 import { RolesPermissionsPage } from '@/pages/roles-permissions';
 import { SpecialtiesPage } from '@/pages/specialties';
 import { SpecialtyKindPage } from '@/pages/specialty-kind';
@@ -23,6 +24,7 @@ export const AppRouter = () => (
   <Routes>
     <Route element={<LoginPage />} path="/login" />
     <Route element={<ForgotPasswordPage />} path="/forgot-password" />
+    <Route element={<VerifyAccountPage />} path="/verify-account" />
 
     <Route element={<RequireAuth />}>
       <Route element={<AdminShell />} path="/admin">

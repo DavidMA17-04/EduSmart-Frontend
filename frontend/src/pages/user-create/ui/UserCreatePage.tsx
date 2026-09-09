@@ -5,7 +5,7 @@ import { roleApi } from '@/features/manage-role';
 import { UserForm, emptyUserForm, toCreatePayload, useUserForm, userApi } from '@/features/manage-user';
 import type { Role } from '@/entities/role';
 import type { AdministrativeUser } from '@/entities/user';
-import { Card, FeedbackCard, PageHeader } from '@/shared/ui';
+import { Card, FeedbackCard, PageHeader, useToast } from '@/shared/ui';
 import { HttpError } from '@/shared/api';
 import styles from './UserPages.module.css';
 
@@ -26,8 +26,14 @@ function initialsFromUser(user: AdministrativeUser): string {
   return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toLocaleUpperCase('es');
 }
 
+function submitIntent(event: FormEvent<HTMLFormElement>): 'save' | 'create-another' {
+  const submitter = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+  return submitter?.dataset.intent === 'create-another' ? 'create-another' : 'save';
+}
+
 export const UserCreatePage = () => {
   const navigate = useNavigate();
+  const toast = useToast();
   const form = useUserForm();
   const [roles, setRoles] = useState<Role[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,11 +58,18 @@ export const UserCreatePage = () => {
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setFormError(null);
-    if (!form.validate()) return;
+    if (!form.validate('create')) return;
 
+    const intent = submitIntent(event);
     setIsSubmitting(true);
     try {
       const user = await userApi.create(toCreatePayload(form.values));
+      if (intent === 'create-another') {
+        form.setValues(emptyUserForm);
+        form.setErrors({});
+        toast.push('Usuario creado. Puede registrar otro.');
+        return;
+      }
       setCreatedUser(user);
     } catch (error) {
       setFormError(error instanceof HttpError ? error.message : 'No se pudo crear el usuario.');
@@ -99,6 +112,7 @@ export const UserCreatePage = () => {
             onClick: () => {
               setCreatedUser(null);
               form.setValues(emptyUserForm);
+              form.setErrors({});
             },
           }}
           summary={
@@ -139,7 +153,7 @@ export const UserCreatePage = () => {
           { label: 'Registro manual' },
         ]}
         icon={UserPlus}
-        subtitle="Complete los datos institucionales. El sistema valida cédula, correo y duplicados."
+        subtitle="Complete los datos personales, institucionales y de acceso. El sistema valida cédula, correo y duplicados."
         title="Registro manual de usuario"
       />
 
@@ -154,7 +168,9 @@ export const UserCreatePage = () => {
               errors={form.errors}
               roles={roles}
               isSubmitting={isSubmitting}
-              submitLabel="Crear usuario"
+              mode="create"
+              submitLabel="Guardar usuario"
+              secondarySubmitLabel="Guardar y crear otro"
               formError={formError}
               onChange={form.onChange}
               onSubmit={onSubmit}
@@ -168,9 +184,25 @@ export const UserCreatePage = () => {
             <h2>Información</h2>
             <p>Use este formulario para incorporar un usuario de forma individual.</p>
             <ul>
-              <li>La cédula y el correo deben ser únicos.</li>
+              <li>La cédula y el correo institucional deben ser únicos.</li>
+              <li>
+                Roles disponibles en el sistema: Administrador, Docente y Estudiante (solo se
+                listan roles activos).
+              </li>
               <li>Debe asignar al menos un rol institucional.</li>
-              <li>La contraseña es opcional; si la indica, habilita el acceso.</li>
+              <li>
+                Estado <strong>Activa</strong>: la cuenta puede iniciar sesión de inmediato (sin
+                verificación por correo).
+              </li>
+              <li>
+                Estado <strong>Pendiente</strong>: la cuenta no puede iniciar sesión hasta verificar
+                el código enviado por correo (PBI-16).
+              </li>
+              <li>
+                La contraseña temporal es obligatoria. El usuario deberá cambiarla al iniciar
+                sesión por primera vez.
+              </li>
+              <li>El correo institucional es el identificador de acceso (login).</li>
             </ul>
           </Card>
         </aside>
