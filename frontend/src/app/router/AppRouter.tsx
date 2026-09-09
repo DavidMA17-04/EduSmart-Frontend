@@ -3,6 +3,7 @@ import { UserMethodSelectionPage } from '@/pages/Admin/Users/UserMethodSelection
 import { UserBulkImportPage } from '@/pages/Admin/Users/UserBulkImportPage/UserBulkImportPage';
 import { UserImportPreviewPage } from '@/pages/Admin/Users/UserImportPreviewPage/UserImportPreviewPage';
 import { AdminHomePage } from '@/pages/admin-home';
+import { ForgotPasswordPage } from '@/pages/forgot-password';
 import { LoginPage } from '@/pages/login';
 import { RolesPermissionsPage } from '@/pages/roles-permissions';
 import { SpecialtiesPage } from '@/pages/specialties';
@@ -21,6 +22,7 @@ import { RootRedirect } from './RootRedirect';
 export const AppRouter = () => (
   <Routes>
     <Route element={<LoginPage />} path="/login" />
+    <Route element={<ForgotPasswordPage />} path="/forgot-password" />
 
     <Route element={<RequireAuth />}>
       <Route element={<AdminShell />} path="/admin">

@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Bell, CalendarRange, ChevronDown, FileBarChart, GraduationCap, Layers, LayoutDashboard, LogOut, Settings, ShieldCheck, Users } from 'lucide-react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { authApi } from '@/features/auth';
-import { getSessionUser } from '@/shared/auth';
+import { authApi, useAuthStore } from '@/features/auth';
 import { Button, Modal } from '@/shared/ui';
 import styles from './AdminShell.module.css';
 
@@ -19,9 +18,11 @@ const navigationItems = [
 
 export const AdminShell = () => {
   const navigate = useNavigate();
-  const sessionUser = getSessionUser();
+  const sessionUser = useAuthStore((state) => state.user);
   const email = sessionUser?.email ?? 'Sesión activa';
-  const displayName = sessionUser?.roles[0] ?? 'Usuario';
+  const displayName = sessionUser?.name
+    ? `${sessionUser.name}${sessionUser.first_lastname ? ` ${sessionUser.first_lastname}` : ''}`
+    : (sessionUser?.roles[0] ?? 'Usuario');
   const avatarLetter = (email[0] ?? 'U').toUpperCase();
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
