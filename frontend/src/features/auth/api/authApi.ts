@@ -48,8 +48,8 @@ export type AuthSessionView = {
 };
 
 export const authApi = {
-  login: (email: string, password: string, remember = false) =>
-    loginWithCredentials(apiBaseUrl, email, password, remember),
+  login: (identifier: string, password: string, remember = false) =>
+    loginWithCredentials(apiBaseUrl, identifier, password, remember),
   logout: async () => {
     const token = getAccessToken();
     if (token) {
