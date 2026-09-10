@@ -1,13 +1,21 @@
 export {
   AuthLoginError,
   clearAccessToken,
+  clearRememberedIdentifier,
   getAccessToken,
   getRefreshToken,
+  getRememberedIdentifier,
+  getRememberMePreference,
   getSessionUser,
+  getStoredSessionUser,
   loginWithCredentials,
+  persistRememberPreference,
   refreshSessionTokens,
   sessionHasPermission,
   setAccessToken,
+  setRefreshToken,
+  setRememberedIdentifier,
   setSessionTokens,
+  setStoredSessionUser,
 } from './session';
-export type { SessionUser } from './session';
+export type { AuthUser, LoginResult, SessionUser } from './session';

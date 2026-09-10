@@ -1,5 +1,6 @@
+import { useAuthStore } from '@/features/auth';
 import { HttpError, httpClient } from '@/shared/api';
-import { clearAccessToken, getAccessToken } from '@/shared/auth';
+import { getAccessToken } from '@/shared/auth';
 import type {
   AcademicPeriodReportFilters,
   AcademicPeriodReportRow,
@@ -82,7 +83,7 @@ async function downloadReportFile(
   }
 
   if (response.status === 401) {
-    clearAccessToken();
+    useAuthStore.getState().logout();
     if (window.location.pathname !== '/login') {
       window.location.assign('/login');
     }

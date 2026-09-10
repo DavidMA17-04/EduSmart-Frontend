@@ -3,6 +3,7 @@ import { UserMethodSelectionPage } from '@/pages/Admin/Users/UserMethodSelection
 import { UserBulkImportPage } from '@/pages/Admin/Users/UserBulkImportPage/UserBulkImportPage';
 import { UserImportPreviewPage } from '@/pages/Admin/Users/UserImportPreviewPage/UserImportPreviewPage';
 import { AdminHomePage } from '@/pages/admin-home';
+import { ForgotPasswordPage } from '@/pages/forgot-password';
 import { LoginPage } from '@/pages/login';
 import { VerifyAccountPage } from '@/pages/verify-account';
 import { RolesPermissionsPage } from '@/pages/roles-permissions';
@@ -14,7 +15,6 @@ import { UserCreatePage } from '@/pages/user-create';
 import { UserDetailPage } from '@/pages/user-detail';
 import { UsersDirectoryPage } from '@/pages/users-directory';
 import { AdministrativeReportsPage } from '@/pages/administrative-reports';
-import { ForgotPasswordPage } from '@/pages/forgot-password';
 import { ProfileSettingsPage } from '@/pages/profile-settings';
 import { ResetPasswordPage } from '@/pages/reset-password';
 import { ImportResultPage } from '@/pages/import-result';
@@ -26,8 +26,8 @@ import { RootRedirect } from './RootRedirect';
 export const AppRouter = () => (
   <Routes>
     <Route element={<LoginPage />} path="/login" />
-    <Route element={<VerifyAccountPage />} path="/verify-account" />
     <Route element={<ForgotPasswordPage />} path="/forgot-password" />
+    <Route element={<VerifyAccountPage />} path="/verify-account" />
     <Route element={<ResetPasswordPage />} path="/reset-password" />
 
     <Route element={<RequireAuth />}>

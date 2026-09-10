@@ -61,7 +61,7 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
   const [showErrorsOnly, setShowErrorsOnly] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<(typeof PAGE_SIZE_OPTIONS)[number]>(10);
-  const [drawerOpen, setDrawerOpen] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -70,7 +70,7 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
   useEffect(() => {
     setRecords(mapValidateResponseToRecords(importData));
     setPage(1);
-    setDrawerOpen(true);
+    setDrawerOpen(false);
   }, [importData]);
 
   useEffect(() => {
@@ -333,107 +333,109 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
         </div>
       )}
 
-      <section className={styles.kpiGrid} aria-label="Resumen de validación">
-        <div className={`${styles.kpiCard} ${styles.kpiTotal}`}>
-          <span className={styles.kpiLabel}>Total Registros</span>
-          <p className={styles.kpiValue}>{currentKPIs.totalRows}</p>
-          <span className={styles.kpiSubText}>
-            <span className={`${styles.kpiDot} ${styles.kpiDotNeutral}`} />
-            100% procesados
-          </span>
-        </div>
-        <div className={`${styles.kpiCard} ${styles.kpiValid}`}>
-          <span className={styles.kpiLabel}>Registros Válidos</span>
-          <p className={styles.kpiValue}>{currentKPIs.validRows}</p>
-          <span className={`${styles.kpiSubText} ${styles.textGreen}`}>
-            <span className={`${styles.kpiDot} ${styles.kpiDotGreen}`} />
-            {currentKPIs.validPercentage}% aptos para importar
-          </span>
-        </div>
-        <div className={`${styles.kpiCard} ${styles.kpiWarning}`}>
-          <span className={styles.kpiLabel}>Advertencias</span>
-          <p className={styles.kpiValue}>{currentKPIs.warningRows}</p>
-          <span className={`${styles.kpiSubText} ${styles.textAmber}`}>
-            <span className={`${styles.kpiDot} ${styles.kpiDotAmber}`} />
-            {currentKPIs.warningPercentage}% requieren atención
-          </span>
-        </div>
-        <div className={`${styles.kpiCard} ${styles.kpiError}`}>
-          <span className={styles.kpiLabel}>Con Errores</span>
-          <p className={styles.kpiValue}>{currentKPIs.errorRows}</p>
-          <span className={`${styles.kpiSubText} ${styles.textRed}`}>
-            <span className={`${styles.kpiDot} ${styles.kpiDotRed}`} />
-            {currentKPIs.errorPercentage}% bloquean importación
-          </span>
-        </div>
-      </section>
-
-      <details
-        className={styles.inconsistenciesDrawer}
-        open={drawerOpen}
-        onToggle={(e) => setDrawerOpen((e.currentTarget as HTMLDetailsElement).open)}
-      >
-        <summary className={styles.inconsistenciesSummary}>
-          <div className={styles.inconsistenciesHeading}>
-            <span className={styles.inconsistenciesIcon} aria-hidden>
-              !
+      <div className={styles.pinnedTop}>
+        <section className={styles.kpiGrid} aria-label="Resumen de validación">
+          <div className={`${styles.kpiCard} ${styles.kpiTotal}`}>
+            <span className={styles.kpiLabel}>Total Registros</span>
+            <p className={styles.kpiValue}>{currentKPIs.totalRows}</p>
+            <span className={styles.kpiSubText}>
+              <span className={`${styles.kpiDot} ${styles.kpiDotNeutral}`} />
+              100% procesados
             </span>
-            <div>
-              <h3 className={styles.inconsistenciesTitle}>
-                Resumen de inconsistencias detectadas
-                {currentKPIs.errorRows > 0 && (
-                  <span className={styles.inconsistenciesBadge}>
-                    {currentKPIs.errorRows} bloqueos
-                  </span>
-                )}
-              </h3>
-              <p className={styles.inconsistenciesHint}>
-                Edite las celdas directamente en la tabla para resolver los errores antes de confirmar.
-              </p>
-            </div>
           </div>
-          <span className={styles.inconsistenciesToggle}>
-            <span className={styles.toggleShow}>Ver detalles</span>
-            <span className={styles.toggleHide}>Ocultar detalles</span>
-            <ChevronDown size={16} className={styles.toggleChevron} aria-hidden />
-          </span>
-        </summary>
+          <div className={`${styles.kpiCard} ${styles.kpiValid}`}>
+            <span className={styles.kpiLabel}>Registros Válidos</span>
+            <p className={styles.kpiValue}>{currentKPIs.validRows}</p>
+            <span className={`${styles.kpiSubText} ${styles.textGreen}`}>
+              <span className={`${styles.kpiDot} ${styles.kpiDotGreen}`} />
+              {currentKPIs.validPercentage}% aptos para importar
+            </span>
+          </div>
+          <div className={`${styles.kpiCard} ${styles.kpiWarning}`}>
+            <span className={styles.kpiLabel}>Advertencias</span>
+            <p className={styles.kpiValue}>{currentKPIs.warningRows}</p>
+            <span className={`${styles.kpiSubText} ${styles.textAmber}`}>
+              <span className={`${styles.kpiDot} ${styles.kpiDotAmber}`} />
+              {currentKPIs.warningPercentage}% requieren atención
+            </span>
+          </div>
+          <div className={`${styles.kpiCard} ${styles.kpiError}`}>
+            <span className={styles.kpiLabel}>Con Errores</span>
+            <p className={styles.kpiValue}>{currentKPIs.errorRows}</p>
+            <span className={`${styles.kpiSubText} ${styles.textRed}`}>
+              <span className={`${styles.kpiDot} ${styles.kpiDotRed}`} />
+              {currentKPIs.errorPercentage}% bloquean importación
+            </span>
+          </div>
+        </section>
 
-        <div className={styles.inconsistenciesBody}>
-          {breakdownItems.length === 0 && !hasAnyDuplicateInconsistency(currentBreakdown) ? (
-            <div className={styles.inconsistencyCard}>
-              <div className={styles.inconsistencyCardIcon}>
-                <CheckCircle2 size={16} />
-              </div>
-              <div className={styles.inconsistencyCardContent}>
-                <div className={styles.inconsistencyCardHeader}>
-                  <h4 className={styles.inconsistencyCardTitle}>Sin inconsistencias críticas</h4>
-                </div>
-                <p className={styles.inconsistencyCardDesc}>
-                  No hay cédulas ni correos duplicados, ni otros bloqueos catalogados en el lote actual.
+        <details
+          className={styles.inconsistenciesDrawer}
+          open={drawerOpen}
+          onToggle={(e) => setDrawerOpen((e.currentTarget as HTMLDetailsElement).open)}
+        >
+          <summary className={styles.inconsistenciesSummary}>
+            <div className={styles.inconsistenciesHeading}>
+              <span className={styles.inconsistenciesIcon} aria-hidden>
+                !
+              </span>
+              <div>
+                <h3 className={styles.inconsistenciesTitle}>
+                  Resumen de inconsistencias detectadas
+                  {currentKPIs.errorRows > 0 && (
+                    <span className={styles.inconsistenciesBadge}>
+                      {currentKPIs.errorRows} bloqueos
+                    </span>
+                  )}
+                </h3>
+                <p className={styles.inconsistenciesHint}>
+                  Edite las celdas directamente en la tabla para resolver los errores antes de confirmar.
                 </p>
               </div>
             </div>
-          ) : (
-            breakdownItems.map((item) => (
-              <div key={item.key} className={styles.inconsistencyCard}>
+            <span className={styles.inconsistenciesToggle}>
+              <span className={styles.toggleShow}>Ver detalles</span>
+              <span className={styles.toggleHide}>Ocultar detalles</span>
+              <ChevronDown size={16} className={styles.toggleChevron} aria-hidden />
+            </span>
+          </summary>
+
+          <div className={styles.inconsistenciesBody}>
+            {breakdownItems.length === 0 && !hasAnyDuplicateInconsistency(currentBreakdown) ? (
+              <div className={styles.inconsistencyCard}>
                 <div className={styles.inconsistencyCardIcon}>
-                  {item.icon === 'id' && <IdCard size={16} />}
-                  {item.icon === 'mail' && <Mail size={16} />}
-                  {item.icon === 'alert' && <AlertCircle size={16} />}
+                  <CheckCircle2 size={16} />
                 </div>
                 <div className={styles.inconsistencyCardContent}>
                   <div className={styles.inconsistencyCardHeader}>
-                    <h4 className={styles.inconsistencyCardTitle}>{item.title}</h4>
-                    <span className={styles.inconsistencyTag}>{item.tag}</span>
+                    <h4 className={styles.inconsistencyCardTitle}>Sin inconsistencias críticas</h4>
                   </div>
-                  <p className={styles.inconsistencyCardDesc}>{item.desc}</p>
+                  <p className={styles.inconsistencyCardDesc}>
+                    No hay cédulas ni correos duplicados, ni otros bloqueos catalogados en el lote actual.
+                  </p>
                 </div>
               </div>
-            ))
-          )}
-        </div>
-      </details>
+            ) : (
+              breakdownItems.map((item) => (
+                <div key={item.key} className={styles.inconsistencyCard}>
+                  <div className={styles.inconsistencyCardIcon}>
+                    {item.icon === 'id' && <IdCard size={16} />}
+                    {item.icon === 'mail' && <Mail size={16} />}
+                    {item.icon === 'alert' && <AlertCircle size={16} />}
+                  </div>
+                  <div className={styles.inconsistencyCardContent}>
+                    <div className={styles.inconsistencyCardHeader}>
+                      <h4 className={styles.inconsistencyCardTitle}>{item.title}</h4>
+                      <span className={styles.inconsistencyTag}>{item.tag}</span>
+                    </div>
+                    <p className={styles.inconsistencyCardDesc}>{item.desc}</p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </details>
+      </div>
 
       <section className={styles.toolbarCard} aria-label="Filtros de vista previa">
         <div className={styles.searchBox}>

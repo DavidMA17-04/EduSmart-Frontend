@@ -1,18 +1,47 @@
 const ACCESS_TOKEN_KEY = 'edusmart.accessToken';
 const REFRESH_TOKEN_KEY = 'edusmart.refreshToken';
+const SESSION_USER_KEY = 'edusmart.sessionUser';
+const REMEMBER_IDENTIFIER_KEY = 'edusmart.rememberIdentifier';
+const REMEMBER_ME_PREFERENCE_KEY = 'edusmart.rememberMePreference';
 
 type LoginEnvelope = {
   success?: boolean;
-  message?: string;
-  data?: { accessToken?: string; refreshToken?: string; mustChangePassword?: boolean };
+  message?: string | string[];
+  data?: {
+    accessToken?: string;
+    refreshToken?: string;
+    user?: Partial<AuthUser> & {
+      id?: number;
+      email?: string;
+      roles?: string[];
+      mustChangePassword?: boolean;
+    };
+  };
 };
 
+export type AuthUser = {
+  id: number;
+  email: string;
+  national_id: string;
+  name: string;
+  first_lastname: string;
+  roles: string[];
+  mustChangePassword: boolean;
+};
+
+/** @deprecated Prefer AuthUser; kept for callers that only need email/roles */
 export type SessionUser = {
   id: number;
   email: string;
   roles: string[];
   permissions: string[];
   mustChangePassword: boolean;
+};
+
+export type LoginResult = {
+  accessToken: string;
+  refreshToken?: string;
+  user: AuthUser;
 };
 
 export class AuthLoginError extends Error {
@@ -25,6 +54,15 @@ export class AuthLoginError extends Error {
   }
 }
 
+function storageGet(key: string): string | null {
+  return sessionStorage.getItem(key) ?? localStorage.getItem(key);
+}
+
+function clearKey(key: string): void {
+  sessionStorage.removeItem(key);
+  localStorage.removeItem(key);
+}
+
 function tokenStore(persistent: boolean): Storage {
   return persistent ? localStorage : sessionStorage;
 }
@@ -34,7 +72,7 @@ function isPersistentSession(): boolean {
 }
 
 export function getAccessToken(): string | null {
-  return sessionStorage.getItem(ACCESS_TOKEN_KEY) ?? localStorage.getItem(ACCESS_TOKEN_KEY);
+  return storageGet(ACCESS_TOKEN_KEY);
 }
 
 export function getRefreshToken(): string | null {
@@ -42,9 +80,13 @@ export function getRefreshToken(): string | null {
 }
 
 export function setAccessToken(token: string, persistent = false): void {
-  sessionStorage.removeItem(ACCESS_TOKEN_KEY);
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
+  clearKey(ACCESS_TOKEN_KEY);
   tokenStore(persistent).setItem(ACCESS_TOKEN_KEY, token);
+}
+
+export function setRefreshToken(token: string, persistent = false): void {
+  clearKey(REFRESH_TOKEN_KEY);
+  tokenStore(persistent).setItem(REFRESH_TOKEN_KEY, token);
 }
 
 export function setSessionTokens(
@@ -53,52 +95,145 @@ export function setSessionTokens(
   persistent = isPersistentSession(),
 ): void {
   setAccessToken(accessToken, persistent);
-  sessionStorage.removeItem(REFRESH_TOKEN_KEY);
-  localStorage.removeItem(REFRESH_TOKEN_KEY);
+  clearKey(REFRESH_TOKEN_KEY);
   if (refreshToken) {
     tokenStore(persistent).setItem(REFRESH_TOKEN_KEY, refreshToken);
   }
 }
 
 export function clearAccessToken(): void {
-  sessionStorage.removeItem(ACCESS_TOKEN_KEY);
-  sessionStorage.removeItem(REFRESH_TOKEN_KEY);
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
-  localStorage.removeItem(REFRESH_TOKEN_KEY);
+  clearKey(ACCESS_TOKEN_KEY);
+  clearKey(REFRESH_TOKEN_KEY);
+  clearKey(SESSION_USER_KEY);
+}
+
+export function setRememberedIdentifier(identifier: string): void {
+  localStorage.setItem(REMEMBER_IDENTIFIER_KEY, identifier.trim());
+  localStorage.setItem(REMEMBER_ME_PREFERENCE_KEY, 'true');
+}
+
+export function clearRememberedIdentifier(): void {
+  localStorage.removeItem(REMEMBER_IDENTIFIER_KEY);
+  localStorage.removeItem(REMEMBER_ME_PREFERENCE_KEY);
+}
+
+export function getRememberedIdentifier(): string | null {
+  const value = localStorage.getItem(REMEMBER_IDENTIFIER_KEY);
+  if (!value || !value.trim()) return null;
+  return value.trim();
+}
+
+export function getRememberMePreference(): boolean {
+  return localStorage.getItem(REMEMBER_ME_PREFERENCE_KEY) === 'true';
+}
+
+export function persistRememberPreference(identifier: string, rememberMe: boolean): void {
+  if (rememberMe) {
+    setRememberedIdentifier(identifier);
+    return;
+  }
+  clearRememberedIdentifier();
+}
+
+export function setStoredSessionUser(user: AuthUser, persistent = false): void {
+  clearKey(SESSION_USER_KEY);
+  tokenStore(persistent).setItem(SESSION_USER_KEY, JSON.stringify(user));
+}
+
+export function getStoredSessionUser(): AuthUser | null {
+  const raw = storageGet(SESSION_USER_KEY);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as AuthUser;
+    if (!parsed || typeof parsed.id !== 'number' || typeof parsed.email !== 'string') {
+      return null;
+    }
+    return {
+      id: parsed.id,
+      email: parsed.email,
+      national_id: parsed.national_id ?? '',
+      name: parsed.name ?? '',
+      first_lastname: parsed.first_lastname ?? '',
+      roles: Array.isArray(parsed.roles) ? parsed.roles.map(String) : [],
+      mustChangePassword: Boolean(parsed.mustChangePassword),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function mapAuthUser(raw: NonNullable<LoginEnvelope['data']>['user']): AuthUser | null {
+  if (!raw || typeof raw.id !== 'number' || typeof raw.email !== 'string') {
+    return null;
+  }
+  return {
+    id: raw.id,
+    email: raw.email,
+    national_id: typeof raw.national_id === 'string' ? raw.national_id : '',
+    name: typeof raw.name === 'string' ? raw.name : '',
+    first_lastname: typeof raw.first_lastname === 'string' ? raw.first_lastname : '',
+    roles: Array.isArray(raw.roles) ? raw.roles.map(String) : [],
+    mustChangePassword: Boolean(raw.mustChangePassword),
+  };
+}
+
+function messageFromEnvelope(payload: LoginEnvelope | null, fallback: string): string {
+  const raw = payload?.message;
+  if (Array.isArray(raw)) {
+    const joined = raw.filter(Boolean).join(' ');
+    return joined || fallback;
+  }
+  if (typeof raw === 'string' && raw.trim()) {
+    return raw;
+  }
+  return fallback;
 }
 
 export async function loginWithCredentials(
   apiBaseUrl: string,
   identifier: string,
   password: string,
-  persistent = false,
-): Promise<string> {
+  rememberMe = false,
+): Promise<LoginResult> {
   const response = await fetch(`${apiBaseUrl}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json; charset=UTF-8' },
     body: JSON.stringify({
       identifier: identifier.trim(),
       password,
-      rememberMe: persistent,
+      rememberMe,
     }),
   });
 
   const payload = (await response.json().catch(() => null)) as LoginEnvelope | null;
 
   if (!response.ok) {
-    const apiMessage = payload?.message;
-    const fallback =
-      response.status === 401 ? 'Credenciales inválidas.' : 'No se pudo iniciar sesión.';
-    throw new AuthLoginError(response.status, apiMessage || fallback);
+    if (response.status === 401) {
+      throw new AuthLoginError(401, 'Credenciales inválidas.');
+    }
+    if (response.status === 403) {
+      throw new AuthLoginError(
+        403,
+        messageFromEnvelope(payload, 'Cuenta inactiva o bloqueada.'),
+      );
+    }
+    throw new AuthLoginError(
+      response.status,
+      messageFromEnvelope(payload, 'No se pudo iniciar sesión.'),
+    );
   }
 
   const token = payload?.data?.accessToken;
-  if (!token) {
+  const user = mapAuthUser(payload?.data?.user);
+  if (!token || !user) {
     throw new AuthLoginError(500, 'No se recibió el token de acceso.');
   }
 
-  setSessionTokens(token, payload?.data?.refreshToken, persistent);
-  return token;
+  return {
+    accessToken: token,
+    refreshToken: payload?.data?.refreshToken,
+    user,
+  };
 }
 
 export async function refreshSessionTokens(apiBaseUrl: string): Promise<string | null> {
@@ -138,18 +273,30 @@ function decodeJwtPayload(token: string): Record<string, unknown> | null {
 
 export function getSessionUser(): SessionUser | null {
   const token = getAccessToken();
-  if (!token) return null;
+  const payload = token ? decodeJwtPayload(token) : null;
+  const stored = getStoredSessionUser();
 
-  const payload = decodeJwtPayload(token);
-  if (!payload || typeof payload.email !== 'string') return null;
+  if (payload && typeof payload.email === 'string') {
+    return {
+      id: Number(payload.sub),
+      email: payload.email,
+      roles: Array.isArray(payload.roles) ? payload.roles.map(String) : (stored?.roles ?? []),
+      permissions: Array.isArray(payload.permissions) ? payload.permissions.map(String) : [],
+      mustChangePassword: Boolean(payload.mustChangePassword ?? stored?.mustChangePassword),
+    };
+  }
 
-  return {
-    id: Number(payload.sub),
-    email: payload.email,
-    roles: Array.isArray(payload.roles) ? payload.roles.map(String) : [],
-    permissions: Array.isArray(payload.permissions) ? payload.permissions.map(String) : [],
-    mustChangePassword: Boolean(payload.mustChangePassword),
-  };
+  if (stored) {
+    return {
+      id: stored.id,
+      email: stored.email,
+      roles: stored.roles,
+      permissions: [],
+      mustChangePassword: stored.mustChangePassword,
+    };
+  }
+
+  return null;
 }
 
 export function sessionHasPermission(code: string): boolean {

@@ -3,9 +3,11 @@ import {
   getAccessToken,
   getRefreshToken,
   loginWithCredentials,
+  persistRememberPreference,
   refreshSessionTokens,
 } from '@/shared/auth';
 import { httpClient } from '@/shared/api';
+import { useAuthStore } from '../model/useAuthStore';
 
 const apiBaseUrl = (import.meta.env.VITE_API_URL ?? '/api/v1').replace(/\/$/, '');
 
@@ -48,8 +50,17 @@ export type AuthSessionView = {
 };
 
 export const authApi = {
-  login: (identifier: string, password: string, remember = false) =>
-    loginWithCredentials(apiBaseUrl, identifier, password, remember),
+  login: async (identifier: string, password: string, rememberMe = false) => {
+    const result = await loginWithCredentials(apiBaseUrl, identifier, password, rememberMe);
+    useAuthStore.getState().setSession(
+      result.accessToken,
+      result.user,
+      rememberMe,
+      result.refreshToken,
+    );
+    persistRememberPreference(identifier, rememberMe);
+    return result;
+  },
   logout: async () => {
     const token = getAccessToken();
     if (token) {
@@ -65,6 +76,7 @@ export const authApi = {
         // El cierre de sesión del cliente no depende de que el backend responda.
       }
     }
+    useAuthStore.getState().logout();
     clearAccessToken();
   },
   refresh: () => refreshSessionTokens(apiBaseUrl),
