@@ -1,0 +1,70 @@
+.group {
+  display: flex;
+  gap: clamp(8px, 1.6vw, 14px);
+  justify-content: center;
+  width: 100%;
+  max-width: min(32rem, 100%);
+  margin-inline: auto;
+}
+
+.groupError .cell {
+  border-color: color-mix(in srgb, var(--brand-danger, #d32f2f) 50%, var(--brand-border, #c1c5c8));
+  background: color-mix(in srgb, var(--brand-danger, #d32f2f) 6%, #fff);
+}
+
+.cell {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 3.75rem;
+  aspect-ratio: 1;
+  height: auto;
+  min-height: 3.25rem;
+  text-align: center;
+  font-size: clamp(1.25rem, 2.2vw, 1.5rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--brand-navy, #021a53);
+  border: 1.5px solid var(--brand-border, #c1c5c8);
+  border-radius: 14px;
+  background: var(--brand-surface, #fff);
+  outline: none;
+  transition:
+    border-color 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cell:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--brand-gold, #cfac65) 55%, var(--brand-border, #c1c5c8));
+}
+
+.cell:focus-visible {
+  border-color: var(--brand-primary, #002e7a);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--brand-gold, #cfac65) 30%, transparent),
+    0 0 0 1px var(--brand-primary, #002e7a);
+}
+
+.cell:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+@media (max-width: 420px) {
+  .group {
+    gap: 6px;
+  }
+
+  .cell {
+    min-height: 2.75rem;
+    max-width: 3rem;
+    font-size: 1.15rem;
+    border-radius: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell {
+    transition: none;
+  }
+}

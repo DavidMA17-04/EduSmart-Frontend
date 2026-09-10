@@ -196,7 +196,8 @@ export const UserCreatePage = () => {
               </li>
               <li>
                 Estado <strong>Pendiente</strong>: la cuenta no puede iniciar sesión hasta verificar
-                el código enviado por correo (PBI-16).
+                el código enviado por correo (válido 5 minutos). Si el correo no se envía, la cuenta
+                permanece pendiente y puede reenviar el código desde la pantalla de verificación.
               </li>
               <li>
                 La contraseña temporal es obligatoria. El usuario deberá cambiarla al iniciar

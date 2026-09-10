@@ -4,8 +4,9 @@
   place-items: center;
   padding: 24px 16px;
   background:
-    radial-gradient(ellipse at top, color-mix(in srgb, var(--brand-primary-light) 55%, transparent), transparent 55%),
-    var(--brand-background, #f5f7fb);
+    radial-gradient(ellipse 70% 45% at 50% 0%, color-mix(in srgb, var(--brand-gold) 14%, transparent), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 85% 20%, color-mix(in srgb, var(--brand-primary) 8%, transparent), transparent 50%),
+    linear-gradient(180deg, #eef2f8 0%, var(--brand-background, #f5f6f8) 48%);
 }
 
 .card {
@@ -13,9 +14,10 @@
   max-width: 28rem;
   padding: 1.75rem 1.5rem 1.5rem;
   border-radius: 16px;
-  border: 1px solid var(--admin-border, #d9e0ea);
-  background: #fff;
-  box-shadow: 0 16px 32px -20px rgba(2, 26, 83, 0.2);
+  border: 1px solid var(--brand-border, #c1c5c8);
+  border-top: 3px solid var(--brand-gold, #cfac65);
+  background: var(--brand-surface, #fff);
+  box-shadow: 0 20px 48px rgba(2, 26, 83, 0.09);
   display: grid;
   gap: 12px;
 }
@@ -26,19 +28,24 @@
   display: grid;
   place-items: center;
   border-radius: 14px;
-  background: var(--brand-primary-light, #e8eef8);
+  background: var(--brand-primary-light, #eff4fb);
   color: var(--brand-primary, #002e7a);
+  border: 1px solid color-mix(in srgb, var(--brand-gold, #cfac65) 45%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-gold, #cfac65) 16%, transparent);
 }
 
 .title {
   margin: 0;
   font-size: 1.35rem;
   color: var(--brand-navy, #021a53);
+  font-family: var(--brand-font-serif, Georgia, serif);
+  letter-spacing: -0.02em;
+  font-weight: 700;
 }
 
 .lead {
   margin: 0;
-  color: var(--admin-muted, #64748b);
+  color: var(--brand-muted, #6b7280);
   font-size: 0.9rem;
   line-height: 1.45;
 }
@@ -54,7 +61,7 @@
   gap: 4px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--admin-text, #1e293b);
+  color: var(--brand-navy, #021a53);
 }
 
 .actions {
@@ -65,7 +72,7 @@
 }
 
 .error {
-  color: var(--admin-danger, #b91c1c);
+  color: var(--brand-danger, #d32f2f);
   font-size: 11px;
   font-weight: 500;
 }
@@ -74,8 +81,10 @@
   margin: 0;
   padding: 8px 10px;
   border-radius: 8px;
-  background: #f0f9ff;
-  color: #0c4a6e;
+  background: var(--brand-primary-light, #eff4fb);
+  border: 1px solid color-mix(in srgb, var(--brand-primary, #002e7a) 14%, transparent);
+  border-left: 3px solid var(--brand-gold, #cfac65);
+  color: var(--brand-navy, #021a53);
   font-size: 12px;
 }
 
@@ -92,5 +101,490 @@
 }
 
 .footer a:hover {
+  color: var(--brand-primary-hover, #164687);
   text-decoration: underline;
+}
+
+/* —— Verify-account only (base classes above stay intact for forgot/reset) —— */
+
+.verifyPage {
+  align-content: center;
+  padding: clamp(28px, 5vh, 48px) clamp(16px, 4vw, 40px);
+}
+
+.verifyCard {
+  position: relative;
+  width: 100%;
+  max-width: min(40rem, 100%);
+  gap: 18px;
+  overflow: hidden;
+  padding: 1.85rem clamp(1.35rem, 3.5vw, 2.25rem) 1.85rem;
+  padding-top: 1.65rem;
+  box-shadow:
+    0 20px 48px rgba(2, 26, 83, 0.1),
+    0 0 0 1px color-mix(in srgb, var(--brand-gold, #cfac65) 12%, transparent);
+  transition: box-shadow 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.verifyCard .iconWrap {
+  justify-self: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+}
+
+.verifyCard .title {
+  font-size: clamp(1.45rem, 2.4vw, 1.7rem);
+}
+
+.verifyCard .lead {
+  max-width: 34rem;
+  margin-inline: auto;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.verifyCard .title,
+.verifyCard .lead {
+  text-align: center;
+  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.verifyFlow {
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.iconStage {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  justify-self: center;
+}
+
+.iconLayer {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  transform: scale(0.94);
+  transition:
+    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.iconLayerActive {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.topProgress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px 0;
+  pointer-events: none;
+}
+
+.topProgressTrack {
+  flex: 1;
+  height: 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand-gold, #cfac65) 18%, #eef2f7);
+  overflow: hidden;
+}
+
+.topProgressFill {
+  height: 100%;
+  width: 100%;
+  transform-origin: left center;
+  transform: scaleX(0);
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    var(--brand-primary, #002e7a) 0%,
+    var(--brand-navy-soft, #164687) 70%,
+    var(--brand-gold-dark, #9b7d2e) 100%
+  );
+  transition:
+    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.55s ease;
+}
+
+.topProgressFillDone {
+  background: linear-gradient(
+    90deg,
+    var(--brand-green, #168750) 0%,
+    var(--brand-green-hover, #147445) 100%
+  );
+}
+
+.topProgressCheck {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  color: var(--brand-green, #168750);
+  opacity: 0;
+  transform: scale(0.75);
+  transition:
+    opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.topProgressCheckVisible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.stage {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.stageOpen {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.stageInner {
+  overflow: hidden;
+  min-height: 0;
+  display: grid;
+  gap: 14px;
+  padding-bottom: 2px;
+}
+
+.emailField {
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-items: center;
+  gap: 8px;
+}
+
+.emailFieldLabel {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--brand-navy, #021a53);
+  white-space: nowrap;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+.emailFieldInput {
+  width: 100%;
+  max-width: min(32rem, 100%);
+  min-height: 44px;
+  min-width: 0;
+  border: 1.5px solid var(--brand-border, #c1c5c8) !important;
+  border-radius: 12px !important;
+  background: var(--brand-surface, #fff) !important;
+  box-shadow: none !important;
+  text-align: center;
+  color: var(--brand-navy, #021a53) !important;
+  font-size: 1rem !important;
+}
+
+.emailFieldInput:focus,
+.emailFieldInput:focus-visible {
+  border-color: var(--brand-primary, #002e7a) !important;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--brand-gold, #cfac65) 28%, transparent),
+    0 0 0 1px var(--brand-primary, #002e7a) !important;
+  outline: none;
+}
+
+.emailField .error,
+.emailField .errorBanner {
+  grid-column: 1;
+  text-align: left;
+  justify-self: center;
+}
+
+@media (max-width: 420px) {
+  .emailFieldInput {
+    max-width: 100%;
+  }
+}
+
+.infoSlot {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.infoSlotOpen {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.infoSlotInner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.emailChip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--brand-gold-light, #f8f1e3);
+  border: 1px solid color-mix(in srgb, var(--brand-gold, #cfac65) 40%, var(--brand-border, #c1c5c8));
+}
+
+.emailChipText {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--brand-navy, #021a53);
+  word-break: break-all;
+}
+
+.linkButton {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--brand-primary, #002e7a);
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.35s ease, opacity 0.35s ease;
+}
+
+.linkButton:hover:not(:disabled) {
+  color: var(--brand-gold-dark, #9b7d2e);
+  text-decoration: underline;
+}
+
+.linkButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.otpBlock {
+  display: grid;
+  gap: 12px;
+}
+
+.otpLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand-navy, #021a53);
+  text-align: center;
+}
+
+.errorBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  max-width: min(32rem, 100%);
+  margin-inline: auto;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--brand-danger, #d32f2f) 22%, transparent);
+  border-left: 3px solid var(--brand-danger, #d32f2f);
+  background: color-mix(in srgb, var(--brand-danger, #d32f2f) 7%, #fff);
+  color: color-mix(in srgb, var(--brand-danger, #d32f2f) 82%, var(--brand-navy, #021a53));
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  text-align: left;
+  box-sizing: border-box;
+  animation: verifyErrorIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.errorBanner svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--brand-danger, #d32f2f);
+}
+
+.progressHint {
+  margin: 0;
+  font-size: 11px;
+  color: var(--brand-muted, #6b7280);
+  min-height: 1em;
+  text-align: center;
+  transition: opacity 0.4s ease;
+}
+
+@keyframes verifyErrorIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.actionsMorph {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin-top: 4px;
+  transition:
+    justify-content 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    gap 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.actionsCentered {
+  justify-content: center;
+}
+
+.actionsSplit {
+  justify-content: space-between;
+}
+
+.primaryAction {
+  flex: 0 0 auto;
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.primaryAction :global(button) {
+  min-height: 44px;
+  padding-inline: 1.35rem;
+  font-size: 0.95rem;
+}
+
+.resendSide {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: right;
+  min-width: 0;
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateX(6px);
+  pointer-events: none;
+  transition:
+    max-width 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.08s,
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    margin 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.resendSideVisible {
+  max-width: 14rem;
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.resendHint {
+  font-size: 11px;
+  color: var(--brand-muted, #6b7280);
+  white-space: nowrap;
+}
+
+.resendButton {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand-primary, #002e7a);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.35s ease, color 0.35s ease;
+}
+
+.resendButton:hover:not(:disabled) {
+  color: var(--brand-gold-dark, #9b7d2e);
+  text-decoration: underline;
+}
+
+.resendButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  text-decoration: none;
+  color: var(--brand-muted, #6b7280);
+}
+
+.actions :global(button) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.spin {
+  animation: verifySpin 0.8s linear infinite;
+}
+
+.successEnter {
+  width: 100%;
+  max-width: min(40rem, 100%);
+  animation: verifyPanelIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes verifyPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes verifySpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .successEnter,
+  .errorBanner {
+    animation: none;
+  }
+
+  .stage,
+  .infoSlot,
+  .iconLayer,
+  .topProgressFill,
+  .topProgressCheck,
+  .verifyCard,
+  .linkButton,
+  .progressHint,
+  .resendButton,
+  .actionsMorph,
+  .resendSide,
+  .primaryAction,
+  .verifyCard .title,
+  .verifyCard .lead {
+    transition: none !important;
+  }
+
+  .spin {
+    animation: none;
+  }
 }
