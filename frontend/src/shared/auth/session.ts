@@ -69,14 +69,18 @@ export function clearAccessToken(): void {
 
 export async function loginWithCredentials(
   apiBaseUrl: string,
-  email: string,
+  identifier: string,
   password: string,
   persistent = false,
 ): Promise<string> {
   const response = await fetch(`${apiBaseUrl}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json; charset=UTF-8' },
-    body: JSON.stringify({ email: email.trim(), password }),
+    body: JSON.stringify({
+      identifier: identifier.trim(),
+      password,
+      rememberMe: persistent,
+    }),
   });
 
   const payload = (await response.json().catch(() => null)) as LoginEnvelope | null;
