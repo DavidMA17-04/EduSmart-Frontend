@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Navigate, Link, useNavigate } from 'react-router-dom';
+import { Navigate, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   CircleHelp,
   Eye,
@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { authApi } from '@/features/auth';
 import { publicApi, type CampusSnapshot } from '@/features/public';
-import { AuthLoginError, getAccessToken } from '@/shared/auth';
+import { AuthLoginError, getAccessToken, getSessionUser } from '@/shared/auth';
 import { Button, Checkbox, Input } from '@/shared/ui';
 import styles from './LoginPage.module.css';
 
@@ -27,6 +27,8 @@ function prefersReducedMotion(): boolean {
 
 export const LoginPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const resetDone = Boolean((location.state as { resetDone?: boolean } | null)?.resetDone);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -92,7 +94,8 @@ export const LoginPage = () => {
   }, [snapshot, snapshotLoading]);
 
   if (getAccessToken()) {
-    return <Navigate replace to="/admin" />;
+    const session = getSessionUser();
+    return <Navigate replace to={session?.mustChangePassword ? '/admin/settings' : '/admin'} />;
   }
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -107,7 +110,8 @@ export const LoginPage = () => {
     setIsSubmitting(true);
     try {
       await authApi.login(email, password, rememberMe);
-      navigate('/admin', { replace: true });
+      const session = getSessionUser();
+      navigate(session?.mustChangePassword ? '/admin/settings' : '/admin', { replace: true });
     } catch (loginError) {
       if (loginError instanceof AuthLoginError) {
         setFormError(loginError.message);
@@ -219,14 +223,16 @@ export const LoginPage = () => {
               />
               Recordarme
             </label>
-            <button
-              className={styles.forgot}
-              onClick={() => setFormError('La recuperación de contraseña aún no está disponible. Contacta al administrador del sistema.')}
-              type="button"
-            >
+            <Link className={styles.forgot} to="/forgot-password">
               ¿Olvidó su contraseña?
-            </button>
+            </Link>
           </div>
+
+          {resetDone ? (
+            <p className={styles.formError} role="status">
+              Contraseña restablecida. Inicie sesión con la nueva clave.
+            </p>
+          ) : null}
 
           {formError ? (
             <p className={styles.formError} role="alert">

@@ -2,18 +2,18 @@ import { useState } from 'react';
 import { Bell, CalendarRange, ChevronDown, FileBarChart, GraduationCap, Layers, LayoutDashboard, LogOut, Settings, ShieldCheck, Users } from 'lucide-react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { authApi } from '@/features/auth';
-import { getSessionUser } from '@/shared/auth';
+import { getSessionUser, sessionHasPermission } from '@/shared/auth';
 import { Button, Modal } from '@/shared/ui';
 import styles from './AdminShell.module.css';
 
 const navigationItems = [
   { label: 'Dashboard', icon: LayoutDashboard, to: '/admin' },
-  { label: 'Usuarios', icon: Users, to: '/admin/users' },
-  { label: 'Roles y permisos', icon: ShieldCheck, to: '/admin/roles-permissions' },
-  { label: 'Estructura académica', icon: GraduationCap, to: '/admin/specialties' },
-  { label: 'Períodos académicos', icon: CalendarRange, to: '/admin/academic-periods' },
-  { label: 'Niveles y secciones', icon: Layers, to: '/admin/sections-groups' },
-  { label: 'Reportes', icon: FileBarChart, to: '/admin/reports' },
+  { label: 'Usuarios', icon: Users, to: '/admin/users', permission: 'administrator.view' },
+  { label: 'Roles y permisos', icon: ShieldCheck, to: '/admin/roles-permissions', permission: 'roles_permissions.view' },
+  { label: 'Estructura académica', icon: GraduationCap, to: '/admin/specialties', permission: 'specialties.view' },
+  { label: 'Períodos académicos', icon: CalendarRange, to: '/admin/academic-periods', permission: 'periods.view' },
+  { label: 'Niveles y secciones', icon: Layers, to: '/admin/sections-groups', permission: 'sections.view' },
+  { label: 'Reportes', icon: FileBarChart, to: '/admin/reports', permission: 'administrator.view' },
   { label: 'Configuración', icon: Settings, to: '/admin/settings' },
 ];
 
@@ -51,7 +51,9 @@ export const AdminShell = () => {
           <small className={styles.brandMotto}>Ciencia · Cultura · 1972</small>
         </div>
         <nav aria-label="Navegación principal" className={styles.navigation}>
-          {navigationItems.map(({ label, icon: Icon, to }) => (
+          {navigationItems
+            .filter((item) => !item.permission || sessionHasPermission(item.permission))
+            .map(({ label, icon: Icon, to }) => (
             <NavLink
               className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
               end={to === '/admin'}
@@ -76,7 +78,7 @@ export const AdminShell = () => {
           <button aria-label="Notificaciones" className={styles.iconButton} type="button">
             <Bell size={20} />
           </button>
-          <button className={styles.profile} type="button">
+          <button className={styles.profile} onClick={() => navigate('/admin/settings')} type="button">
             <span className={styles.headerAvatar}>{avatarLetter}</span>
             <span>
               <strong>{displayName}</strong>

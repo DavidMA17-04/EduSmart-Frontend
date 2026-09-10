@@ -3,13 +3,16 @@ const REFRESH_TOKEN_KEY = 'edusmart.refreshToken';
 
 type LoginEnvelope = {
   success?: boolean;
-  data?: { accessToken?: string; refreshToken?: string };
+  message?: string;
+  data?: { accessToken?: string; refreshToken?: string; mustChangePassword?: boolean };
 };
 
 export type SessionUser = {
   id: number;
   email: string;
   roles: string[];
+  permissions: string[];
+  mustChangePassword: boolean;
 };
 
 export class AuthLoginError extends Error {
@@ -22,15 +25,39 @@ export class AuthLoginError extends Error {
   }
 }
 
+function tokenStore(persistent: boolean): Storage {
+  return persistent ? localStorage : sessionStorage;
+}
+
+function isPersistentSession(): boolean {
+  return Boolean(localStorage.getItem(ACCESS_TOKEN_KEY) || localStorage.getItem(REFRESH_TOKEN_KEY));
+}
+
 export function getAccessToken(): string | null {
   return sessionStorage.getItem(ACCESS_TOKEN_KEY) ?? localStorage.getItem(ACCESS_TOKEN_KEY);
+}
+
+export function getRefreshToken(): string | null {
+  return sessionStorage.getItem(REFRESH_TOKEN_KEY) ?? localStorage.getItem(REFRESH_TOKEN_KEY);
 }
 
 export function setAccessToken(token: string, persistent = false): void {
   sessionStorage.removeItem(ACCESS_TOKEN_KEY);
   localStorage.removeItem(ACCESS_TOKEN_KEY);
-  const store = persistent ? localStorage : sessionStorage;
-  store.setItem(ACCESS_TOKEN_KEY, token);
+  tokenStore(persistent).setItem(ACCESS_TOKEN_KEY, token);
+}
+
+export function setSessionTokens(
+  accessToken: string,
+  refreshToken?: string,
+  persistent = isPersistentSession(),
+): void {
+  setAccessToken(accessToken, persistent);
+  sessionStorage.removeItem(REFRESH_TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+  if (refreshToken) {
+    tokenStore(persistent).setItem(REFRESH_TOKEN_KEY, refreshToken);
+  }
 }
 
 export function clearAccessToken(): void {
@@ -52,25 +79,45 @@ export async function loginWithCredentials(
     body: JSON.stringify({ email: email.trim(), password }),
   });
 
+  const payload = (await response.json().catch(() => null)) as LoginEnvelope | null;
+
   if (!response.ok) {
-    throw new AuthLoginError(
-      response.status,
-      response.status === 401 ? 'Credenciales inválidas.' : 'No se pudo iniciar sesión.',
-    );
+    const apiMessage = payload?.message;
+    const fallback =
+      response.status === 401 ? 'Credenciales inválidas.' : 'No se pudo iniciar sesión.';
+    throw new AuthLoginError(response.status, apiMessage || fallback);
   }
 
-  const payload = (await response.json()) as LoginEnvelope;
-  const token = payload.data?.accessToken;
+  const token = payload?.data?.accessToken;
   if (!token) {
     throw new AuthLoginError(500, 'No se recibió el token de acceso.');
   }
 
-  setAccessToken(token, persistent);
-  if (payload.data?.refreshToken) {
-    const store = persistent ? localStorage : sessionStorage;
-    store.setItem(REFRESH_TOKEN_KEY, payload.data.refreshToken);
-  }
+  setSessionTokens(token, payload?.data?.refreshToken, persistent);
   return token;
+}
+
+export async function refreshSessionTokens(apiBaseUrl: string): Promise<string | null> {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return null;
+
+  const response = await fetch(`${apiBaseUrl}/auth/refresh`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json; charset=UTF-8',
+      Authorization: `Bearer ${refreshToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const payload = (await response.json().catch(() => null)) as LoginEnvelope | null;
+  const accessToken = payload?.data?.accessToken;
+  if (!accessToken) return null;
+  setSessionTokens(accessToken, payload?.data?.refreshToken ?? refreshToken);
+  return accessToken;
 }
 
 function decodeJwtPayload(token: string): Record<string, unknown> | null {
@@ -96,5 +143,16 @@ export function getSessionUser(): SessionUser | null {
     id: Number(payload.sub),
     email: payload.email,
     roles: Array.isArray(payload.roles) ? payload.roles.map(String) : [],
+    permissions: Array.isArray(payload.permissions) ? payload.permissions.map(String) : [],
+    mustChangePassword: Boolean(payload.mustChangePassword),
   };
+}
+
+export function sessionHasPermission(code: string): boolean {
+  const user = getSessionUser();
+  if (!user) return false;
+  if (user.roles.includes('ADMIN') || user.roles.some((role) => role.toLowerCase() === 'administrador')) {
+    return true;
+  }
+  return user.permissions.includes(code);
 }

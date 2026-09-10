@@ -86,6 +86,9 @@ export const userApi = {
     };
   },
   getById: async (id: number) => normalizeUser(await requestUser<AdministrativeUser>(`/users/${id}`)),
+  getMe: async () => normalizeUser(await requestUser<AdministrativeUser>('/users/me')),
+  updateMe: async (payload: Pick<UpdateUserPayload, 'name' | 'first_lastname' | 'second_lastname' | 'phone'>) =>
+    normalizeUser(await requestUser<AdministrativeUser>('/users/me', { method: 'PATCH', body: JSON.stringify(payload) })),
   create: async (payload: CreateUserPayload) =>
     normalizeUser(await requestUser<AdministrativeUser>('/users', { method: 'POST', body: JSON.stringify(payload) })),
   update: async (id: number, payload: UpdateUserPayload) =>

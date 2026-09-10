@@ -12,9 +12,12 @@ export interface AdministrativeUser {
   nationalId: string | null;
   firstName: string | null;
   lastName: string | null;
+  first_lastname?: string | null;
+  second_lastname?: string | null;
   email: string | null;
   phone: string | null;
   status: UserAccountStatus;
+  mustChangePassword?: boolean;
   roles: UserRoleRef[];
   createdAt: string;
   updatedAt: string;

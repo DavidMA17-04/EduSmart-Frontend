@@ -14,40 +14,64 @@ import { UserCreatePage } from '@/pages/user-create';
 import { UserDetailPage } from '@/pages/user-detail';
 import { UsersDirectoryPage } from '@/pages/users-directory';
 import { AdministrativeReportsPage } from '@/pages/administrative-reports';
+import { ForgotPasswordPage } from '@/pages/forgot-password';
+import { ProfileSettingsPage } from '@/pages/profile-settings';
+import { ResetPasswordPage } from '@/pages/reset-password';
 import { ImportResultPage } from '@/pages/import-result';
 import { AdminShell } from '@/widgets/app-shell';
 import { RequireAuth } from './RequireAuth';
+import { RequirePermission } from './RequirePermission';
 import { RootRedirect } from './RootRedirect';
 
 export const AppRouter = () => (
   <Routes>
     <Route element={<LoginPage />} path="/login" />
     <Route element={<VerifyAccountPage />} path="/verify-account" />
+    <Route element={<ForgotPasswordPage />} path="/forgot-password" />
+    <Route element={<ResetPasswordPage />} path="/reset-password" />
 
     <Route element={<RequireAuth />}>
       <Route element={<AdminShell />} path="/admin">
         <Route element={<AdminHomePage />} index />
         <Route element={<AdminHomePage />} path="dashboard" />
-        <Route element={<UserMethodSelectionPage />} path="users" />
-        <Route element={<UserBulkImportPage />} path="users/import/bulk" />
-        <Route element={<UserImportPreviewPage />} path="users/import/preview" />
-        <Route element={<UsersDirectoryPage />} path="users/directory" />
-        <Route element={<UserCreatePage />} path="users/new" />
-        <Route element={<ImportResultPage />} path="users/import-result/:jobId" />
-        <Route element={<UserDetailPage />} path="users/:userId" />
-        <Route element={<RolesPermissionsPage />} path="roles-permissions" />
-        <Route element={<SpecialtiesPage />} path="specialties" />
-        <Route
-          element={<SpecialtyKindPage kind="EXPLORATORY_WORKSHOP" />}
-          path="specialties/workshops"
-        />
-        <Route
-          element={<SpecialtyKindPage kind="TECHNICAL_SPECIALTY" />}
-          path="specialties/technical"
-        />
-        <Route element={<AcademicPeriodsPage />} path="academic-periods" />
-        <Route element={<SectionsGroupsPage />} path="sections-groups" />
-        <Route element={<AdministrativeReportsPage />} path="reports" />
+
+        <Route element={<RequirePermission permission="administrator.view" />}>
+          <Route element={<UserMethodSelectionPage />} path="users" />
+          <Route element={<UserBulkImportPage />} path="users/import/bulk" />
+          <Route element={<UserImportPreviewPage />} path="users/import/preview" />
+          <Route element={<UsersDirectoryPage />} path="users/directory" />
+          <Route element={<UserCreatePage />} path="users/new" />
+          <Route element={<ImportResultPage />} path="users/import-result/:jobId" />
+          <Route element={<UserDetailPage />} path="users/:userId" />
+          <Route element={<AdministrativeReportsPage />} path="reports" />
+        </Route>
+
+        <Route element={<RequirePermission permission="roles_permissions.view" />}>
+          <Route element={<RolesPermissionsPage />} path="roles-permissions" />
+        </Route>
+
+        <Route element={<RequirePermission permission="specialties.view" />}>
+          <Route element={<SpecialtiesPage />} path="specialties" />
+          <Route
+            element={<SpecialtyKindPage kind="EXPLORATORY_WORKSHOP" />}
+            path="specialties/workshops"
+          />
+          <Route
+            element={<SpecialtyKindPage kind="TECHNICAL_SPECIALTY" />}
+            path="specialties/technical"
+          />
+        </Route>
+
+        <Route element={<RequirePermission permission="periods.view" />}>
+          <Route element={<AcademicPeriodsPage />} path="academic-periods" />
+        </Route>
+
+        <Route element={<RequirePermission permission="sections.view" />}>
+          <Route element={<SectionsGroupsPage />} path="sections-groups" />
+        </Route>
+
+        <Route element={<ProfileSettingsPage />} path="settings" />
+        <Route element={<ProfileSettingsPage />} path="profile" />
         <Route element={<AdminHomePage />} path="*" />
       </Route>
     </Route>

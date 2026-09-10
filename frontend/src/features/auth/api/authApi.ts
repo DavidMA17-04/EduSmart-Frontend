@@ -1,11 +1,21 @@
-import { clearAccessToken, getAccessToken, loginWithCredentials } from '@/shared/auth';
+import {
+  clearAccessToken,
+  getAccessToken,
+  getRefreshToken,
+  loginWithCredentials,
+  refreshSessionTokens,
+} from '@/shared/auth';
+import { httpClient } from '@/shared/api';
 
 const apiBaseUrl = (import.meta.env.VITE_API_URL ?? '/api/v1').replace(/\/$/, '');
 
-async function postJson<T>(path: string, body: unknown): Promise<T> {
+async function postJson<T>(path: string, body: unknown, token?: string | null): Promise<T> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json; charset=UTF-8' };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
   const response = await fetch(`${apiBaseUrl}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+    headers,
     body: JSON.stringify(body),
   });
 
@@ -27,6 +37,16 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
   return (payload?.data ?? payload) as T;
 }
 
+export type AuthSessionView = {
+  id: number;
+  userAgent: string | null;
+  ipAddress: string | null;
+  createdAt: string;
+  lastUsedAt: string | null;
+  expiresAt: string;
+  current: boolean;
+};
+
 export const authApi = {
   login: (email: string, password: string, remember = false) =>
     loginWithCredentials(apiBaseUrl, email, password, remember),
@@ -47,8 +67,38 @@ export const authApi = {
     }
     clearAccessToken();
   },
+  refresh: () => refreshSessionTokens(apiBaseUrl),
   verifyAccount: (email: string, code: string) =>
     postJson<{ message: string }>('/auth/verify-account', { email, code }),
   resendVerification: (email: string) =>
     postJson<{ message: string }>('/auth/resend-verification', { email }),
+  forgotPassword: (email: string) =>
+    postJson<{ message: string }>('/auth/forgot-password', { email }),
+  resetPassword: (token: string, newPassword: string) =>
+    postJson<{ message: string }>('/auth/reset-password', { token, newPassword }),
+  changePassword: (currentPassword: string, newPassword: string) =>
+    postJson<{ message: string }>(
+      '/auth/change-password',
+      { currentPassword, newPassword },
+      getAccessToken(),
+    ),
+  listSessions: async () => {
+    const response = await httpClient<{ success: boolean; data: AuthSessionView[] }>('/auth/sessions');
+    return response.data;
+  },
+  revokeSession: async (id: number) => {
+    const response = await httpClient<{ success: boolean; data: { message: string } }>(
+      `/auth/sessions/${id}`,
+      { method: 'DELETE' },
+    );
+    return response.data;
+  },
+  logoutAll: async () => {
+    const response = await httpClient<{ success: boolean; data: { message: string } }>(
+      '/auth/logout-all',
+      { method: 'POST' },
+    );
+    return response.data;
+  },
+  getRefreshToken,
 };

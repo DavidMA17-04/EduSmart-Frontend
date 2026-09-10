@@ -1,4 +1,4 @@
-import { clearAccessToken, getAccessToken } from '@/shared/auth';
+import { clearAccessToken, getAccessToken, refreshSessionTokens } from '@/shared/auth';
 
 const apiBaseUrl = (import.meta.env.VITE_API_URL ?? '/api/v1').replace(/\/$/, '');
 
@@ -32,6 +32,9 @@ async function parseErrorMessage(response: Response): Promise<string> {
     : rawMessage;
 
   if (response.status === 401) {
+    if (message && message !== 'Unauthorized' && message !== 'Invalid credentials') {
+      return message;
+    }
     return message === 'Invalid credentials'
       ? 'Credenciales inválidas.'
       : 'No autorizado. Inicie sesión para continuar.';
@@ -44,6 +47,19 @@ async function parseErrorMessage(response: Response): Promise<string> {
   return message ?? 'No se pudo completar la solicitud.';
 }
 
+const PUBLIC_AUTH_PATHS = new Set([
+  '/auth/login',
+  '/auth/refresh',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+  '/auth/verify-account',
+  '/auth/resend-verification',
+]);
+
+function isPublicAuthPath(path: string): boolean {
+  return PUBLIC_AUTH_PATHS.has(path.split('?')[0] ?? path);
+}
+
 function redirectToLogin(): void {
   clearAccessToken();
   if (window.location.pathname !== '/login') {
@@ -52,19 +68,30 @@ function redirectToLogin(): void {
 }
 
 export async function httpClient<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const token = getAccessToken();
-
-  let response: Response;
-  try {
-    response = await fetch(`${apiBaseUrl}${path}`, {
+  const requestOnce = async (token: string | null) => {
+    const response = await fetch(`${apiBaseUrl}${path}`, {
       ...init,
       headers: buildHeaders(init, token),
     });
+    return response;
+  };
+
+  let token = getAccessToken();
+  let response: Response;
+  try {
+    response = await requestOnce(token);
   } catch {
     throw new Error(`No se pudo conectar con la API en ${apiBaseUrl}. Verifique que el backend esté activo.`);
   }
 
-  if (response.status === 401 && !path.startsWith('/auth/')) {
+  if (response.status === 401 && !isPublicAuthPath(path)) {
+    const refreshed = await refreshSessionTokens(apiBaseUrl);
+    if (refreshed) {
+      response = await requestOnce(refreshed);
+    }
+  }
+
+  if (response.status === 401 && !isPublicAuthPath(path)) {
     redirectToLogin();
     throw new HttpError(response.status, await parseErrorMessage(response));
   }
