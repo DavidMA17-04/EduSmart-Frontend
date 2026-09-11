@@ -1,0 +1,133 @@
+.layout {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: minmax(0, 1.4fr) minmax(240px, 0.8fr);
+  align-items: stretch;
+}
+
+.intro,
+.flow {
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--brand-border, #c1c5c8) 55%, transparent);
+  background:
+    radial-gradient(
+      ellipse 80% 70% at 0% 0%,
+      color-mix(in srgb, var(--brand-primary, #002e7a) 8%, transparent),
+      transparent 55%
+    ),
+    var(--admin-surface, #fff);
+}
+
+.intro {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 18px;
+  padding: 24px;
+  align-items: start;
+}
+
+.introIcon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--brand-primary-light, rgba(0, 46, 122, 0.08));
+  color: var(--brand-primary, var(--admin-primary));
+}
+
+.introBody {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.introTitle {
+  margin: 0;
+  font-family: var(--font-heading, var(--brand-font-serif));
+  font-size: clamp(1.15rem, 2vw, 1.35rem);
+  color: var(--brand-navy, var(--admin-text));
+  letter-spacing: -0.01em;
+}
+
+.introText,
+.viewOnlyHint {
+  margin: 0;
+  color: var(--admin-muted, var(--brand-muted));
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.viewOnlyHint {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--brand-primary, #002e7a) 5%, transparent);
+}
+
+.flow {
+  padding: 22px 20px;
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+
+.flowHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--brand-primary, var(--admin-primary));
+}
+
+.flowHeader h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--brand-navy, var(--admin-text));
+}
+
+.steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: center;
+  font-size: 0.92rem;
+  color: var(--brand-navy, var(--admin-text));
+}
+
+.stepIndex {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--brand-primary, var(--admin-primary));
+  background: var(--brand-primary-light, rgba(0, 46, 122, 0.08));
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .intro {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+
+  .introIcon {
+    width: 44px;
+    height: 44px;
+  }
+}

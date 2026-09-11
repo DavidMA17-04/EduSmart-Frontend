@@ -1,0 +1,45 @@
+.layout {
+  display: grid;
+  gap: 24px;
+}
+
+.mainColumn {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+
+.notice {
+  display: grid;
+  gap: 8px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--admin-border, #e4e7ec);
+  background: var(--admin-surface-soft, #f8fafc);
+}
+
+.notice p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--admin-text, #1a1a1a);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filters > * {
+  min-width: 160px;
+}
+
+.muted {
+  color: var(--admin-muted, #667085);
+}
+
+.modalBody {
+  display: grid;
+  gap: 12px;
+}

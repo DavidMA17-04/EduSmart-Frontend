@@ -1,0 +1,66 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.window {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  line-height: 1.2;
+  height: 1.2em;
+}
+
+.line {
+  display: flex;
+  white-space: pre;
+}
+
+.outgoing {
+  position: relative;
+}
+
+.incoming {
+  position: absolute;
+  inset: 0;
+  display: flex;
+}
+
+.char {
+  display: inline-block;
+  transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--i, 0) * 22ms);
+  will-change: transform;
+}
+
+.incoming .char {
+  transform: translateY(-110%);
+}
+
+/* Activated from parent button hover / focus-visible */
+:global(button:hover:not(:disabled)) .outgoing .char,
+:global(button:focus-visible:not(:disabled)) .outgoing .char {
+  transform: translateY(110%);
+}
+
+:global(button:hover:not(:disabled)) .incoming .char,
+:global(button:focus-visible:not(:disabled)) .incoming .char {
+  transform: translateY(0%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .char {
+    transition: none;
+  }
+
+  :global(button:hover:not(:disabled)) .outgoing .char,
+  :global(button:focus-visible:not(:disabled)) .outgoing .char {
+    transform: none;
+  }
+
+  :global(button:hover:not(:disabled)) .incoming .char,
+  :global(button:focus-visible:not(:disabled)) .incoming .char {
+    transform: translateY(-110%);
+  }
+}

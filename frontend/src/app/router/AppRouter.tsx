@@ -10,7 +10,16 @@ import { RolesPermissionsPage } from '@/pages/roles-permissions';
 import { SpecialtiesPage } from '@/pages/specialties';
 import { SpecialtyKindPage } from '@/pages/specialty-kind';
 import { AcademicPeriodsPage } from '@/pages/academic-periods';
+import {
+  AttendanceHomePage,
+  AttendanceNewPage,
+  AttendanceSessionPage,
+} from '@/pages/attendance';
+import { ATTENDANCE_PERMISSIONS } from '@/features/manage-attendance';
 import { SectionsGroupsPage } from '@/pages/sections-groups';
+import { TeachingAssignmentsPage } from '@/pages/teaching-assignments';
+import { SchedulePage } from '@/pages/schedule';
+import { MySchedulePage } from '@/pages/my-schedule';
 import { UserCreatePage } from '@/pages/user-create';
 import { UserDetailPage } from '@/pages/user-detail';
 import { UsersDirectoryPage } from '@/pages/users-directory';
@@ -19,6 +28,7 @@ import { ProfileSettingsPage } from '@/pages/profile-settings';
 import { ResetPasswordPage } from '@/pages/reset-password';
 import { ImportResultPage } from '@/pages/import-result';
 import { AdminShell } from '@/widgets/app-shell';
+import { SCHEDULE_PERMISSIONS } from '@/features/manage-schedule';
 import { RequireAuth } from './RequireAuth';
 import { RequirePermission } from './RequirePermission';
 import { RootRedirect } from './RootRedirect';
@@ -68,6 +78,49 @@ export const AppRouter = () => (
 
         <Route element={<RequirePermission permission="sections.view" />}>
           <Route element={<SectionsGroupsPage />} path="sections-groups" />
+        </Route>
+
+        <Route element={<RequirePermission permission="academic_structure.view" />}>
+          <Route element={<TeachingAssignmentsPage />} path="teaching-assignments" />
+        </Route>
+
+        <Route
+          element={
+            <RequirePermission permission={SCHEDULE_PERMISSIONS.view} />
+          }
+        >
+          <Route element={<SchedulePage />} path="schedule" />
+        </Route>
+
+        <Route
+          element={
+            <RequirePermission
+              permission={SCHEDULE_PERMISSIONS.viewOwn}
+              withoutPermission={SCHEDULE_PERMISSIONS.view}
+            />
+          }
+        >
+          <Route element={<MySchedulePage />} path="my-schedule" />
+        </Route>
+
+        <Route
+          element={
+            <RequirePermission permission={ATTENDANCE_PERMISSIONS.view} />
+          }
+        >
+          <Route element={<AttendanceHomePage />} path="attendance" />
+          <Route
+            element={<AttendanceSessionPage />}
+            path="attendance/sessions/:sessionId"
+          />
+        </Route>
+
+        <Route
+          element={
+            <RequirePermission permission={ATTENDANCE_PERMISSIONS.create} />
+          }
+        >
+          <Route element={<AttendanceNewPage />} path="attendance/new" />
         </Route>
 
         <Route element={<ProfileSettingsPage />} path="settings" />

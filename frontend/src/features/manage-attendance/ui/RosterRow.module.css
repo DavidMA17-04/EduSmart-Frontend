@@ -1,0 +1,73 @@
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(260px, 1fr);
+  gap: 14px 20px;
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--brand-border, #c1c5c8) 55%, transparent);
+  background: var(--admin-surface, #fff);
+}
+
+.dirty {
+  border-color: color-mix(in srgb, var(--brand-primary, #002e7a) 28%, transparent);
+  background: color-mix(in srgb, var(--brand-primary, #002e7a) 3%, transparent);
+}
+
+.identity {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.name {
+  font-size: 0.98rem;
+  color: var(--brand-navy, var(--admin-text));
+}
+
+.nationalId {
+  font-size: 0.85rem;
+  color: var(--admin-muted, var(--brand-muted));
+  font-variant-numeric: tabular-nums;
+}
+
+.dirtyHint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--brand-primary, var(--admin-primary));
+}
+
+.dirtyDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--brand-primary, var(--admin-primary));
+}
+
+.control {
+  justify-self: end;
+}
+
+@media (max-width: 760px) {
+  .row {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .control {
+    justify-self: stretch;
+  }
+
+  .control :global([role='radiogroup']) {
+    width: 100%;
+  }
+
+  .control :global([role='radio']) {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+}

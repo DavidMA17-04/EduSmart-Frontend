@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AlertCircle, CheckCircle2, Loader2, Mail, ShieldCheck } from 'lucide-react';
 import { authApi } from '@/features/auth';
+import { isValidEmail } from '@/features/auth/model/useVerificationActions';
 import { Alert, Button, FeedbackCard, Input } from '@/shared/ui';
 import { VERIFICATION_UI } from '../model/verificationUi.constants';
 import { OtpCodeInput } from './OtpCodeInput';
@@ -11,10 +12,6 @@ type Step = 'email' | 'code' | 'completing' | 'success';
 
 const SUCCESS_HOLD_MS = 4000;
 const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
-
-function isValidEmail(value: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-}
 
 function computeProgressPct(step: Step, codeLength: number): number {
   if (step === 'email') return 0;

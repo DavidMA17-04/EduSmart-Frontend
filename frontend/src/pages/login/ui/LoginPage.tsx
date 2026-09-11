@@ -1,141 +1,22 @@
-import { useEffect, useState, type FormEvent } from 'react';
-import { Navigate, Link, useLocation, useNavigate } from 'react-router-dom';
-import {
-  CircleHelp,
-  Eye,
-  EyeOff,
-  Loader2,
-  Lock,
-  LogIn,
-  TrendingUp,
-  User,
-  Users,
-} from 'lucide-react';
-import { authApi, useAuthStore } from '@/features/auth';
-import { publicApi, type CampusSnapshot } from '@/features/public';
-import {
-  AuthLoginError,
-  getRememberedIdentifier,
-  getRememberMePreference,
-  getSessionUser,
-} from '@/shared/auth';
-import { Button, Checkbox, Input } from '@/shared/ui';
+import { useRef } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { CircleHelp } from 'lucide-react';
+import { useAuthStore } from '@/features/auth';
+import { getSessionUser } from '@/shared/auth';
+import { InstitutionStatsCard } from './InstitutionStatsCard';
+import { LoginFlow } from './LoginFlow';
 import styles from './LoginPage.module.css';
 
-function formatCount(value: number): string {
-  return value.toLocaleString('es-CR');
-}
-
-function prefersReducedMotion(): boolean {
-  return typeof window !== 'undefined'
-    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
-
 export const LoginPage = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   const resetDone = Boolean((location.state as { resetDone?: boolean } | null)?.resetDone);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const [identifier, setIdentifier] = useState('');
-  const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [identifierError, setIdentifierError] = useState<string | null>(null);
-  const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [formError, setFormError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [snapshot, setSnapshot] = useState<CampusSnapshot | null>(null);
-  const [snapshotLoading, setSnapshotLoading] = useState(true);
-  const [displayCount, setDisplayCount] = useState<number | null>(null);
+  const wasAuthenticatedOnMount = useRef(useAuthStore.getState().isAuthenticated);
 
-  useEffect(() => {
-    const remembered = getRememberedIdentifier();
-    if (remembered) {
-      setIdentifier(remembered);
-      setRememberMe(getRememberMePreference());
-    }
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-    publicApi
-      .getCampusSnapshot()
-      .then((data) => {
-        if (active) setSnapshot(data);
-      })
-      .catch(() => {
-        if (active) setSnapshot(null);
-      })
-      .finally(() => {
-        if (active) setSnapshotLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (snapshotLoading) {
-      setDisplayCount(null);
-      return;
-    }
-
-    const target = snapshot?.totalUsers;
-    if (target == null) {
-      setDisplayCount(null);
-      return;
-    }
-
-    if (prefersReducedMotion()) {
-      setDisplayCount(target);
-      return;
-    }
-
-    let frameId = 0;
-    const durationMs = 800;
-    const start = performance.now();
-
-    const tick = (now: number) => {
-      const progress = Math.min(1, (now - start) / durationMs);
-      const eased = 1 - (1 - progress) ** 3;
-      setDisplayCount(Math.round(target * eased));
-      if (progress < 1) {
-        frameId = requestAnimationFrame(tick);
-      }
-    };
-
-    frameId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frameId);
-  }, [snapshot, snapshotLoading]);
-
-  if (isAuthenticated) {
+  if (isAuthenticated && wasAuthenticatedOnMount.current) {
     const session = getSessionUser();
     return <Navigate replace to={session?.mustChangePassword ? '/admin/settings' : '/admin'} />;
   }
-
-  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const nextIdentifierError = identifier.trim() ? null : 'Este campo es obligatorio.';
-    const nextPasswordError = password ? null : 'La contraseña es obligatoria.';
-    setIdentifierError(nextIdentifierError);
-    setPasswordError(nextPasswordError);
-    setFormError(null);
-    if (nextIdentifierError || nextPasswordError) return;
-
-    setIsSubmitting(true);
-    try {
-      const result = await authApi.login(identifier, password, rememberMe);
-      navigate(result.user.mustChangePassword ? '/admin/settings' : '/admin', { replace: true });
-    } catch (loginError) {
-      if (loginError instanceof AuthLoginError) {
-        setFormError(loginError.message);
-      } else {
-        setFormError('No se pudo conectar con el servidor. Verifique que el backend esté activo.');
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <div className={`admin-shell ${styles.layout}`}>
@@ -159,122 +40,13 @@ export const LoginPage = () => {
           </p>
         </div>
 
-        <div className={styles.sellCard} aria-live="polite">
-          <span className={styles.sellIcon}>
-            <Users size={16} aria-hidden="true" />
-          </span>
-          <div className={styles.sellBody}>
-            <strong className={styles.sellValue}>
-              {displayCount === null ? '—' : formatCount(displayCount)}
-            </strong>
-            <span className={styles.sellLabel}>Usuarios en la plataforma</span>
-          </div>
-          <span className={styles.trendBadge} aria-hidden="true">
-            <TrendingUp className={styles.trendArrow} size={14} strokeWidth={2.4} />
-          </span>
-        </div>
+        <InstitutionStatsCard />
       </aside>
 
       <section className={styles.panel}>
-        <form className={styles.card} onSubmit={onSubmit} noValidate>
-          <div className={styles.cardBrand}>
-            <h2>Iniciar sesión</h2>
-            <p>Cuenta institucional CTP Hojancha</p>
-          </div>
-
-          <label className={styles.field}>
-            Correo o identificación
-            <span className={`${styles.inputWrap} ${identifierError ? styles.inputInvalid : ''}`}>
-              <User aria-hidden="true" className={styles.inputIcon} size={16} />
-              <Input
-                autoComplete="username"
-                className={styles.input}
-                onChange={(event) => {
-                  setIdentifier(event.target.value);
-                  if (identifierError) setIdentifierError(null);
-                }}
-                placeholder="usuario@ctphojancha.ed.cr o cédula"
-                type="text"
-                value={identifier}
-              />
-            </span>
-            {identifierError ? <span className={styles.fieldError}>{identifierError}</span> : null}
-          </label>
-
-          <label className={styles.field}>
-            Contraseña
-            <span className={`${styles.inputWrap} ${passwordError ? styles.inputInvalid : ''}`}>
-              <Lock aria-hidden="true" className={styles.inputIcon} size={16} />
-              <Input
-                autoComplete="current-password"
-                className={`${styles.input} ${styles.passwordInput}`}
-                minLength={8}
-                onChange={(event) => {
-                  setPassword(event.target.value);
-                  if (passwordError) setPasswordError(null);
-                }}
-                placeholder="••••••••"
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-              />
-              <button
-                aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
-                className={styles.togglePassword}
-                onClick={() => setShowPassword((visible) => !visible)}
-                type="button"
-              >
-                {showPassword ? <EyeOff aria-hidden="true" size={16} /> : <Eye aria-hidden="true" size={16} />}
-              </button>
-            </span>
-            {passwordError ? <span className={styles.fieldError}>{passwordError}</span> : null}
-          </label>
-
-          <div className={styles.row}>
-            <label className={styles.remember}>
-              <Checkbox
-                checked={rememberMe}
-                onChange={(event) => setRememberMe(event.target.checked)}
-              />
-              Recordarme
-            </label>
-            <Link className={styles.forgot} to="/forgot-password">
-              ¿Olvidó su contraseña?
-            </Link>
-          </div>
-
-          {resetDone ? (
-            <p className={styles.formError} role="status">
-              Contraseña restablecida. Inicie sesión con la nueva clave.
-            </p>
-          ) : null}
-
-          {formError ? (
-            <p className={styles.formError} role="alert">
-              {formError}
-            </p>
-          ) : null}
-
-          <Button className={styles.submit} disabled={isSubmitting} type="submit">
-            {isSubmitting ? (
-              <Loader2 aria-hidden="true" className={styles.spinner} size={16} />
-            ) : (
-              <LogIn aria-hidden="true" size={16} />
-            )}
-            {isSubmitting ? 'Ingresando…' : 'Iniciar sesión'}
-          </Button>
-
-          <p className={styles.verifyPrompt}>
-            ¿Necesita verificar su cuenta?{' '}
-            <Link to="/verify-account">Ingresar código de verificación</Link>
-          </p>
-
-          <div className={styles.divider}><span>o continúa con</span></div>
-
-          <div className={styles.sso}>
-            <button disabled title="Próximamente" type="button">Microsoft 365</button>
-            <button disabled title="Próximamente" type="button">Google</button>
-          </div>
-        </form>
+        <div className={styles.card}>
+          <LoginFlow resetDone={resetDone} />
+        </div>
 
         <p className={styles.help}>
           <CircleHelp aria-hidden="true" size={14} />

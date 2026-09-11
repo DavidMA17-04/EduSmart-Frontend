@@ -1,0 +1,41 @@
+.header {
+  display: grid;
+  gap: 4px;
+  padding: 20px 22px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--brand-border, #c1c5c8) 55%, transparent);
+  background:
+    radial-gradient(
+      ellipse 70% 80% at 0% 0%,
+      color-mix(in srgb, var(--brand-primary, #002e7a) 8%, transparent),
+      transparent 55%
+    ),
+    var(--admin-surface, #fff);
+}
+
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-heading, var(--brand-font-serif));
+  font-size: clamp(1.25rem, 2.2vw, 1.55rem);
+  color: var(--brand-navy, var(--admin-text));
+  letter-spacing: -0.01em;
+}
+
+.meta {
+  margin: 6px 0 0;
+  font-size: 0.95rem;
+  color: var(--brand-navy, var(--admin-text));
+}
+
+.metaSecondary {
+  margin: 2px 0 0;
+  font-size: 0.88rem;
+  color: var(--admin-muted, var(--brand-muted));
+}

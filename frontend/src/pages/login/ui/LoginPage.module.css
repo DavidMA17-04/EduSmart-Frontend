@@ -111,7 +111,7 @@
   font-size: 0.78rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--brand-nav-muted);
+  color: var(--brand-gold);
   font-weight: 600;
 }
 
@@ -182,30 +182,35 @@
   justify-items: center;
   gap: 16px;
   padding: 40px 28px 28px;
+  min-width: 0;
   background:
     radial-gradient(ellipse 70% 50% at 80% 0%, color-mix(in srgb, var(--brand-primary) 6%, transparent), transparent 55%),
     linear-gradient(180deg, #eef2f8 0%, var(--brand-background) 45%);
 }
 
 .card {
-  width: min(100%, 420px);
+  width: min(100%, 440px);
   display: grid;
-  gap: 15px;
-  padding: 28px 26px 24px;
+  gap: 22px;
+  padding: 34px 30px 30px;
   border: 1px solid var(--brand-border);
   border-top: 3px solid var(--brand-gold);
   border-radius: 16px;
   background: var(--brand-surface);
   box-shadow: 0 20px 48px rgba(2, 26, 83, 0.09);
   animation: cardIn 0.55s ease-out both;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: visible;
 }
 
 .cardBrand {
   display: grid;
   justify-items: center;
-  gap: 4px;
+  gap: 8px;
   text-align: center;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
 .cardBrand h2 {
@@ -225,7 +230,7 @@
 
 .field {
   display: grid;
-  gap: 6px;
+  gap: 8px;
   color: var(--brand-navy);
   font-size: 0.8125rem;
   font-weight: 650;
@@ -325,8 +330,9 @@
 
 .submit {
   width: 100%;
-  min-height: 46px !important;
-  height: 46px !important;
+  min-height: 48px !important;
+  height: 48px !important;
+  margin-top: 4px;
   border-radius: 10px !important;
   font-size: 0.9375rem !important;
   box-shadow: 0 8px 18px color-mix(in srgb, var(--brand-primary) 28%, transparent);
@@ -517,6 +523,7 @@
   }
 
   .card {
-    padding: 24px 20px 20px;
+    gap: 18px;
+    padding: 28px 22px 24px;
   }
 }

@@ -5,6 +5,9 @@ type ApiEnvelope<T> = { success: boolean; data: T };
 export interface CampusSnapshot {
   activeUsers: number;
   totalUsers: number;
+  totalSpecialties: number;
+  totalExploratoryWorkshops: number;
+  totalSections: number;
 }
 
 export const publicApi = {

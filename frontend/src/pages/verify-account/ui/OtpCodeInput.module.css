@@ -1,10 +1,13 @@
 .group {
   display: flex;
-  gap: clamp(8px, 1.6vw, 14px);
+  gap: clamp(4px, 1.2vw, 10px);
   justify-content: center;
+  align-items: stretch;
   width: 100%;
-  max-width: min(32rem, 100%);
+  max-width: 100%;
+  box-sizing: border-box;
   margin-inline: auto;
+  min-width: 0;
 }
 
 .groupError .cell {
@@ -13,19 +16,21 @@
 }
 
 .cell {
+  box-sizing: border-box;
   flex: 1 1 0;
+  width: 0;
   min-width: 0;
-  max-width: 3.75rem;
-  aspect-ratio: 1;
+  max-width: 3.25rem;
+  aspect-ratio: 1 / 1;
   height: auto;
-  min-height: 3.25rem;
+  min-height: 0;
   text-align: center;
-  font-size: clamp(1.25rem, 2.2vw, 1.5rem);
+  font-size: clamp(1.05rem, 2.8vw, 1.35rem);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--brand-navy, #021a53);
   border: 1.5px solid var(--brand-border, #c1c5c8);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--brand-surface, #fff);
   outline: none;
   transition:
@@ -52,14 +57,13 @@
 
 @media (max-width: 420px) {
   .group {
-    gap: 6px;
+    gap: 4px;
   }
 
   .cell {
-    min-height: 2.75rem;
-    max-width: 3rem;
-    font-size: 1.15rem;
-    border-radius: 11px;
+    max-width: 2.85rem;
+    font-size: 1.05rem;
+    border-radius: 10px;
   }
 }
 

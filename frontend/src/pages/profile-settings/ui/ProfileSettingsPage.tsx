@@ -1,15 +1,18 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { KeyRound, MonitorSmartphone, UserRound } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { authApi } from '@/features/auth';
 import { userApi } from '@/features/manage-user';
 import { isValidInitialPassword } from '@/features/manage-user/model/userFormRules';
 import type { AdministrativeUser } from '@/entities/user';
 import type { AuthSessionView } from '@/features/auth/api/authApi';
 import { clearAccessToken } from '@/shared/auth';
+import { runAppEnterTransition } from '@/shared/motion/runAppEnterTransition';
 import { Alert, Button, Card, Input, PageHeader, Table } from '@/shared/ui';
 import styles from './ProfileSettingsPage.module.css';
 
 export const ProfileSettingsPage = () => {
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<AdministrativeUser | null>(null);
   const [name, setName] = useState('');
   const [firstLastName, setFirstLastName] = useState('');
@@ -84,8 +87,10 @@ export const ProfileSettingsPage = () => {
     setSavingPassword(true);
     try {
       await authApi.changePassword(currentPassword, newPassword);
-      await authApi.logout();
-      window.location.assign('/login');
+      await runAppEnterTransition(async () => {
+        await authApi.logout();
+        navigate('/login', { replace: true });
+      });
     } catch (error) {
       setPasswordError(error instanceof Error ? error.message : 'No se pudo cambiar la contraseña.');
       setSavingPassword(false);
@@ -107,9 +112,11 @@ export const ProfileSettingsPage = () => {
     setSessionsError(null);
     setClosingAll(true);
     try {
-      await authApi.logoutAll();
-      clearAccessToken();
-      window.location.assign('/login');
+      await runAppEnterTransition(async () => {
+        await authApi.logoutAll();
+        clearAccessToken();
+        navigate('/login', { replace: true });
+      });
     } catch (error) {
       setSessionsError(error instanceof Error ? error.message : 'No se pudieron cerrar las sesiones.');
       setClosingAll(false);

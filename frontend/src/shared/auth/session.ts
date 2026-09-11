@@ -10,13 +10,14 @@ type LoginEnvelope = {
   data?: {
     accessToken?: string;
     refreshToken?: string;
+    reason?: string;
     user?: Partial<AuthUser> & {
       id?: number;
       email?: string;
       roles?: string[];
       mustChangePassword?: boolean;
     };
-  };
+  } | null;
 };
 
 export type AuthUser = {
@@ -44,10 +45,16 @@ export type LoginResult = {
   user: AuthUser;
 };
 
+/** Stable reason codes from login error envelope `data.reason` (backend). */
+export const AUTH_LOGIN_REASON = {
+  ACCOUNT_PENDING: 'ACCOUNT_PENDING',
+} as const;
+
 export class AuthLoginError extends Error {
   constructor(
     public readonly status: number,
     message: string,
+    public readonly reason: string | null = null,
   ) {
     super(message);
     this.name = 'AuthLoginError';
@@ -208,18 +215,29 @@ export async function loginWithCredentials(
   const payload = (await response.json().catch(() => null)) as LoginEnvelope | null;
 
   if (!response.ok) {
+    const reason =
+      payload?.data && typeof payload.data === 'object' && typeof payload.data.reason === 'string'
+        ? payload.data.reason
+        : null;
+
     if (response.status === 401) {
-      throw new AuthLoginError(401, 'Credenciales inválidas.');
+      throw new AuthLoginError(
+        401,
+        messageFromEnvelope(payload, 'Credenciales inválidas.'),
+        reason,
+      );
     }
     if (response.status === 403) {
       throw new AuthLoginError(
         403,
         messageFromEnvelope(payload, 'Cuenta inactiva o bloqueada.'),
+        reason,
       );
     }
     throw new AuthLoginError(
       response.status,
       messageFromEnvelope(payload, 'No se pudo iniciar sesión.'),
+      reason,
     );
   }
 

@@ -1,21 +1,15 @@
 import { useState } from 'react';
-import { Bell, CalendarRange, ChevronDown, FileBarChart, GraduationCap, Layers, LayoutDashboard, LogOut, Settings, ShieldCheck, Users } from 'lucide-react';
+import { Bell, ChevronDown, LogOut } from 'lucide-react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { authApi, useAuthStore } from '@/features/auth';
 import { sessionHasPermission } from '@/shared/auth';
+import { runAppEnterTransition } from '@/shared/motion/runAppEnterTransition';
 import { Button, Modal } from '@/shared/ui';
+import {
+  adminNavigationItems,
+  filterAdminNavigation,
+} from '../model/adminNavigation';
 import styles from './AdminShell.module.css';
-
-const navigationItems = [
-  { label: 'Dashboard', icon: LayoutDashboard, to: '/admin' },
-  { label: 'Usuarios', icon: Users, to: '/admin/users', permission: 'administrator.view' },
-  { label: 'Roles y permisos', icon: ShieldCheck, to: '/admin/roles-permissions', permission: 'roles_permissions.view' },
-  { label: 'Estructura académica', icon: GraduationCap, to: '/admin/specialties', permission: 'specialties.view' },
-  { label: 'Períodos académicos', icon: CalendarRange, to: '/admin/academic-periods', permission: 'periods.view' },
-  { label: 'Niveles y secciones', icon: Layers, to: '/admin/sections-groups', permission: 'sections.view' },
-  { label: 'Reportes', icon: FileBarChart, to: '/admin/reports', permission: 'administrator.view' },
-  { label: 'Configuración', icon: Settings, to: '/admin/settings' },
-];
 
 export const AdminShell = () => {
   const navigate = useNavigate();
@@ -29,13 +23,17 @@ export const AdminShell = () => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const onLogout = async () => {
+    if (isLoggingOut) return;
     setIsLoggingOut(true);
     try {
-      await authApi.logout();
-      navigate('/login', { replace: true });
+      setLogoutOpen(false);
+      // Cover first while session is still active, then logout + navigate under the curtain.
+      await runAppEnterTransition(async () => {
+        await authApi.logout();
+        navigate('/login', { replace: true });
+      });
     } finally {
       setIsLoggingOut(false);
-      setLogoutOpen(false);
     }
   };
 
@@ -53,19 +51,21 @@ export const AdminShell = () => {
           <small className={styles.brandMotto}>Ciencia · Cultura · 1972</small>
         </div>
         <nav aria-label="Navegación principal" className={styles.navigation}>
-          {navigationItems
-            .filter((item) => !item.permission || sessionHasPermission(item.permission))
-            .map(({ label, icon: Icon, to }) => (
-            <NavLink
-              className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
-              end={to === '/admin'}
-              key={to}
-              to={to}
-            >
-              <Icon aria-hidden="true" size={18} />
-              {label}
-            </NavLink>
-          ))}
+          {filterAdminNavigation(adminNavigationItems, sessionHasPermission).map(
+            ({ label, icon: Icon, to }) => (
+              <NavLink
+                className={({ isActive }) =>
+                  `${styles.navItem} ${isActive ? styles.active : ''}`
+                }
+                end={to === '/admin'}
+                key={to}
+                to={to}
+              >
+                <Icon aria-hidden="true" size={18} />
+                {label}
+              </NavLink>
+            ),
+          )}
         </nav>
         <div className={styles.account}>
           <span className={styles.avatar}>{avatarLetter}</span>

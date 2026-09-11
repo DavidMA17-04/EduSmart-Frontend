@@ -1,4 +1,12 @@
-export const PERMISSION_ACTIONS = ['VIEW', 'CREATE', 'EDIT', 'DELETE', 'EXPORT', 'CONFIGURE'] as const;
+export const PERMISSION_ACTIONS = [
+  'VIEW',
+  'CREATE',
+  'EDIT',
+  'DELETE',
+  'EXPORT',
+  'CONFIGURE',
+  'VIEW_OWN',
+] as const;
 export type PermissionAction = (typeof PERMISSION_ACTIONS)[number];
 
 export const PERMISSION_MODULES = [
@@ -13,15 +21,33 @@ export const PERMISSION_MODULES = [
   'ROLES_PERMISSIONS',
   'SPECIALTIES',
   'SECTIONS',
+  'SCHEDULES',
 ] as const;
 export type PermissionModule = (typeof PERMISSION_MODULES)[number];
 
 export const PERMISSION_ACTION_LABELS: Record<PermissionAction, string> = {
-  VIEW: 'Ver', CREATE: 'Crear', EDIT: 'Editar', DELETE: 'Eliminar', EXPORT: 'Exportar', CONFIGURE: 'Configurar',
+  VIEW: 'Ver',
+  CREATE: 'Crear',
+  EDIT: 'Editar',
+  DELETE: 'Eliminar',
+  EXPORT: 'Exportar',
+  CONFIGURE: 'Configurar',
+  VIEW_OWN: 'Ver propio',
 };
 
 export const PERMISSION_MODULE_LABELS: Record<PermissionModule, string> = {
-  ADMINISTRATOR: 'Administrativo', ACADEMIC_STRUCTURE: 'Estructura académica', PERIODS: 'Períodos', ATTENDANCE: 'Asistencias', STUDENTS: 'Estudiantes', DISCIPLINARY: 'Amonestaciones', COMMUNICATIONS: 'Avisos', APPEALS: 'Apelaciones', ROLES_PERMISSIONS: 'Roles y permisos', SPECIALTIES: 'Especialidades', SECTIONS: 'Secciones',
+  ADMINISTRATOR: 'Administrativo',
+  ACADEMIC_STRUCTURE: 'Estructura académica',
+  PERIODS: 'Períodos',
+  ATTENDANCE: 'Asistencias',
+  STUDENTS: 'Estudiantes',
+  DISCIPLINARY: 'Amonestaciones',
+  COMMUNICATIONS: 'Avisos',
+  APPEALS: 'Apelaciones',
+  ROLES_PERMISSIONS: 'Roles y permisos',
+  SPECIALTIES: 'Especialidades',
+  SECTIONS: 'Secciones',
+  SCHEDULES: 'Horarios',
 };
 
 export interface Permission {
