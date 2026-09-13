@@ -1,0 +1,104 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.panel {
+  width: min(560px, 100%);
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #0f172a;
+}
+
+.header p {
+  margin: 6px 0 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #334155;
+}
+
+.field select,
+.field textarea {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font: inherit;
+  background: #fff;
+}
+
+.hintError {
+  color: #be123c;
+}
+
+.dropzone {
+  position: relative;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 16px;
+  padding: 18px;
+  background: #f8fafc;
+  text-align: center;
+  color: #64748b;
+}
+
+.dropzoneActive {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.dropzone input[type='file'] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.preview {
+  margin-top: 10px;
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+  font-size: 0.85rem;
+  position: relative;
+  z-index: 1;
+}
+
+.preview button {
+  border: 0;
+  background: transparent;
+  color: #be123c;
+  cursor: pointer;
+  font: inherit;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
