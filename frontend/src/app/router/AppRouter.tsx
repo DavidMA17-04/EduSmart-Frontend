@@ -12,6 +12,7 @@ import { SpecialtyKindPage } from '@/pages/specialty-kind';
 import { AcademicPeriodsPage } from '@/pages/academic-periods';
 import {
   AttendanceHomePage,
+  AttendanceJustificationsPage,
   AttendanceNewPage,
   AttendanceSessionPage,
 } from '@/pages/attendance';
@@ -109,6 +110,10 @@ export const AppRouter = () => (
           }
         >
           <Route element={<AttendanceHomePage />} path="attendance" />
+          <Route
+            element={<AttendanceJustificationsPage />}
+            path="attendance/justifications"
+          />
           <Route
             element={<AttendanceSessionPage />}
             path="attendance/sessions/:sessionId"

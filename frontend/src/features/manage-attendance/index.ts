@@ -1,11 +1,13 @@
 export { attendanceApi } from './api/attendanceApi';
 export {
   ATTENDANCE_HOME_PATH,
+  ATTENDANCE_JUSTIFICATIONS_PATH,
   ATTENDANCE_NEW_PATH,
   ATTENDANCE_PERMISSIONS,
   ATTENDANCE_ROUTE_GUARDS,
   ATTENDANCE_SESSION_PATH,
   canCreateAttendanceClass,
+  canReviewJustifications,
   parseAttendanceSessionId,
 } from './model/attendanceRouting';
 export {
@@ -36,3 +38,11 @@ export { OfferingCard } from './ui/OfferingCard';
 export { AttendanceStatusControl } from './ui/AttendanceStatusControl';
 export { SessionHeader } from './ui/SessionHeader';
 export { RosterRow } from './ui/RosterRow';
+export { JustificationStatusBadge } from './ui/JustificationStatusBadge';
+export { JustificationsInboxPanel } from './ui/JustificationsInboxPanel';
+export { RequestJustificationModal } from './ui/RequestJustificationModal';
+export { ReviewJustificationModal } from './ui/ReviewJustificationModal';
+export {
+  justifiableAbsencesMock,
+  justificationsMock,
+} from './mocks/justificationsMock';

@@ -1,6 +1,7 @@
-import { Plus, UserCheck } from 'lucide-react';
+import { ClipboardList, Plus, UserCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
+  ATTENDANCE_JUSTIFICATIONS_PATH,
   ATTENDANCE_NEW_PATH,
   canCreateAttendanceClass,
 } from '@/features/manage-attendance';
@@ -20,12 +21,22 @@ export const AttendanceHomePage = () => {
         breadcrumbs={[{ label: 'Asistencias' }]}
         icon={UserCheck}
         primaryAction={
-          canCreate ? (
-            <Button onClick={() => navigate(ATTENDANCE_NEW_PATH)} type="button">
-              <Plus aria-hidden="true" size={16} />
-              Nueva clase
+          <div className={styles.headerActions}>
+            <Button
+              onClick={() => navigate(ATTENDANCE_JUSTIFICATIONS_PATH)}
+              type="button"
+              variant="secondary"
+            >
+              <ClipboardList aria-hidden="true" size={16} />
+              Justificaciones
             </Button>
-          ) : undefined
+            {canCreate ? (
+              <Button onClick={() => navigate(ATTENDANCE_NEW_PATH)} type="button">
+                <Plus aria-hidden="true" size={16} />
+                Nueva clase
+              </Button>
+            ) : null}
+          </div>
         }
         subtitle="Registra y gestiona la asistencia de tus clases."
         title="Asistencias"

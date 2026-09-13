@@ -144,3 +144,79 @@ export interface SaveAttendanceRecordInput {
 export interface SaveAttendanceRecordsInput {
   records: SaveAttendanceRecordInput[];
 }
+
+/** PBI-27 justification lifecycle (request status). */
+export type JustificationStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export type AttendanceJustificationStatus =
+  | 'NONE'
+  | 'PENDING'
+  | 'JUSTIFIED'
+  | 'REJECTED';
+
+export interface JustificationEvidenceItem {
+  id: number;
+  fileName: string;
+  mimeType: string;
+  fileSizeBytes: number;
+  url: string;
+  uploadedByUserId: number;
+  createdAt: string;
+}
+
+export interface JustificationListItem {
+  id: number;
+  status: JustificationStatus;
+  reason: string;
+  decisionNotes: string | null;
+  createdAt: string;
+  reviewedAt: string | null;
+  reviewedByUserId: number | null;
+  attendanceId: number;
+  sessionDate: string;
+  student: { userId: number; fullName: string; nationalId: string };
+  group: { id: number; name: string };
+  offering: { name: string; kind: string | null };
+  evidences: JustificationEvidenceItem[];
+}
+
+export interface JustificationListFilters {
+  status?: JustificationStatus | '';
+  studentUserId?: number;
+  groupId?: number;
+  q?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+/** Paginated GET /attendance/justifications result. */
+export interface JustificationListPageResult {
+  items: JustificationListItem[];
+  total: number;
+}
+
+/** GET /attendance/justifications/justifiable-absences filters. */
+export interface JustifiableAbsencesFilters {
+  studentUserId?: number;
+}
+
+export interface CreateJustificationInput {
+  attendanceId: number;
+  reason: string;
+}
+
+export interface ReviewJustificationInput {
+  status: 'APPROVED' | 'REJECTED';
+  decisionNotes?: string;
+}
+
+/** Selectable ABSENT mark for WF-39. */
+export interface JustifiableAbsenceOption {
+  attendanceId: number;
+  sessionDate: string;
+  offeringName: string;
+  groupName: string;
+  studentFullName: string;
+}
