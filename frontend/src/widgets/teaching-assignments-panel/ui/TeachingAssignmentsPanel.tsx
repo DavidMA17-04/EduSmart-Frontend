@@ -1,4 +1,5 @@
 import { BookOpen, Edit3, Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import {
   offeringKindLabel,
   type AcademicOfferingKind,
@@ -10,6 +11,8 @@ import {
   DataTableShell,
   DataToolbar,
   EmptyState,
+  FormActions,
+  Input,
   ModalCrud,
   RowActionButton,
   RowActions,
@@ -48,9 +51,12 @@ export const TeachingAssignmentsPanel = () => {
           grupo y período. Alimentan Asistencias.
         </p>
         <p className={styles.muted}>
-          El flujo de <strong>Docente guía</strong> (relación guía → grupo) se
-          gestiona en Niveles y secciones y es independiente. Ser guía no concede
-          por sí solo materias ni asistencia del grupo.
+          El catálogo de materias se administra en{' '}
+          <Link className={styles.inlineLink} to="/admin/subjects">
+            Materias
+          </Link>{' '}
+          (CRUD con nombre). También puedes crear una materia desde el formulario
+          de asignación.
         </p>
       </div>
 
@@ -209,11 +215,56 @@ export const TeachingAssignmentsPanel = () => {
             offeringOptions={model.offeringOptions}
             onCancel={model.closeDialog}
             onChange={model.patchForm}
+            onCreateSubject={model.openSubjectCreate}
             onSubmit={() => void model.submit()}
             periods={model.periods}
             teachers={model.teachers}
             teacherDisplayName={model.teacherDisplayName}
           />
+        </div>
+      </ModalCrud>
+
+      <ModalCrud
+        isOpen={model.subjectCreateOpen}
+        onClose={model.closeSubjectCreate}
+        title="Nueva materia"
+      >
+        <div className={styles.modalBody}>
+          {model.subjectCreateError ? (
+            <Alert>{model.subjectCreateError}</Alert>
+          ) : null}
+          <form
+            className={styles.subjectForm}
+            onSubmit={(event) => {
+              event.preventDefault();
+              void model.submitSubjectCreate();
+            }}
+          >
+            <label className={styles.subjectField}>
+              Nombre de la materia
+              <Input
+                maxLength={150}
+                onChange={(e) => model.setNewSubjectName(e.target.value)}
+                placeholder="Ej. Matemática"
+                required
+                value={model.newSubjectName}
+              />
+            </label>
+            <label className={styles.subjectField}>
+              Código (opcional)
+              <Input
+                maxLength={30}
+                onChange={(e) => model.setNewSubjectCode(e.target.value)}
+                placeholder="Ej. MAT-01"
+                value={model.newSubjectCode}
+              />
+            </label>
+            <FormActions
+              isSubmitting={model.isCreatingSubject}
+              onCancel={model.closeSubjectCreate}
+              submitLabel="Crear materia"
+            />
+          </form>
         </div>
       </ModalCrud>
     </section>

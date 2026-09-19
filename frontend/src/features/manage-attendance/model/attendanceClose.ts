@@ -115,6 +115,7 @@ export function formatFinalizeSummaryLines(
     `Presentes: ${summary.present}`,
     `Ausentes: ${summary.absent}`,
     `Tardías: ${summary.late}`,
+    `Justificadas: ${summary.justified}`,
     `Sin marcar: ${summary.unmarked}`,
   ];
 }

@@ -14,6 +14,7 @@ import { academicPeriodApi } from '@/features/manage-academic-period/api/academi
 import { groupApi } from '@/features/manage-group/api/groupApi';
 import { guideTeacherApi } from '@/features/manage-group/api/guideTeacherApi';
 import { specialtyApi } from '@/features/manage-specialty/api/specialtyApi';
+import { subjectApi as subjectCrudApi } from '@/features/manage-subject';
 import { HttpError } from '@/shared/api/httpClient';
 import { useToast } from '@/shared/ui';
 import {
@@ -90,6 +91,13 @@ export function useTeachingAssignmentsPanel() {
   const [form, setForm] = useState<TeachingAssignmentFormValues>(
     EMPTY_TEACHING_ASSIGNMENT_FORM,
   );
+  const [subjectCreateOpen, setSubjectCreateOpen] = useState(false);
+  const [newSubjectName, setNewSubjectName] = useState('');
+  const [newSubjectCode, setNewSubjectCode] = useState('');
+  const [subjectCreateError, setSubjectCreateError] = useState<string | null>(
+    null,
+  );
+  const [isCreatingSubject, setIsCreatingSubject] = useState(false);
 
   const loadCatalog = useCallback(async () => {
     setCatalogLoading(true);
@@ -268,6 +276,61 @@ export function useTeachingAssignmentsPanel() {
     toast,
   ]);
 
+  const openSubjectCreate = useCallback(() => {
+    setNewSubjectName('');
+    setNewSubjectCode('');
+    setSubjectCreateError(null);
+    setSubjectCreateOpen(true);
+  }, []);
+
+  const closeSubjectCreate = useCallback(() => {
+    if (isCreatingSubject) return;
+    setSubjectCreateOpen(false);
+    setSubjectCreateError(null);
+  }, [isCreatingSubject]);
+
+  const submitSubjectCreate = useCallback(async () => {
+    const name = newSubjectName.trim();
+    if (name.length < 2) {
+      setSubjectCreateError(
+        'El nombre de la materia es obligatorio (mín. 2 caracteres).',
+      );
+      return;
+    }
+    setIsCreatingSubject(true);
+    setSubjectCreateError(null);
+    try {
+      const created = await subjectCrudApi.create({
+        name,
+        code: newSubjectCode.trim() || null,
+        status: 'ACTIVE',
+      });
+      setSubjects((prev) =>
+        [...prev, created]
+          .filter((s) => s.status === 'ACTIVE')
+          .sort((a, b) => a.name.localeCompare(b.name, 'es')),
+      );
+      setForm((prev) => ({
+        ...prev,
+        offeringKind: 'SUBJECT',
+        subjectId: String(created.id),
+        specialtyId: '',
+      }));
+      setSubjectCreateOpen(false);
+      toast.push(`Materia "${created.name}" creada.`, 'success');
+    } catch (err) {
+      if (err instanceof HttpError && err.status === 409) {
+        setSubjectCreateError('Ya existe una materia con ese nombre.');
+      } else {
+        setSubjectCreateError(
+          err instanceof Error ? err.message : 'No se pudo crear la materia.',
+        );
+      }
+    } finally {
+      setIsCreatingSubject(false);
+    }
+  }, [newSubjectCode, newSubjectName, toast]);
+
   return {
     rows: visibleRows,
     teachers,
@@ -303,6 +366,16 @@ export function useTeachingAssignmentsPanel() {
     teacherDisplayName,
     assignmentTeacherName,
     canEdit: true,
+    subjectCreateOpen,
+    openSubjectCreate,
+    closeSubjectCreate,
+    newSubjectName,
+    setNewSubjectName,
+    newSubjectCode,
+    setNewSubjectCode,
+    subjectCreateError,
+    isCreatingSubject,
+    submitSubjectCreate,
   };
 }
 

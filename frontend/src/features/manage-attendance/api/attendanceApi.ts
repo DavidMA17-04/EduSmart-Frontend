@@ -1,11 +1,14 @@
 import type {
   AttendanceAvailableOffering,
   AttendanceGroup,
+  AttendanceHistoryFilters,
+  AttendanceHistoryPage,
   AttendanceRecordMutationResult,
   AttendanceRosterStudent,
   AttendanceScheduleContext,
   AttendanceSessionDetail,
   AttendanceSessionMutationResult,
+  AttendanceSessionTokenResult,
   CreateAttendanceSessionFromScheduleInput,
   CreateAttendanceSessionInput,
   CreateJustificationInput,
@@ -15,16 +18,22 @@ import type {
   JustificationListFilters,
   JustificationListItem,
   JustificationListPageResult,
+  RedeemAttendanceTokenInput,
+  RedeemAttendanceTokenResult,
   ReviewJustificationInput,
   SaveAttendanceRecordsInput,
 } from '@/entities/attendance';
-import { httpClient } from '@/shared/api';
+import { useAuthStore } from '@/features/auth';
+import { HttpError, httpClient } from '@/shared/api';
+import { getAccessToken } from '@/shared/auth';
 import {
   justifiableAbsencesMock,
   justificationsMock,
 } from '../mocks/justificationsMock';
 
 type ApiEnvelope<T> = { success: boolean; data: T };
+
+const apiBaseUrl = (import.meta.env.VITE_API_URL ?? '/api/v1').replace(/\/$/, '');
 
 const request = async <T>(path: string, init?: RequestInit): Promise<T> =>
   (await httpClient<ApiEnvelope<T>>(path, init)).data;
@@ -59,6 +68,85 @@ function applyListFilters(
   });
 }
 
+async function downloadAttendanceExport(
+  sessionId: number,
+  format: 'pdf' | 'excel',
+): Promise<void> {
+  const token = getAccessToken();
+  const headers = new Headers();
+  if (token) headers.set('Authorization', `Bearer ${token}`);
+
+  const path = `/attendance/sessions/${sessionId}/export/${format}`;
+  const fileName =
+    format === 'pdf' ? 'reporte-asistencia.pdf' : 'reporte-asistencia.xlsx';
+
+  let response: Response;
+  try {
+    response = await fetch(`${apiBaseUrl}${path}`, { headers });
+  } catch {
+    throw new Error(
+      `No se pudo conectar con la API en ${apiBaseUrl}. Verifique que el backend esté activo.`,
+    );
+  }
+
+  if (response.status === 401) {
+    useAuthStore.getState().logout();
+    if (window.location.pathname !== '/login') {
+      window.location.assign('/login');
+    }
+    throw new HttpError(response.status, 'No autorizado.');
+  }
+
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as {
+      message?: string | string[];
+    } | null;
+    const raw = payload?.message;
+    const message = Array.isArray(raw) ? raw.filter(Boolean).join(' ') : raw;
+    throw new HttpError(
+      response.status,
+      message ?? 'No se pudo descargar el reporte.',
+    );
+  }
+
+  const blob = await response.blob();
+  const objectUrl = URL.createObjectURL(blob);
+  try {
+    const link = document.createElement('a');
+    link.href = objectUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
+function buildHistoryQuery(filters: AttendanceHistoryFilters): string {
+  const params = new URLSearchParams();
+  const entries: Array<[string, string | number | undefined]> = [
+    ['startDate', filters.startDate],
+    ['endDate', filters.endDate],
+    ['groupId', filters.groupId],
+    ['teachingAssignmentId', filters.teachingAssignmentId],
+    ['studentId', filters.studentId],
+    ['status', filters.status],
+    ['registrationMethod', filters.registrationMethod],
+    ['search', filters.search],
+    ['page', filters.page],
+    ['limit', filters.limit],
+    ['sortBy', filters.sortBy],
+    ['sortOrder', filters.sortOrder],
+  ];
+  for (const [key, value] of entries) {
+    if (value === undefined || value === '') continue;
+    params.set(key, String(value));
+  }
+  const qs = params.toString();
+  return qs ? `?${qs}` : '';
+}
+
 export const attendanceApi = {
   listAttendanceGroups: () => request<AttendanceGroup[]>('/attendance/groups'),
 
@@ -77,6 +165,11 @@ export const attendanceApi = {
       `/attendance/schedule-context${qs ? `?${qs}` : ''}`,
     );
   },
+
+  searchAttendanceHistory: (filters: AttendanceHistoryFilters = {}) =>
+    request<AttendanceHistoryPage>(
+      `/attendance/history${buildHistoryQuery(filters)}`,
+    ),
 
   createAttendanceSession: (input: CreateAttendanceSessionInput) =>
     request<AttendanceSessionMutationResult>('/attendance/sessions', {
@@ -254,4 +347,21 @@ export const attendanceApi = {
   },
 
   isJustificationsMockMode: () => isDemoMode,
+
+  generateSessionToken: (sessionId: number) =>
+    request<AttendanceSessionTokenResult>(
+      `/attendance/sessions/${sessionId}/token`,
+      { method: 'POST' },
+    ),
+
+  redeemAttendanceToken: (input: RedeemAttendanceTokenInput) => {
+    const code = (input.code ?? input.token ?? '').trim();
+    return request<RedeemAttendanceTokenResult>('/attendance/redeem-token', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    });
+  },
+
+  exportAttendanceSession: (sessionId: number, format: 'pdf' | 'excel') =>
+    downloadAttendanceExport(sessionId, format),
 };

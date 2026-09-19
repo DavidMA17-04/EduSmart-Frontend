@@ -39,6 +39,33 @@
   color: var(--admin-muted, #667085);
 }
 
+.inlineLink {
+  color: var(--brand-primary, var(--admin-primary));
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.inlineLink:hover {
+  text-decoration: underline;
+}
+
+.modalBody {
+  display: grid;
+  gap: 12px;
+}
+
+.subjectForm {
+  display: grid;
+  gap: 14px;
+}
+
+.subjectField {
+  display: grid;
+  gap: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 .modalBody {
   display: grid;
   gap: 12px;

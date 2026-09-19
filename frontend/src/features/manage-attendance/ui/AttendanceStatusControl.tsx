@@ -16,6 +16,7 @@ const toneClass: Record<AttendanceStatus, string> = {
   PRESENT: styles.present,
   ABSENT: styles.absent,
   LATE: styles.late,
+  JUSTIFIED: styles.justified,
 };
 
 export const AttendanceStatusControl = ({

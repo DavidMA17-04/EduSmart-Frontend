@@ -1,6 +1,6 @@
 /** Attendance domain types aligned with backend Phase 1A / 1A.2 contracts. */
 
-export type AttendanceStatus = 'PRESENT' | 'ABSENT' | 'LATE';
+export type AttendanceStatus = 'PRESENT' | 'ABSENT' | 'LATE' | 'JUSTIFIED';
 
 export type AttendanceRegistrationMethod = 'MANUAL' | 'TOKEN';
 
@@ -49,6 +49,8 @@ export interface AttendanceSessionDetail {
   startedAt: string;
   closedAt: string | null;
   teachingAssignmentId: number;
+  attendanceToken?: string | null;
+  attendanceTokenExpiresAt?: string | null;
   group: AttendanceSessionGroupSummary;
   offering: AttendanceSessionOfferingSummary;
 }
@@ -219,4 +221,75 @@ export interface JustifiableAbsenceOption {
   offeringName: string;
   groupName: string;
   studentFullName: string;
+}
+
+/** GET /attendance/history query */
+export interface AttendanceHistoryFilters {
+  startDate?: string;
+  endDate?: string;
+  groupId?: number;
+  teachingAssignmentId?: number;
+  studentId?: number;
+  status?: AttendanceStatus;
+  registrationMethod?: AttendanceRegistrationMethod;
+  search?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: 'sessionDate' | 'registeredAt' | 'studentName' | 'status';
+  sortOrder?: 'ASC' | 'DESC';
+}
+
+export interface AttendanceHistoryItem {
+  attendanceId: number;
+  sessionId: number;
+  sessionDate: string;
+  startedAt: string;
+  registeredAt: string;
+  status: AttendanceStatus;
+  registrationMethod: AttendanceRegistrationMethod;
+  group: { id: number; name: string; gradeLevel: number | null };
+  offering: {
+    kind: AcademicOfferingKind | null;
+    id: number | null;
+    name: string;
+    labelKind: string;
+  };
+  teacher: { id: number; fullName: string };
+  student: { id: number; nationalId: string; fullName: string };
+  teachingAssignmentId: number;
+}
+
+export interface AttendanceHistoryPage {
+  items: AttendanceHistoryItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+/** POST /attendance/sessions/:id/token */
+export interface AttendanceSessionTokenResult {
+  sessionId: number;
+  token: string;
+  expiresAt: string;
+}
+
+/** POST /attendance/sessions/redeem-token */
+export interface RedeemAttendanceTokenInput {
+  token?: string;
+  code?: string;
+}
+
+export interface RedeemAttendanceTokenResult {
+  attendanceId: number;
+  sessionId: number;
+  studentUserId: number;
+  status: AttendanceStatus;
+  registrationMethod: AttendanceRegistrationMethod;
+  registeredAt: string;
+  alreadyRedeemed: boolean;
+  sessionDate: string;
+  groupName: string;
+  offeringName: string;
+  offeringLabelKind: string;
 }

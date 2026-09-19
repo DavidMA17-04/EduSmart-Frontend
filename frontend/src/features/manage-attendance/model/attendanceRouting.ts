@@ -2,7 +2,11 @@
 
 export const ATTENDANCE_HOME_PATH = '/admin/attendance';
 export const ATTENDANCE_NEW_PATH = '/admin/attendance/new';
+export const ATTENDANCE_HISTORY_PATH = '/admin/attendance/history';
 export const ATTENDANCE_JUSTIFICATIONS_PATH = '/admin/attendance/justifications';
+export const ATTENDANCE_REDEEM_PATH = '/admin/attendance/redeem';
+/** Alias amigable para estudiantes (redirige al canje en AdminShell). */
+export const STUDENT_ATTENDANCE_PATH = '/student/attendance';
 export const ATTENDANCE_SESSION_PATH = (sessionId: number | string) =>
   `/admin/attendance/sessions/${sessionId}`;
 
@@ -22,6 +26,11 @@ export const ATTENDANCE_ROUTE_GUARDS = [
     page: 'AttendanceHomePage',
   },
   {
+    path: ATTENDANCE_HISTORY_PATH,
+    permission: ATTENDANCE_PERMISSIONS.view,
+    page: 'AttendanceHistoryPage',
+  },
+  {
     path: ATTENDANCE_NEW_PATH,
     permission: ATTENDANCE_PERMISSIONS.create,
     page: 'AttendanceNewPage',
@@ -35,6 +44,11 @@ export const ATTENDANCE_ROUTE_GUARDS = [
     path: ATTENDANCE_JUSTIFICATIONS_PATH,
     permission: ATTENDANCE_PERMISSIONS.view,
     page: 'AttendanceJustificationsPage',
+  },
+  {
+    path: ATTENDANCE_REDEEM_PATH,
+    permission: null,
+    page: 'AttendanceRedeemPage',
   },
 ] as const;
 

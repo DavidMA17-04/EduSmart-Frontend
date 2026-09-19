@@ -1,5 +1,13 @@
 import { useCallback, useState } from 'react';
-import { CalendarClock, Link2, Settings2 } from 'lucide-react';
+import {
+  CalendarClock,
+  Link2,
+  Pencil,
+  Plus,
+  Settings2,
+  Trash2,
+  Users,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { ScheduleEntry, ScheduleTimeSlot } from '@/entities/schedule';
 import {
@@ -44,22 +52,34 @@ function EntryCard({
         <strong className={styles.offeringName}>{ta.offering.name}</strong>
         <Badge tone="neutral">{ta.offering.labelKind}</Badge>
         {showGroup ? (
-          <span className={styles.meta}>{ta.group.name}</span>
+          <span className={styles.meta}>
+            <Users aria-hidden="true" className={styles.metaIcon} size={12} />
+            {ta.group.name}
+          </span>
         ) : null}
         {showTeacher ? (
-          <span className={styles.meta}>{ta.teacher.name}</span>
+          <span className={styles.meta}>
+            <CalendarClock
+              aria-hidden="true"
+              className={styles.metaIcon}
+              size={12}
+            />
+            {ta.teacher.name}
+          </span>
         ) : null}
       </div>
       {canEdit ? (
         <div className={styles.entryActions}>
-          <button className={styles.linkBtn} onClick={onEdit} type="button">
+          <button className={styles.iconBtn} onClick={onEdit} type="button">
+            <Pencil aria-hidden="true" size={13} />
             Editar
           </button>
           <button
-            className={styles.linkBtnDanger}
+            className={styles.iconBtnDanger}
             onClick={onRemove}
             type="button"
           >
+            <Trash2 aria-hidden="true" size={13} />
             Quitar
           </button>
         </div>
@@ -94,7 +114,8 @@ function ClassCellBody({
     if (!canAssign) return <span className={styles.emptyCell}>—</span>;
     return (
       <button className={styles.assignBtn} onClick={onAssign} type="button">
-        + Asignar
+        <Plus aria-hidden="true" size={14} />
+        Asignar clase
       </button>
     );
   }
@@ -114,7 +135,8 @@ function ClassCellBody({
       ))}
       {canAssign ? (
         <button className={styles.assignBtn} onClick={onAssign} type="button">
-          + Asignar
+          <Plus aria-hidden="true" size={14} />
+          Asignar clase
         </button>
       ) : null}
     </div>

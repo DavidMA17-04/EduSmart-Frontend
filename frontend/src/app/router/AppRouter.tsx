@@ -11,13 +11,20 @@ import { SpecialtiesPage } from '@/pages/specialties';
 import { SpecialtyKindPage } from '@/pages/specialty-kind';
 import { AcademicPeriodsPage } from '@/pages/academic-periods';
 import {
+  AttendanceHistoryPage,
   AttendanceHomePage,
   AttendanceJustificationsPage,
   AttendanceNewPage,
+  AttendanceRedeemPage,
   AttendanceSessionPage,
 } from '@/pages/attendance';
-import { ATTENDANCE_PERMISSIONS } from '@/features/manage-attendance';
+import {
+  ATTENDANCE_PERMISSIONS,
+  ATTENDANCE_REDEEM_PATH,
+  STUDENT_ATTENDANCE_PATH,
+} from '@/features/manage-attendance';
 import { SectionsGroupsPage } from '@/pages/sections-groups';
+import { SubjectsPage } from '@/pages/subjects';
 import { TeachingAssignmentsPage } from '@/pages/teaching-assignments';
 import { SchedulePage } from '@/pages/schedule';
 import { MySchedulePage } from '@/pages/my-schedule';
@@ -73,16 +80,17 @@ export const AppRouter = () => (
           />
         </Route>
 
+        <Route element={<RequirePermission permission="academic_structure.view" />}>
+          <Route element={<SubjectsPage />} path="subjects" />
+          <Route element={<TeachingAssignmentsPage />} path="teaching-assignments" />
+        </Route>
+
         <Route element={<RequirePermission permission="periods.view" />}>
           <Route element={<AcademicPeriodsPage />} path="academic-periods" />
         </Route>
 
         <Route element={<RequirePermission permission="sections.view" />}>
           <Route element={<SectionsGroupsPage />} path="sections-groups" />
-        </Route>
-
-        <Route element={<RequirePermission permission="academic_structure.view" />}>
-          <Route element={<TeachingAssignmentsPage />} path="teaching-assignments" />
         </Route>
 
         <Route
@@ -104,12 +112,19 @@ export const AppRouter = () => (
           <Route element={<MySchedulePage />} path="my-schedule" />
         </Route>
 
+        {/* Canje de código: menú solo para Estudiante; API también exige ese rol. */}
+        <Route element={<AttendanceRedeemPage />} path="attendance/redeem" />
+
         <Route
           element={
             <RequirePermission permission={ATTENDANCE_PERMISSIONS.view} />
           }
         >
           <Route element={<AttendanceHomePage />} path="attendance" />
+          <Route
+            element={<AttendanceHistoryPage />}
+            path="attendance/history"
+          />
           <Route
             element={<AttendanceJustificationsPage />}
             path="attendance/justifications"
@@ -146,6 +161,10 @@ export const AppRouter = () => (
     <Route element={<Navigate replace to="/admin" />} path="/administrative/*" />
 
     <Route element={<Navigate replace to="/admin/users" />} path="/onboarding" />
+    <Route
+      element={<Navigate replace to={ATTENDANCE_REDEEM_PATH} />}
+      path={STUDENT_ATTENDANCE_PATH}
+    />
     <Route element={<RootRedirect />} path="/" />
     <Route element={<RootRedirect />} path="*" />
   </Routes>

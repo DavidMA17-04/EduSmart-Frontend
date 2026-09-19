@@ -74,6 +74,39 @@
   gap: 10px;
 }
 
+.tokenCard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--brand-primary, #002e7a) 25%, transparent);
+  background: color-mix(in srgb, var(--brand-primary, #002e7a) 6%, transparent);
+}
+
+.tokenLabel {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--admin-muted, var(--brand-muted));
+}
+
+.tokenValue {
+  margin: 4px 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 1.35rem;
+  letter-spacing: 0.12em;
+  color: var(--brand-navy, var(--admin-text));
+}
+
+.tokenMeta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--admin-muted, var(--brand-muted));
+}
+
 .searchField {
   position: relative;
   display: block;
@@ -110,6 +143,13 @@
 .rosterList {
   display: grid;
   gap: 10px;
+}
+
+.rosterBulkActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
 }
 
 .rosterError {

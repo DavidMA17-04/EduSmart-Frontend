@@ -10,6 +10,7 @@ import {
   isStudentDirty,
   setStudentDraftStatus,
   summarizeDraft,
+  markAllStudentsPresent,
 } from './attendanceDraft';
 
 const roster: AttendanceRosterStudent[] = [
@@ -94,12 +95,24 @@ describe('attendanceDraft', () => {
     expect(collectDirtyStudentIds(initial, draft, [1, 2, 3, 4])).toEqual([]);
   });
 
-  it('6. counts correctos PRESENT/ABSENT/LATE/null', () => {
+  it('markAllStudentsPresent marca todo el roster', () => {
+    const initial = buildInitialDraft(roster);
+    const next = markAllStudentsPresent(initial, roster.map((r) => r.userId));
+    expect(next).toEqual({
+      1: 'PRESENT',
+      2: 'PRESENT',
+      3: 'PRESENT',
+      4: 'PRESENT',
+    });
+  });
+
+  it('6. counts correctos PRESENT/ABSENT/LATE/JUSTIFIED/null', () => {
     const draft = buildInitialDraft(roster);
     expect(summarizeDraft(draft, [1, 2, 3, 4])).toEqual({
       present: 1,
       absent: 1,
       late: 1,
+      justified: 0,
       unmarked: 1,
       total: 4,
     });
@@ -138,16 +151,18 @@ describe('attendanceDraft', () => {
 });
 
 describe('AttendanceStatusControl contract', () => {
-  it('statuses válidos PRESENT/ABSENT/LATE + labels', () => {
+  it('statuses válidos PRESENT/ABSENT/LATE/JUSTIFIED + labels', () => {
     expect(ATTENDANCE_STATUS_OPTIONS.map((o) => o.value)).toEqual([
       'PRESENT',
       'ABSENT',
       'LATE',
+      'JUSTIFIED',
     ]);
     expect(ATTENDANCE_STATUS_OPTIONS.map((o) => o.label)).toEqual([
       'Presente',
       'Ausente',
       'Tarde',
+      'Justificada',
     ]);
   });
 

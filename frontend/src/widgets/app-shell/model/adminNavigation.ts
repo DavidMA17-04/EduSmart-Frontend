@@ -1,9 +1,11 @@
 import {
   BookMarked,
+  BookOpen,
   CalendarClock,
   CalendarRange,
   FileBarChart,
   GraduationCap,
+  KeyRound,
   Layers,
   LayoutDashboard,
   Settings,
@@ -12,6 +14,8 @@ import {
   Users,
   type LucideIcon,
 } from 'lucide-react';
+import { STUDENT_ROLE_NAME } from '@/entities/role';
+import { getSessionUser } from '@/shared/auth';
 
 export type AdminNavItem = {
   label: string;
@@ -20,7 +24,24 @@ export type AdminNavItem = {
   permission?: string;
   /** Hide when the session also has this permission (e.g. Admin bypass vs Docente own). */
   hideWhenPermission?: string;
+  /** Show only when the session has an Estudiante / STUDENT role. */
+  requireStudentRole?: boolean;
 };
+
+function roleMatches(role: string, ...candidates: string[]): boolean {
+  const value = String(role).trim();
+  const lower = value.toLowerCase();
+  return candidates.some((c) => c === value || c.toLowerCase() === lower);
+}
+
+export function sessionRolesIncludeStudent(
+  roles: readonly string[] | undefined,
+): boolean {
+  if (!roles?.length) return false;
+  return roles.some((role) =>
+    roleMatches(role, STUDENT_ROLE_NAME, 'Estudiante', 'STUDENT'),
+  );
+}
 
 /** Sidebar items for AdminShell — filtered by sessionHasPermission when permission is set. */
 export const adminNavigationItems: AdminNavItem[] = [
@@ -37,6 +58,12 @@ export const adminNavigationItems: AdminNavItem[] = [
     icon: GraduationCap,
     to: '/admin/specialties',
     permission: 'specialties.view',
+  },
+  {
+    label: 'Materias',
+    icon: BookOpen,
+    to: '/admin/subjects',
+    permission: 'academic_structure.view',
   },
   {
     label: 'Períodos académicos',
@@ -70,6 +97,12 @@ export const adminNavigationItems: AdminNavItem[] = [
     hideWhenPermission: 'schedules.view',
   },
   {
+    label: 'Ingresar código',
+    icon: KeyRound,
+    to: '/admin/attendance/redeem',
+    requireStudentRole: true,
+  },
+  {
     label: 'Asistencias',
     icon: UserCheck,
     to: '/admin/attendance',
@@ -87,10 +120,15 @@ export const adminNavigationItems: AdminNavItem[] = [
 export function filterAdminNavigation(
   items: AdminNavItem[],
   hasPermission: (permission: string) => boolean,
+  roles?: readonly string[],
 ): AdminNavItem[] {
+  const effectiveRoles = roles ?? getSessionUser()?.roles ?? [];
   return items.filter((item) => {
     if (item.permission && !hasPermission(item.permission)) return false;
     if (item.hideWhenPermission && hasPermission(item.hideWhenPermission)) {
+      return false;
+    }
+    if (item.requireStudentRole && !sessionRolesIncludeStudent(effectiveRoles)) {
       return false;
     }
     return true;

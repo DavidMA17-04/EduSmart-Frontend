@@ -13,7 +13,7 @@ export const SpecialtiesPage = () => (
         { label: 'Oferta académica' },
       ]}
       icon={GraduationCap}
-      subtitle="Talleres exploratorios y especialidades técnicas del CTP Hojancha."
+      subtitle="Materias regulares, talleres exploratorios y especialidades técnicas del CTP Hojancha."
       title="Oferta académica"
     />
     <AcademicOfferHub />

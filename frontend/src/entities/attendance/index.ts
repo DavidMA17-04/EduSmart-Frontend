@@ -2,6 +2,9 @@ export type {
   AcademicOfferingKind,
   AttendanceAvailableOffering,
   AttendanceGroup,
+  AttendanceHistoryFilters,
+  AttendanceHistoryItem,
+  AttendanceHistoryPage,
   AttendanceJustificationStatus,
   AttendanceRecordMutationResult,
   AttendanceRecordSummary,
@@ -14,6 +17,7 @@ export type {
   AttendanceSessionMutationResult,
   AttendanceSessionOfferingSummary,
   AttendanceSessionStatus,
+  AttendanceSessionTokenResult,
   AttendanceStatus,
   CreateAttendanceSessionFromScheduleInput,
   CreateAttendanceSessionInput,
@@ -25,8 +29,9 @@ export type {
   JustificationListItem,
   JustificationListPageResult,
   JustificationStatus,
+  RedeemAttendanceTokenInput,
+  RedeemAttendanceTokenResult,
   ReviewJustificationInput,
   SaveAttendanceRecordInput,
   SaveAttendanceRecordsInput,
 } from './model/types';
-

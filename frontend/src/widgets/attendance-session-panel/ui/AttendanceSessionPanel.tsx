@@ -1,4 +1,14 @@
-import { CheckCircle2, Loader2, Save, Search, Users } from 'lucide-react';
+import {
+  CheckCircle2,
+  FileSpreadsheet,
+  FileText,
+  KeyRound,
+  Loader2,
+  Save,
+  Search,
+  UserCheck,
+  Users,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
   ATTENDANCE_HOME_PATH,
@@ -57,6 +67,38 @@ export const AttendanceSessionPanel = ({
       return;
     }
     toast.push(result.message, 'error');
+  };
+
+  const onGenerateToken = async () => {
+    const result = await model.generateToken();
+    toast.push(result.message, result.ok ? 'success' : 'error');
+  };
+
+  const onCopyToken = async () => {
+    const ok = await model.copySessionToken();
+    toast.push(
+      ok ? 'Código copiado al portapapeles.' : 'No se pudo copiar el código.',
+      ok ? 'success' : 'error',
+    );
+  };
+
+  const onMarkAllPresent = () => {
+    model.markAllPresent();
+    toast.push('Todos marcados como Presente (sin guardar).', 'info');
+  };
+
+  const onLoadRoster = async () => {
+    const result = await model.reloadRoster();
+    if (!result.message) return;
+    toast.push(
+      result.message,
+      result.ok ? (result.count === 0 ? 'info' : 'success') : 'error',
+    );
+  };
+
+  const onExport = async (format: 'pdf' | 'excel') => {
+    const result = await model.exportSession(format);
+    toast.push(result.message, result.ok ? 'success' : 'error');
   };
 
   if (sessionId == null) {
@@ -181,6 +223,26 @@ export const AttendanceSessionPanel = ({
         </label>
 
         <div className={styles.toolbarActions}>
+          <Button
+            disabled={model.busy || model.rosterLoading}
+            onClick={() => void onLoadRoster()}
+            type="button"
+            variant="secondary"
+          >
+            {model.rosterLoading ? (
+              <Loader2
+                aria-hidden="true"
+                className={styles.spinner}
+                size={16}
+              />
+            ) : (
+              <Users aria-hidden="true" size={16} />
+            )}
+            {model.roster.length > 0
+              ? 'Actualizar lista'
+              : 'Cargar estudiantes'}
+          </Button>
+
           {model.saveButton.visible ? (
             <Button
               disabled={!model.saveButton.enabled}
@@ -219,8 +281,80 @@ export const AttendanceSessionPanel = ({
               {model.finalizeButton.label}
             </Button>
           ) : null}
+
+          {model.canEdit && model.session.status === 'OPEN' ? (
+            <Button
+              disabled={model.busy || model.tokenBusy}
+              onClick={() => void onGenerateToken()}
+              type="button"
+              variant="secondary"
+            >
+              {model.tokenBusy ? (
+                <Loader2
+                  aria-hidden="true"
+                  className={styles.spinner}
+                  size={16}
+                />
+              ) : (
+                <KeyRound aria-hidden="true" size={16} />
+              )}
+              Generar código
+            </Button>
+          ) : null}
+
+          <Button
+            disabled={model.exportingFormat !== null || model.busy}
+            onClick={() => void onExport('pdf')}
+            type="button"
+            variant="secondary"
+          >
+            {model.exportingFormat === 'pdf' ? (
+              <Loader2 aria-hidden="true" className={styles.spinner} size={16} />
+            ) : (
+              <FileText aria-hidden="true" size={16} />
+            )}
+            Exportar PDF
+          </Button>
+          <Button
+            disabled={model.exportingFormat !== null || model.busy}
+            onClick={() => void onExport('excel')}
+            type="button"
+            variant="secondary"
+          >
+            {model.exportingFormat === 'excel' ? (
+              <Loader2 aria-hidden="true" className={styles.spinner} size={16} />
+            ) : (
+              <FileSpreadsheet aria-hidden="true" size={16} />
+            )}
+            Exportar Excel
+          </Button>
         </div>
       </div>
+
+      {model.tokenError ? <Alert>{model.tokenError}</Alert> : null}
+
+      {model.sessionToken ? (
+        <div className={styles.tokenCard}>
+          <div>
+            <p className={styles.tokenLabel}>Código de asistencia</p>
+            <p className={styles.tokenValue}>{model.sessionToken.token}</p>
+            <p className={styles.tokenMeta}>
+              Expira:{' '}
+              {new Intl.DateTimeFormat('es-CR', {
+                dateStyle: 'short',
+                timeStyle: 'short',
+              }).format(new Date(model.sessionToken.expiresAt))}
+            </p>
+            <p className={styles.tokenMeta}>
+              Los estudiantes lo ingresan en el menú «Ingresar código». Tú puedes
+              marcar estados de forma manual en la lista de abajo.
+            </p>
+          </div>
+          <Button onClick={() => void onCopyToken()} type="button" variant="secondary">
+            Copiar
+          </Button>
+        </div>
+      ) : null}
 
       {model.rosterError ? (
         <div className={styles.rosterError}>
@@ -229,19 +363,46 @@ export const AttendanceSessionPanel = ({
             No pudimos cargar los estudiantes.
           </p>
           <Button
-            onClick={() => void model.reloadRoster()}
+            disabled={model.rosterLoading}
+            onClick={() => void onLoadRoster()}
             type="button"
             variant="secondary"
           >
+            {model.rosterLoading ? (
+              <Loader2
+                aria-hidden="true"
+                className={styles.spinner}
+                size={16}
+              />
+            ) : (
+              <Users aria-hidden="true" size={16} />
+            )}
             Reintentar
           </Button>
         </div>
       ) : model.roster.length === 0 ? (
         <EmptyState
-          description="No hay estudiantes en este grupo para la fecha de esta clase."
+          description="Carga la lista de estudiantes matriculados en este grupo para la fecha de la clase. Luego podrás marcar Presente, Ausente, Tardía o Justificada."
           icon={Users}
-          title="Sin estudiantes"
-        />
+          title="Sin estudiantes cargados"
+        >
+          <Button
+            disabled={model.rosterLoading || model.busy}
+            onClick={() => void onLoadRoster()}
+            type="button"
+          >
+            {model.rosterLoading ? (
+              <Loader2
+                aria-hidden="true"
+                className={styles.spinner}
+                size={16}
+              />
+            ) : (
+              <Users aria-hidden="true" size={16} />
+            )}
+            Cargar estudiantes de la sección
+          </Button>
+        </EmptyState>
       ) : model.visibleRoster.length === 0 ? (
         <EmptyState
           description="Prueba con otro nombre o identificación."
@@ -249,18 +410,33 @@ export const AttendanceSessionPanel = ({
           title="No encontramos estudiantes con esa búsqueda."
         />
       ) : (
-        <div className={styles.rosterList}>
-          {model.visibleRoster.map((student) => (
-            <RosterRow
-              dirty={model.isDirtyStudent(student.userId)}
-              key={student.userId}
-              onChange={(status) => model.setStatus(student.userId, status)}
-              readOnly={model.controlsDisabled}
-              status={model.draft[student.userId] ?? null}
-              student={student}
-            />
-          ))}
-        </div>
+        <>
+          {!model.readOnly ? (
+            <div className={styles.rosterBulkActions}>
+              <Button
+                disabled={model.controlsDisabled}
+                onClick={onMarkAllPresent}
+                type="button"
+                variant="secondary"
+              >
+                <UserCheck aria-hidden="true" size={16} />
+                Marcar todos como Presentes
+              </Button>
+            </div>
+          ) : null}
+          <div className={styles.rosterList}>
+            {model.visibleRoster.map((student) => (
+              <RosterRow
+                dirty={model.isDirtyStudent(student.userId)}
+                key={student.userId}
+                onChange={(status) => model.setStatus(student.userId, status)}
+                readOnly={model.controlsDisabled}
+                status={model.draft[student.userId] ?? null}
+                student={student}
+              />
+            ))}
+          </div>
+        </>
       )}
 
       {!model.rosterError && model.roster.length > 0 ? (
@@ -276,6 +452,10 @@ export const AttendanceSessionPanel = ({
           <div>
             <dt>Tardías</dt>
             <dd>{summary.late}</dd>
+          </div>
+          <div>
+            <dt>Justificadas</dt>
+            <dd>{summary.justified}</dd>
           </div>
           <div>
             <dt>Sin marcar</dt>

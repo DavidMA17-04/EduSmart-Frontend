@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 import type { AcademicPeriod } from '@/entities/academic-period';
 import type { AcademicGroup, GuideTeacher } from '@/entities/group';
 import type {
@@ -24,6 +26,7 @@ type TeachingAssignmentFormProps = {
   onChange: (patch: Partial<TeachingAssignmentFormValues>) => void;
   onSubmit: () => void;
   onCancel: () => void;
+  onCreateSubject?: () => void;
 };
 
 export function TeachingAssignmentForm({
@@ -40,6 +43,7 @@ export function TeachingAssignmentForm({
   onChange,
   onSubmit,
   onCancel,
+  onCreateSubject,
 }: TeachingAssignmentFormProps) {
   const isEdit = dialogMode === 'edit';
   const offeringLabel =
@@ -154,23 +158,52 @@ export function TeachingAssignmentForm({
       </label>
 
       {form.offeringKind === 'SUBJECT' ? (
-        <label className={styles.field}>
-          <span>{offeringLabel}</span>
-          <Select
-            aria-label={offeringLabel}
-            disabled={isSaving}
-            onChange={(e) => onChange({ subjectId: e.target.value, specialtyId: '' })}
-            required
-            value={form.subjectId}
-          >
-            <option value="">Seleccione una materia…</option>
-            {offeringOptions.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
+        <div className={styles.subjectBlock}>
+          <label className={styles.field}>
+            <span>Nombre de la materia</span>
+            <Select
+              aria-label={offeringLabel}
+              disabled={isSaving || offeringOptions.length === 0}
+              onChange={(e) =>
+                onChange({ subjectId: e.target.value, specialtyId: '' })
+              }
+              required
+              value={form.subjectId}
+            >
+              <option value="">
+                {offeringOptions.length === 0
+                  ? 'No hay materias cargadas…'
+                  : 'Seleccione una materia…'}
               </option>
-            ))}
-          </Select>
-        </label>
+              {offeringOptions.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </Select>
+          </label>
+          {offeringOptions.length === 0 ? (
+            <p className={styles.hint}>
+              Primero crea la materia con su nombre. Puedes hacerlo aquí o en el
+              módulo{' '}
+              <Link className={styles.inlineLink} to="/admin/subjects">
+                Materias
+              </Link>
+              .
+            </p>
+          ) : null}
+          {onCreateSubject ? (
+            <Button
+              disabled={isSaving}
+              onClick={onCreateSubject}
+              type="button"
+              variant="secondary"
+            >
+              <Plus size={16} />
+              Nueva materia
+            </Button>
+          ) : null}
+        </div>
       ) : null}
 
       {form.offeringKind === 'EXPLORATORY_WORKSHOP' ||
@@ -180,7 +213,9 @@ export function TeachingAssignmentForm({
           <Select
             aria-label={offeringLabel}
             disabled={isSaving}
-            onChange={(e) => onChange({ specialtyId: e.target.value, subjectId: '' })}
+            onChange={(e) =>
+              onChange({ specialtyId: e.target.value, subjectId: '' })
+            }
             required
             value={form.specialtyId}
           >
@@ -199,11 +234,20 @@ export function TeachingAssignmentForm({
       ) : null}
 
       <div className={styles.actions}>
-        <Button disabled={isSaving} onClick={onCancel} type="button" variant="secondary">
+        <Button
+          disabled={isSaving}
+          onClick={onCancel}
+          type="button"
+          variant="secondary"
+        >
           Cancelar
         </Button>
         <Button disabled={isSaving} type="submit">
-          {isSaving ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear asignación'}
+          {isSaving
+            ? 'Guardando…'
+            : isEdit
+              ? 'Guardar cambios'
+              : 'Crear asignación'}
         </Button>
       </div>
     </form>

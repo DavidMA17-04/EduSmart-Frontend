@@ -1,7 +1,9 @@
-import { ListOrdered, Plus, UserCheck } from 'lucide-react';
+import { History, KeyRound, ListOrdered, Plus, UserCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
+  ATTENDANCE_HISTORY_PATH,
   ATTENDANCE_NEW_PATH,
+  ATTENDANCE_REDEEM_PATH,
   canCreateAttendanceClass,
 } from '@/features/manage-attendance';
 import { sessionHasPermission } from '@/shared/auth';
@@ -27,23 +29,42 @@ export const AttendanceHubPanel = () => {
         <div className={styles.introBody}>
           <h2 className={styles.introTitle}>Toma de asistencia por clase</h2>
           <p className={styles.introText}>
-            Abre una sesión para un grupo y la materia, taller o especialidad que
-            impartes. Marca presente, ausente o tardía y cierra la sesión cuando
-            termines.
+            Abre una sesión, genera el código para que los estudiantes se
+            registren, o marca presente/ausente/tardía/justificada de forma
+            manual en la lista.
           </p>
-          {canCreate ? (
+          <div className={styles.introActions}>
+            {canCreate ? (
+              <Button
+                onClick={() => navigate(ATTENDANCE_NEW_PATH)}
+                type="button"
+              >
+                <Plus aria-hidden="true" size={16} />
+                Nueva clase
+              </Button>
+            ) : (
+              <p className={styles.viewOnlyHint}>
+                Puedes consultar las sesiones de asistencia a las que tengas
+                acceso.
+              </p>
+            )}
             <Button
-              onClick={() => navigate(ATTENDANCE_NEW_PATH)}
+              onClick={() => navigate(ATTENDANCE_REDEEM_PATH)}
               type="button"
+              variant="secondary"
             >
-              <Plus aria-hidden="true" size={16} />
-              Nueva clase
+              <KeyRound aria-hidden="true" size={16} />
+              Ingresar código
             </Button>
-          ) : (
-            <p className={styles.viewOnlyHint}>
-              Puedes consultar las sesiones de asistencia a las que tengas acceso.
-            </p>
-          )}
+            <Button
+              onClick={() => navigate(ATTENDANCE_HISTORY_PATH)}
+              type="button"
+              variant="secondary"
+            >
+              <History aria-hidden="true" size={16} />
+              Ver historial
+            </Button>
+          </div>
         </div>
       </article>
 

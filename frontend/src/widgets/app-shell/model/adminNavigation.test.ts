@@ -135,6 +135,14 @@ describe('adminNavigation — Asignaciones académicas', () => {
       true,
     );
   });
+
+  it('nav Materias apunta a /admin/subjects con academic_structure.view', () => {
+    const item = adminNavigationItems.find((nav) => nav.to === '/admin/subjects');
+    expect(item).toMatchObject({
+      label: 'Materias',
+      permission: 'academic_structure.view',
+    });
+  });
 });
 
 describe('adminNavigation — Horario / Mi horario (D2)', () => {
@@ -255,6 +263,60 @@ describe('adminNavigation — Horario / Mi horario (D2)', () => {
       sessionHasPermission,
     );
     expect(visible.some((nav) => nav.to === '/admin/my-schedule')).toBe(true);
+  });
+
+  it('Estudiante ve Ingresar código (canje de token)', () => {
+    setSessionTokens(
+      encodeJwt({
+        sub: 521,
+        email: 'smoke_pbi24.alumno@edusmart.test',
+        roles: ['Estudiante'],
+        permissions: ['schedules.view_own'],
+      }),
+    );
+    const visible = filterAdminNavigation(
+      adminNavigationItems,
+      sessionHasPermission,
+    );
+    expect(visible.some((nav) => nav.to === '/admin/attendance/redeem')).toBe(
+      true,
+    );
+  });
+
+  it('Docente NO ve Ingresar código en el menú', () => {
+    setSessionTokens(
+      encodeJwt({
+        sub: 520,
+        email: 'docente@ctphojancha.ed.cr',
+        roles: ['TEACHER'],
+        permissions: ['schedules.view_own', 'attendance.view'],
+      }),
+    );
+    const visible = filterAdminNavigation(
+      adminNavigationItems,
+      sessionHasPermission,
+    );
+    expect(visible.some((nav) => nav.to === '/admin/attendance/redeem')).toBe(
+      false,
+    );
+  });
+
+  it('Admin NO ve Ingresar código en el menú', () => {
+    setSessionTokens(
+      encodeJwt({
+        sub: 1,
+        email: 'admin@ctphojancha.ed.cr',
+        roles: ['ADMIN'],
+        permissions: ['attendance.view'],
+      }),
+    );
+    const visible = filterAdminNavigation(
+      adminNavigationItems,
+      sessionHasPermission,
+    );
+    expect(visible.some((nav) => nav.to === '/admin/attendance/redeem')).toBe(
+      false,
+    );
   });
 
   it('E2. Estudiante NO ve Horario administrativo', () => {

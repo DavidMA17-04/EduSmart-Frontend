@@ -15,6 +15,7 @@ export type AttendanceSummaryCounts = {
   present: number;
   absent: number;
   late: number;
+  justified: number;
   unmarked: number;
   total: number;
 };
@@ -33,6 +34,7 @@ export const ATTENDANCE_STATUS_OPTIONS: Array<{
   { value: 'PRESENT', label: 'Presente' },
   { value: 'ABSENT', label: 'Ausente' },
   { value: 'LATE', label: 'Tarde' },
+  { value: 'JUSTIFIED', label: 'Justificada' },
 ];
 
 export function buildInitialDraft(
@@ -55,6 +57,18 @@ export function setStudentDraftStatus(
   status: DraftStatus,
 ): AttendanceDraftMap {
   return { ...draft, [userId]: status };
+}
+
+/** Bulk-mark roster students as PRESENT (local draft only). */
+export function markAllStudentsPresent(
+  draft: AttendanceDraftMap,
+  studentIds: number[],
+): AttendanceDraftMap {
+  const next = { ...draft };
+  for (const id of studentIds) {
+    next[id] = 'PRESENT';
+  }
+  return next;
 }
 
 export function isStudentDirty(
@@ -81,6 +95,7 @@ export function summarizeDraft(
     present: 0,
     absent: 0,
     late: 0,
+    justified: 0,
     unmarked: 0,
     total: studentIds.length,
   };
@@ -90,6 +105,7 @@ export function summarizeDraft(
     if (status === 'PRESENT') counts.present += 1;
     else if (status === 'ABSENT') counts.absent += 1;
     else if (status === 'LATE') counts.late += 1;
+    else if (status === 'JUSTIFIED') counts.justified += 1;
     else counts.unmarked += 1;
   }
 

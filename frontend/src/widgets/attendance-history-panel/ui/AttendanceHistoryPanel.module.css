@@ -1,0 +1,111 @@
+.layout {
+  display: grid;
+  gap: 16px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: end;
+}
+
+.field {
+  display: grid;
+  gap: 4px;
+  min-width: 140px;
+}
+
+.fieldLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--admin-muted, var(--brand-muted));
+}
+
+.toolbarActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.muted {
+  margin: 0;
+  color: var(--admin-muted, var(--brand-muted));
+  font-size: 0.92rem;
+}
+
+.skeleton {
+  display: grid;
+  gap: 8px;
+}
+
+.skeletonRow {
+  height: 44px;
+  border-radius: 10px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--brand-primary, #002e7a) 6%, transparent),
+    color-mix(in srgb, var(--brand-primary, #002e7a) 12%, transparent),
+    color-mix(in srgb, var(--brand-primary, #002e7a) 6%, transparent)
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+.studentCell {
+  display: grid;
+  gap: 2px;
+}
+
+.studentId {
+  font-size: 0.8rem;
+  color: var(--admin-muted, var(--brand-muted));
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.pageSize {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--admin-muted, var(--brand-muted));
+}
+
+.linkButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--brand-primary, var(--admin-primary));
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.linkButton:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 720px) {
+  .field {
+    min-width: min(100%, 180px);
+    flex: 1 1 140px;
+  }
+}

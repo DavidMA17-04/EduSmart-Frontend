@@ -51,21 +51,23 @@ export const AdminShell = () => {
           <small className={styles.brandMotto}>Ciencia · Cultura · 1972</small>
         </div>
         <nav aria-label="Navegación principal" className={styles.navigation}>
-          {filterAdminNavigation(adminNavigationItems, sessionHasPermission).map(
-            ({ label, icon: Icon, to }) => (
-              <NavLink
-                className={({ isActive }) =>
-                  `${styles.navItem} ${isActive ? styles.active : ''}`
-                }
-                end={to === '/admin'}
-                key={to}
-                to={to}
-              >
-                <Icon aria-hidden="true" size={18} />
-                {label}
-              </NavLink>
-            ),
-          )}
+          {filterAdminNavigation(
+            adminNavigationItems,
+            sessionHasPermission,
+            sessionUser?.roles ?? [],
+          ).map(({ label, icon: Icon, to }) => (
+            <NavLink
+              className={({ isActive }) =>
+                `${styles.navItem} ${isActive ? styles.active : ''}`
+              }
+              end={to === '/admin'}
+              key={to}
+              to={to}
+            >
+              <Icon aria-hidden="true" size={18} />
+              {label}
+            </NavLink>
+          ))}
         </nav>
         <div className={styles.account}>
           <span className={styles.avatar}>{avatarLetter}</span>

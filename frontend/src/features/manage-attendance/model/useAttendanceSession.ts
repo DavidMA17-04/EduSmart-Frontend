@@ -29,6 +29,7 @@ import {
   isAttendanceSessionEditable,
   isAttendanceSessionNotOpenError,
   isStudentDirty,
+  markAllStudentsPresent,
   reconcileDraftAfterSave,
   summarizeDraft,
   type AttendanceDraftMap,
@@ -85,6 +86,7 @@ export function useAttendanceSession(sessionId: number | null) {
     message: string;
   } | null>(null);
   const [rosterError, setRosterError] = useState<string | null>(null);
+  const [rosterLoading, setRosterLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const [saving, setSaving] = useState(false);
@@ -93,6 +95,15 @@ export function useAttendanceSession(sessionId: number | null) {
   const [closeError, setCloseError] = useState<string | null>(null);
   const [refreshWarning, setRefreshWarning] = useState<string | null>(null);
   const [finalizeOpen, setFinalizeOpen] = useState(false);
+  const [tokenBusy, setTokenBusy] = useState(false);
+  const [tokenError, setTokenError] = useState<string | null>(null);
+  const [sessionToken, setSessionToken] = useState<{
+    token: string;
+    expiresAt: string;
+  } | null>(null);
+  const [exportingFormat, setExportingFormat] = useState<'pdf' | 'excel' | null>(
+    null,
+  );
 
   const canEdit = sessionHasPermission(ATTENDANCE_PERMISSIONS.edit);
   const busy = saving || closing;
@@ -139,6 +150,13 @@ export function useAttendanceSession(sessionId: number | null) {
 
       if (sessionResult.status === 'fulfilled') {
         setSession(sessionResult.value);
+        const token = sessionResult.value.attendanceToken;
+        const expiresAt = sessionResult.value.attendanceTokenExpiresAt;
+        if (token && expiresAt) {
+          setSessionToken({ token, expiresAt });
+        } else {
+          setSessionToken(null);
+        }
       } else {
         setSession(null);
         setSessionError(classifyLoadError(sessionResult.reason));
@@ -169,19 +187,39 @@ export function useAttendanceSession(sessionId: number | null) {
     };
   }, [sessionId, applyRosterRows]);
 
-  const reloadRoster = useCallback(async () => {
-    if (sessionId == null) return;
+  const reloadRoster = useCallback(async (): Promise<{
+    ok: boolean;
+    count: number;
+    message: string | null;
+  }> => {
+    if (sessionId == null || rosterLoading) {
+      return { ok: false, count: 0, message: null };
+    }
+    setRosterLoading(true);
     setRosterError(null);
     setRefreshWarning(null);
     try {
       const rows = await attendanceApi.getAttendanceRoster(sessionId);
       applyRosterRows(rows);
+      return {
+        ok: true,
+        count: rows.length,
+        message:
+          rows.length === 0
+            ? 'No hay estudiantes matriculados en este grupo para la fecha de la clase.'
+            : `Se cargaron ${rows.length} estudiante${rows.length === 1 ? '' : 's'}.`,
+      };
     } catch (reason) {
-      setRosterError(
-        flowErrorMessage(reason, 'No pudimos cargar los estudiantes.'),
+      const message = flowErrorMessage(
+        reason,
+        'No pudimos cargar los estudiantes.',
       );
+      setRosterError(message);
+      return { ok: false, count: 0, message };
+    } finally {
+      setRosterLoading(false);
     }
-  }, [applyRosterRows, sessionId]);
+  }, [applyRosterRows, rosterLoading, sessionId]);
 
   const reloadSessionMeta = useCallback(async () => {
     if (sessionId == null) return null;
@@ -224,6 +262,14 @@ export function useAttendanceSession(sessionId: number | null) {
     [roster],
   );
 
+  const markAllPresent = useCallback(() => {
+    if (!session || busy || !editable) return;
+    setDraft((current) => markAllStudentsPresent(current, studentIds));
+    setSaveError(null);
+    setCloseError(null);
+    setRefreshWarning(null);
+  }, [busy, editable, session, studentIds]);
+
   const dirtyIds = useMemo(
     () =>
       editable
@@ -231,6 +277,37 @@ export function useAttendanceSession(sessionId: number | null) {
         : [],
     [draft, editable, initialDraft, studentIds],
   );
+
+  /** Live refresh while OPEN and no unsaved local edits (token redemptions). */
+  useEffect(() => {
+    if (
+      sessionId == null ||
+      session?.status !== 'OPEN' ||
+      busy ||
+      dirtyIds.length > 0 ||
+      loading
+    ) {
+      return;
+    }
+    const timer = window.setInterval(() => {
+      void attendanceApi
+        .getAttendanceRoster(sessionId)
+        .then((rows) => {
+          applyRosterRows(rows);
+        })
+        .catch(() => {
+          /* keep last good roster on poll errors */
+        });
+    }, 5000);
+    return () => window.clearInterval(timer);
+  }, [
+    applyRosterRows,
+    busy,
+    dirtyIds.length,
+    loading,
+    session?.status,
+    sessionId,
+  ]);
 
   const summary = useMemo(
     () => summarizeDraft(draft, studentIds),
@@ -509,12 +586,87 @@ export function useAttendanceSession(sessionId: number | null) {
     sessionId,
   ]);
 
+  const generateToken = useCallback(async (): Promise<{
+    ok: boolean;
+    message: string;
+  }> => {
+    if (sessionId == null || !canEdit || busy || tokenBusy) {
+      return { ok: false, message: 'No se puede generar el código ahora.' };
+    }
+    if (!session || session.status !== 'OPEN') {
+      return {
+        ok: false,
+        message: 'Solo se puede generar código en una sesión abierta.',
+      };
+    }
+    setTokenBusy(true);
+    setTokenError(null);
+    try {
+      const result = await attendanceApi.generateSessionToken(sessionId);
+      setSessionToken({
+        token: result.token,
+        expiresAt: result.expiresAt,
+      });
+      return { ok: true, message: 'Código de asistencia generado.' };
+    } catch (reason) {
+      const message = flowErrorMessage(
+        reason,
+        'No se pudo generar el código de asistencia.',
+      );
+      setTokenError(message);
+      return { ok: false, message };
+    } finally {
+      setTokenBusy(false);
+    }
+  }, [busy, canEdit, session, sessionId, tokenBusy]);
+
+  const copySessionToken = useCallback(async (): Promise<boolean> => {
+    if (!sessionToken?.token || !navigator.clipboard?.writeText) return false;
+    try {
+      await navigator.clipboard.writeText(sessionToken.token);
+      return true;
+    } catch {
+      return false;
+    }
+  }, [sessionToken]);
+
+  const exportSession = useCallback(
+    async (format: 'pdf' | 'excel'): Promise<{ ok: boolean; message: string }> => {
+      if (sessionId == null || exportingFormat) {
+        return { ok: false, message: 'No se puede exportar ahora.' };
+      }
+      setExportingFormat(format);
+      try {
+        await attendanceApi.exportAttendanceSession(sessionId, format);
+        return {
+          ok: true,
+          message:
+            format === 'pdf'
+              ? 'PDF de asistencia descargado.'
+              : 'Excel de asistencia descargado.',
+        };
+      } catch (reason) {
+        return {
+          ok: false,
+          message: flowErrorMessage(
+            reason,
+            'No se pudo exportar el reporte de asistencia.',
+          ),
+        };
+      } finally {
+        setExportingFormat(null);
+      }
+    },
+    [exportingFormat, sessionId],
+  );
+
   return {
     session,
     roster,
     loading,
     sessionError,
     rosterError,
+    rosterLoading,
     reloadRoster,
     reloadSessionMeta,
     searchQuery,
@@ -522,6 +674,7 @@ export function useAttendanceSession(sessionId: number | null) {
     visibleRoster,
     draft,
     setStatus,
+    markAllPresent,
     readOnly,
     controlsDisabled: readOnly || busy,
     canEdit,
@@ -544,5 +697,12 @@ export function useAttendanceSession(sessionId: number | null) {
     canSave,
     saveChanges,
     confirmFinalize,
+    tokenBusy,
+    tokenError,
+    sessionToken,
+    generateToken,
+    copySessionToken,
+    exportingFormat,
+    exportSession,
   };
 }

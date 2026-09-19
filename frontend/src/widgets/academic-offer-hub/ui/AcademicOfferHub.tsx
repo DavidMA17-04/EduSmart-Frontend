@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ImagePlus, Layers, Wrench } from 'lucide-react';
+import { BookOpen, ImagePlus, Layers, Wrench } from 'lucide-react';
 import type { SpecialtyHubCover, SpecialtyKind } from '@/entities/specialty';
 import { resolveUploadUrl, specialtyApi } from '@/features/manage-specialty/api/specialtyApi';
+import { subjectApi } from '@/features/manage-subject';
 import { Alert, Button, Modal } from '@/shared/ui';
 import styles from './AcademicOfferHub.module.css';
 
-const CARDS: Array<{
+const SPECIALTY_CARDS: Array<{
   kind: SpecialtyKind;
   title: string;
   subtitle: string;
@@ -33,6 +34,7 @@ export const AcademicOfferHub = () => {
   const navigate = useNavigate();
   const [covers, setCovers] = useState<SpecialtyHubCover[]>([]);
   const [counts, setCounts] = useState<Partial<Record<SpecialtyKind, number>>>({});
+  const [subjectsCount, setSubjectsCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [configKind, setConfigKind] = useState<SpecialtyKind | null>(null);
   const [previewFile, setPreviewFile] = useState<File | null>(null);
@@ -42,16 +44,18 @@ export const AcademicOfferHub = () => {
   const load = useCallback(async () => {
     setError(null);
     try {
-      const [hubCovers, workshops, technical] = await Promise.all([
+      const [hubCovers, workshops, technical, subjects] = await Promise.all([
         specialtyApi.listHubCovers(),
         specialtyApi.list('EXPLORATORY_WORKSHOP'),
         specialtyApi.list('TECHNICAL_SPECIALTY'),
+        subjectApi.list().catch(() => []),
       ]);
       setCovers(hubCovers);
       setCounts({
         EXPLORATORY_WORKSHOP: workshops.length,
         TECHNICAL_SPECIALTY: technical.length,
       });
+      setSubjectsCount(subjects.length);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'No se pudo cargar la oferta académica.');
     }
@@ -141,7 +145,26 @@ export const AcademicOfferHub = () => {
     <div className={styles.hub}>
       {error ? <Alert>{error}</Alert> : null}
       <div className={styles.grid}>
-        {CARDS.map((card) => {
+        <article className={styles.card}>
+          <div className={styles.overlay} />
+          <div className={styles.cardBody}>
+            <span className={styles.cardIcon}>
+              <BookOpen size={22} />
+            </span>
+            <h2>Materias</h2>
+            <p>Catálogo de materias regulares (nombre obligatorio)</p>
+            <small>
+              {subjectsCount} {subjectsCount === 1 ? 'registro' : 'registros'}
+            </small>
+            <div className={styles.cardActions}>
+              <Button onClick={() => navigate('/admin/subjects')} type="button">
+                Ver
+              </Button>
+            </div>
+          </div>
+        </article>
+
+        {SPECIALTY_CARDS.map((card) => {
           const Icon = card.icon;
           const imageUrl = coverByKind.get(card.kind) ?? null;
           const count = counts[card.kind] ?? 0;

@@ -5,6 +5,7 @@ import {
   setSessionTokens,
 } from '@/shared/auth';
 import {
+  ATTENDANCE_HISTORY_PATH,
   ATTENDANCE_HOME_PATH,
   ATTENDANCE_NEW_PATH,
   ATTENDANCE_PERMISSIONS,
@@ -72,6 +73,13 @@ describe('attendanceRouting — route guards', () => {
   it('4. /admin/attendance/sessions/:id requiere attendance.view', () => {
     const guard = ATTENDANCE_ROUTE_GUARDS.find(
       (r) => r.path === '/admin/attendance/sessions/:sessionId',
+    );
+    expect(guard?.permission).toBe(ATTENDANCE_PERMISSIONS.view);
+  });
+
+  it('history /admin/attendance/history requiere attendance.view', () => {
+    const guard = ATTENDANCE_ROUTE_GUARDS.find(
+      (r) => r.path === ATTENDANCE_HISTORY_PATH,
     );
     expect(guard?.permission).toBe(ATTENDANCE_PERMISSIONS.view);
   });

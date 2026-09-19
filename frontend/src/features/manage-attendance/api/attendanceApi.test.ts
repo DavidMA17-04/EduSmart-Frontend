@@ -283,3 +283,75 @@ describe('attendance contract sample shapes', () => {
     expect(['PRESENT', 'ABSENT', 'LATE']).toContain(present.attendance.status);
   });
 });
+
+describe('attendanceApi history and tokens', () => {
+  beforeEach(() => {
+    mockedHttp.mockReset();
+  });
+
+  it('searchAttendanceHistory → GET /attendance/history with query', async () => {
+    const data = {
+      items: [],
+      total: 0,
+      page: 1,
+      limit: 25,
+      totalPages: 0,
+    };
+    mockedHttp.mockResolvedValueOnce({ success: true, data });
+
+    await expect(
+      attendanceApi.searchAttendanceHistory({
+        startDate: '2026-09-01',
+        status: 'PRESENT',
+        registrationMethod: 'TOKEN',
+        page: 1,
+        limit: 25,
+      }),
+    ).resolves.toEqual(data);
+
+    const path = String(mockedHttp.mock.calls[0]?.[0]);
+    expect(path).toMatch(/^\/attendance\/history\?/);
+    expect(path).toContain('startDate=2026-09-01');
+    expect(path).toContain('status=PRESENT');
+    expect(path).toContain('registrationMethod=TOKEN');
+  });
+
+  it('generateSessionToken → POST /attendance/sessions/:id/token', async () => {
+    const data = {
+      sessionId: 7,
+      token: 'ABCD1234',
+      expiresAt: '2026-09-11T16:20:00.000Z',
+    };
+    mockedHttp.mockResolvedValueOnce({ success: true, data });
+
+    await expect(attendanceApi.generateSessionToken(7)).resolves.toEqual(data);
+    expect(mockedHttp).toHaveBeenCalledWith('/attendance/sessions/7/token', {
+      method: 'POST',
+    });
+  });
+
+  it('redeemAttendanceToken → POST /attendance/redeem-token', async () => {
+    const data = {
+      attendanceId: 1,
+      sessionId: 7,
+      studentUserId: 501,
+      status: 'PRESENT' as const,
+      registrationMethod: 'TOKEN' as const,
+      registeredAt: '2026-09-11T15:01:00.000Z',
+      alreadyRedeemed: false,
+      sessionDate: '2026-09-11',
+      groupName: '10-1',
+      offeringName: 'Matemática',
+      offeringLabelKind: 'SUBJECT',
+    };
+    mockedHttp.mockResolvedValueOnce({ success: true, data });
+
+    await expect(
+      attendanceApi.redeemAttendanceToken({ token: 'ABCD1234' }),
+    ).resolves.toEqual(data);
+    expect(mockedHttp).toHaveBeenCalledWith('/attendance/redeem-token', {
+      method: 'POST',
+      body: JSON.stringify({ code: 'ABCD1234' }),
+    });
+  });
+});

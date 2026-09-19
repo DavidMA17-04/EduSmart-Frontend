@@ -42,6 +42,13 @@
   min-width: 0;
 }
 
+.introActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
 .introTitle {
   margin: 0;
   font-family: var(--font-heading, var(--brand-font-serif));

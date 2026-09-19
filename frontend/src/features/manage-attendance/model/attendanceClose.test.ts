@@ -121,6 +121,7 @@ describe('finalize confirm copy', () => {
       present: 20,
       absent: 3,
       late: 2,
+      justified: 0,
       unmarked: 5,
       total: 30,
     });
@@ -128,6 +129,7 @@ describe('finalize confirm copy', () => {
       'Presentes: 20',
       'Ausentes: 3',
       'Tardías: 2',
+      'Justificadas: 0',
       'Sin marcar: 5',
     ]);
   });
