@@ -4,7 +4,9 @@ import {
   PERMISSION_MODULE_LABELS,
   PERMISSION_MODULES,
   PermissionToggle,
+  PROTECTED_ADMIN_PERMISSION_TOOLTIP,
   buildPermissionMatrix,
+  isProtectedAdminPermission,
   type Permission,
 } from '@/entities/permission';
 import styles from './PermissionMatrix.module.css';
@@ -14,6 +16,8 @@ interface PermissionMatrixProps {
   selectedPermissionIds: number[];
   readOnly?: boolean;
   disabled?: boolean;
+  /** Cuando true, los permisos críticos del Admin quedan marcados y no editables. */
+  lockProtectedAdminPermissions?: boolean;
   onToggle: (permissionId: number, checked: boolean) => void;
 }
 
@@ -22,6 +26,7 @@ export const PermissionMatrix = ({
   selectedPermissionIds,
   readOnly = false,
   disabled = false,
+  lockProtectedAdminPermissions = false,
   onToggle,
 }: PermissionMatrixProps) => {
   const matrix = buildPermissionMatrix(permissions);
@@ -37,14 +42,23 @@ export const PermissionMatrix = ({
             const permission = matrix[module][action];
             if (!permission) return <td key={action}><span className={styles.unavailable}>—</span></td>;
 
-            const checked = selectedPermissionIds.includes(permission.id);
+            const isProtected =
+              lockProtectedAdminPermissions && isProtectedAdminPermission(permission.code);
+            const checked = isProtected || selectedPermissionIds.includes(permission.id);
+            const locked = isProtected;
+            const toggleDisabled = !isInteractive || locked;
+
             return (
               <td key={action} className={styles.cell}>
                 <PermissionToggle
                   action={action}
                   checked={checked}
-                  disabled={!isInteractive}
-                  onCheckedChange={(nextChecked) => onToggle(permission.id, nextChecked)}
+                  disabled={toggleDisabled}
+                  title={locked ? PROTECTED_ADMIN_PERMISSION_TOOLTIP : undefined}
+                  onCheckedChange={(nextChecked) => {
+                    if (locked) return;
+                    onToggle(permission.id, nextChecked);
+                  }}
                 />
               </td>
             );

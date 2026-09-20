@@ -9,7 +9,8 @@ import {
 
 const base: TeachingAssignmentFormValues = {
   userId: '5',
-  groupId: '3',
+  groupId: '',
+  groupIds: ['3'],
   academicPeriodId: '1',
   offeringKind: 'SUBJECT',
   subjectId: '2',
@@ -46,10 +47,10 @@ describe('allowedOfferingKindsForGrade (UX)', () => {
 });
 
 describe('buildCreatePayload XOR', () => {
-  it('SUBJECT → subjectId set, specialtyId null', () => {
+  it('SUBJECT → subjectId set, specialtyId null, groupIds', () => {
     expect(buildCreatePayload(base)).toEqual({
       userId: 5,
-      groupId: 3,
+      groupIds: [3],
       offeringKind: 'SUBJECT',
       academicPeriodId: 1,
       subjectId: 2,
@@ -67,7 +68,7 @@ describe('buildCreatePayload XOR', () => {
       }),
     ).toEqual({
       userId: 5,
-      groupId: 3,
+      groupIds: [3],
       offeringKind: 'EXPLORATORY_WORKSHOP',
       academicPeriodId: 1,
       subjectId: null,
@@ -87,13 +88,15 @@ describe('buildCreatePayload XOR', () => {
       offeringKind: 'TECHNICAL_SPECIALTY',
       subjectId: null,
       specialtyId: 9,
+      groupIds: [3],
     });
   });
 
-  it('buildUpdatePayload omite userId/groupId', () => {
+  it('buildUpdatePayload omite userId/groupId/groupIds', () => {
     const update = buildUpdatePayload(base);
     expect(update).not.toHaveProperty('userId');
     expect(update).not.toHaveProperty('groupId');
+    expect(update).not.toHaveProperty('groupIds');
     expect(update).toMatchObject({
       offeringKind: 'SUBJECT',
       subjectId: 2,
@@ -110,6 +113,15 @@ describe('validateTeachingAssignmentForm', () => {
         { requireTeacherAndGroup: true },
       ),
     ).toMatch(/docente/i);
+  });
+
+  it('exige al menos un grupo', () => {
+    expect(
+      validateTeachingAssignmentForm(
+        { ...base, groupIds: [] },
+        { requireTeacherAndGroup: true },
+      ),
+    ).toMatch(/grupo/i);
   });
 
   it('exige materia para SUBJECT', () => {

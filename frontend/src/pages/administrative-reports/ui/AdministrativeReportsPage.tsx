@@ -23,7 +23,7 @@ import styles from './AdministrativeReportsPage.module.css';
 const REPORT_TABS: Array<{ id: AdministrativeReportType; label: string }> = [
   { id: 'users', label: 'Usuarios' },
   { id: 'academic-structure', label: 'Estructura académica' },
-  { id: 'academic-periods', label: 'Períodos académicos' },
+  { id: 'academic-periods', label: 'Cursos lectivos' },
 ];
 
 function UsersFilters({
@@ -92,12 +92,12 @@ function StructureFilters({
   return (
     <div className={styles.filters}>
       <Select
-        aria-label="Filtrar por período académico"
+        aria-label="Filtrar por curso lectivo"
         className={styles.filterControl}
         onChange={(event) => onChange('academicPeriodId', event.target.value)}
         value={draft.academicPeriodId}
       >
-        <option value="">Período: Todos</option>
+        <option value="">Curso lectivo: Todos</option>
         {academicPeriods.map((period) => (
           <option key={period.id} value={String(period.id)}>{period.name}</option>
         ))}
@@ -151,7 +151,7 @@ function PeriodFilters({
   return (
     <div className={styles.filters}>
       <Select
-        aria-label="Filtrar por estado de período"
+        aria-label="Filtrar por estado de curso lectivo"
         className={styles.filterControl}
         onChange={(event) => onChange('status', event.target.value)}
         value={draft.status}
@@ -236,7 +236,7 @@ function StructureTable({ rows }: { rows: AcademicStructureReportRow[] }) {
           <th>Nivel</th>
           <th>Especialidad</th>
           <th>Cantidad de estudiantes</th>
-          <th>Período académico</th>
+          <th>Curso lectivo</th>
           <th>Docente guía</th>
           <th>Estado</th>
         </tr>
@@ -299,7 +299,7 @@ function PeriodsTable({ rows }: { rows: AcademicPeriodReportRow[] }) {
         {rows.length === 0 && (
           <tr>
             <td className={styles.empty} colSpan={5}>
-              No se encontraron períodos académicos para los filtros seleccionados.
+              No se encontraron cursos lectivos para los filtros seleccionados.
             </td>
           </tr>
         )}
@@ -311,7 +311,7 @@ function PeriodsTable({ rows }: { rows: AcademicPeriodReportRow[] }) {
 function loadingMessage(reportType: AdministrativeReportType): string {
   if (reportType === 'users') return 'Cargando reporte de usuarios…';
   if (reportType === 'academic-structure') return 'Cargando reporte de estructura académica…';
-  return 'Cargando reporte de períodos académicos…';
+  return 'Cargando reporte de cursos lectivos…';
 }
 
 function formatRecordCount(count: number): string {

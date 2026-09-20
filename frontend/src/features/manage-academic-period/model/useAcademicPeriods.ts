@@ -18,7 +18,7 @@ export function useAcademicPeriods() {
     try {
       setPeriods(await academicPeriodApi.list());
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'No se pudieron cargar los períodos académicos.');
+      setError(reason instanceof Error ? reason.message : 'No se pudieron cargar los cursos lectivos.');
     } finally {
       if (!silent) setIsLoading(false);
     }

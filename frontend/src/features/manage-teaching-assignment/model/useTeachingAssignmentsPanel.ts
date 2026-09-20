@@ -16,6 +16,7 @@ import { guideTeacherApi } from '@/features/manage-group/api/guideTeacherApi';
 import { specialtyApi } from '@/features/manage-specialty/api/specialtyApi';
 import { subjectApi as subjectCrudApi } from '@/features/manage-subject';
 import { HttpError } from '@/shared/api/httpClient';
+import { filterPeriodsForSessionRole } from '@/shared/auth';
 import { useToast } from '@/shared/ui';
 import {
   subjectApi,
@@ -45,7 +46,7 @@ function assignmentTeacherName(row: TeachingAssignment): string {
 function humanizeMutationError(error: unknown): string {
   if (error instanceof HttpError) {
     if (error.status === 409) {
-      return 'Ya existe una asignación académica para este docente, grupo, oferta y período.';
+      return 'Ya existe una asignación académica para este docente, grupo, oferta y curso lectivo.';
     }
     if (error.status === 400) {
       const msg = error.message ?? '';
@@ -113,7 +114,7 @@ export function useTeachingAssignmentsPanel() {
         ]);
       setTeachers(teacherList);
       setGroups(groupList);
-      setPeriods(periodList);
+      setPeriods(filterPeriodsForSessionRole(periodList));
       setSubjects(subjectList.filter((s) => s.status === 'ACTIVE'));
       setWorkshops(workshopList.filter((s) => s.status === 'ACTIVE'));
       setTechnicals(techList.filter((s) => s.status === 'ACTIVE'));
@@ -157,17 +158,29 @@ export function useTeachingAssignmentsPanel() {
     void loadAssignments();
   }, [loadAssignments]);
 
-  const selectedGroup = useMemo(
-    () => groups.find((g) => String(g.id) === form.groupId) ?? null,
-    [groups, form.groupId],
-  );
+  const selectedGroups = useMemo(() => {
+    const ids =
+      dialogMode === 'edit' && form.groupId
+        ? [form.groupId]
+        : form.groupIds;
+    return groups.filter((g) => ids.includes(String(g.id)));
+  }, [groups, form.groupId, form.groupIds, dialogMode]);
+
+  const selectedGroup = selectedGroups[0] ?? null;
 
   const gradeLevel = selectedGroup?.section?.gradeLevel ?? null;
 
-  const allowedKinds = useMemo(
-    () => allowedOfferingKindsForGrade(gradeLevel),
-    [gradeLevel],
-  );
+  const allowedKinds = useMemo(() => {
+    if (!selectedGroups.length) return [] as AcademicOfferingKind[];
+    const sets = selectedGroups.map(
+      (g) => new Set(allowedOfferingKindsForGrade(g.section?.gradeLevel)),
+    );
+    const [first, ...rest] = sets;
+    if (!first) return [] as AcademicOfferingKind[];
+    return ([...first] as AcademicOfferingKind[]).filter((kind) =>
+      rest.every((s) => s.has(kind)),
+    );
+  }, [selectedGroups]);
 
   const offeringOptions = useMemo(() => {
     if (form.offeringKind === 'SUBJECT') return subjects;
@@ -185,11 +198,17 @@ export function useTeachingAssignmentsPanel() {
     (patch: Partial<TeachingAssignmentFormValues>) => {
       setForm((prev) => {
         const next = { ...prev, ...patch };
-        if (patch.groupId !== undefined && patch.groupId !== prev.groupId) {
+        const groupsChanged =
+          (patch.groupIds !== undefined &&
+            JSON.stringify(patch.groupIds) !== JSON.stringify(prev.groupIds)) ||
+          (patch.groupId !== undefined && patch.groupId !== prev.groupId);
+
+        if (groupsChanged) {
           next.offeringKind = '';
           next.subjectId = '';
           next.specialtyId = '';
-          const group = groups.find((g) => String(g.id) === patch.groupId);
+          const firstId = (patch.groupIds ?? [])[0] ?? patch.groupId ?? next.groupId;
+          const group = groups.find((g) => String(g.id) === firstId);
           if (group?.academicPeriodId && !next.academicPeriodId) {
             next.academicPeriodId = String(group.academicPeriodId);
           }
@@ -219,6 +238,7 @@ export function useTeachingAssignmentsPanel() {
     setForm({
       userId: String(row.userId),
       groupId: String(row.groupId),
+      groupIds: [String(row.groupId)],
       academicPeriodId: row.academicPeriodId != null ? String(row.academicPeriodId) : '',
       offeringKind: row.offeringKind,
       subjectId: row.subjectId != null ? String(row.subjectId) : '',
@@ -254,8 +274,14 @@ export function useTeachingAssignmentsPanel() {
     setMutationError(null);
     try {
       if (dialogMode === 'create') {
-        await teachingAssignmentApi.create(buildCreatePayload(form));
-        toast.push('Asignación académica creada.', 'success');
+        const created = await teachingAssignmentApi.create(buildCreatePayload(form));
+        const count = Array.isArray(created) ? created.length : 1;
+        toast.push(
+          count > 1
+            ? `Se crearon ${count} asignaciones académicas.`
+            : 'Asignación académica creada.',
+          'success',
+        );
       } else if (editingId != null) {
         await teachingAssignmentApi.update(editingId, buildUpdatePayload(form));
         toast.push('Asignación académica actualizada.', 'success');

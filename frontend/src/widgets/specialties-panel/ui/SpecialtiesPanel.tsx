@@ -23,7 +23,7 @@ interface SpecialtiesPanelProps {
 
 export const SpecialtiesPanel = ({ kind }: SpecialtiesPanelProps) => {
   const model = useSpecialtiesPanel(kind);
-  const nameColumn = kind === 'EXPLORATORY_WORKSHOP' ? 'Taller' : 'Especialidad';
+  const nameColumn = kind === 'EXPLORATORY_WORKSHOP' ? 'Taller' : 'Carrera Técnica';
   const EmptyIcon = kind === 'EXPLORATORY_WORKSHOP' ? Layers : Wrench;
   const dialogTitle =
     model.dialogMode === 'create' ? model.copy.createTitle : model.copy.editTitle;
@@ -159,7 +159,7 @@ export const SpecialtiesPanel = ({ kind }: SpecialtiesPanelProps) => {
         message={`¿Inactivar ${model.copy.noun} ${model.pendingDeactivate?.name ?? ''}?`}
         onCancel={model.cancelDeactivate}
         onConfirm={() => void model.confirmDeactivate()}
-        secondary="Dejará de estar disponible para asignación en períodos académicos."
+        secondary="Dejará de estar disponible para asignación en cursos lectivos."
         title={`Inactivar ${model.copy.noun}`}
         tone="danger"
       />

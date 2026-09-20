@@ -12,7 +12,7 @@ export const TeachingAssignmentsPage = () => (
         { label: 'Asignaciones académicas' },
       ]}
       icon={BookMarked}
-      subtitle="Configure qué imparte cada docente (materia, taller o especialidad) por grupo y período. Independiente del docente guía."
+      subtitle="Configure qué imparte cada docente (materia, taller o carrera técnica) por grupo y curso lectivo. Independiente del docente guía."
       title="Asignaciones académicas"
     />
     <TeachingAssignmentsPanel />

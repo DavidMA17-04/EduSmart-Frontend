@@ -14,6 +14,8 @@ interface GroupFormProps {
   guideTeachers: GuideTeacher[];
   isSubmitting?: boolean;
   submitLabel?: string;
+  /** When true, show enrolled student count as read-only. Hidden on create. */
+  showStudentCount?: boolean;
   onChange: <K extends keyof GroupFormValues>(field: K, value: GroupFormValues[K]) => void;
   onSubmit: FormEventHandler<HTMLFormElement>;
   onCancel: () => void;
@@ -26,6 +28,7 @@ export const GroupForm = ({
   guideTeachers,
   isSubmitting = false,
   submitLabel = 'Guardar cambios',
+  showStudentCount = false,
   onChange,
   onSubmit,
   onCancel,
@@ -65,17 +68,24 @@ export const GroupForm = ({
       <span className={styles.hint}>Indique si esta sección tiene especialidad. Puede quedar vacía.</span>
     </label>
     <label>
-      Cantidad de estudiantes
+      Cupo máximo
       <Input
-        max={100}
-        min={0}
-        onChange={(event) => onChange('studentCount', parseNumberField(event.target.value))}
-        placeholder="0"
+        max={200}
+        min={1}
+        onChange={(event) => onChange('maxCapacity', parseNumberField(event.target.value))}
+        placeholder="30"
         required
         type="number"
-        value={values.studentCount}
+        value={values.maxCapacity}
       />
+      <span className={styles.hint}>Capacidad máxima de la sección (cascarón vacío al crear).</span>
     </label>
+    {showStudentCount ? (
+      <label>
+        Estudiantes matriculados
+        <Input disabled readOnly type="number" value={values.studentCount === '' ? 0 : values.studentCount} />
+      </label>
+    ) : null}
     <label>
       Docente guía
       <Select onChange={(event) => onChange('guideTeacherId', event.target.value)} value={values.guideTeacherId}>

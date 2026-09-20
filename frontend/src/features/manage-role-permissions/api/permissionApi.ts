@@ -26,4 +26,7 @@ export const permissionApi = {
     method: 'PUT',
     body: JSON.stringify({ permissionIds }),
   }),
+  resetToDefaults: (roleId: number) => request<Role>(`/roles/${roleId}/reset-defaults`, {
+    method: 'POST',
+  }),
 };

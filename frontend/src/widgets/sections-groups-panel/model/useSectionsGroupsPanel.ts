@@ -14,6 +14,7 @@ import {
 } from '@/features/manage-group';
 import { academicPeriodApi, useManageSection, useSectionForm, useSections } from '@/features/manage-section';
 import { specialtyApi } from '@/features/manage-specialty';
+import { filterPeriodsForSessionRole } from '@/shared/auth';
 import { useToast } from '@/shared/ui';
 
 export type PanelTab = 'niveles' | 'grupos' | 'docentes';
@@ -102,7 +103,10 @@ export function useSectionsGroupsPanel() {
 
   useEffect(() => {
     void specialtyApi.list().then(setSpecialties).catch(() => setSpecialties([]));
-    void academicPeriodApi.list().then(setAcademicPeriods).catch(() => setAcademicPeriods([]));
+    void academicPeriodApi
+      .list()
+      .then((list) => setAcademicPeriods(filterPeriodsForSessionRole(list)))
+      .catch(() => setAcademicPeriods([]));
   }, []);
 
   const groupsBySection = useMemo(() => {
@@ -305,6 +309,7 @@ export function useSectionsGroupsPanel() {
       event.preventDefault();
       const payload = groupForm.toPayload();
       if (!payload.name || !payload.sectionId) return;
+      if (!Number.isFinite(payload.maxCapacity) || payload.maxCapacity < 1) return;
       try {
         if (groupFormMode === 'create') {
           const created = await createGroup(payload);

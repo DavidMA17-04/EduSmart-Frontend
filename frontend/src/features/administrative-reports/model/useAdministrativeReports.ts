@@ -180,7 +180,7 @@ export function useAdministrativeReports() {
             ? 'No se pudo cargar el reporte de usuarios.'
             : reportType === 'academic-structure'
               ? 'No se pudo cargar el reporte de estructura académica.'
-              : 'No se pudo cargar el reporte de períodos académicos.';
+              : 'No se pudo cargar el reporte de cursos lectivos.';
         setError(loadErrorMessage(reason, fallback));
       } finally {
         if (active) setIsLoading(false);

@@ -38,7 +38,10 @@ export interface CreateUserPayload {
   roleIds?: number[];
 }
 
-export type UpdateUserPayload = Partial<CreateUserPayload>;
+export type UpdateUserPayload = Partial<CreateUserPayload> & {
+  /** Motivo de baja; obligatorio al pasar a INACTIVE. */
+  reason?: string;
+};
 
 export interface UserAuditLog {
   id: number;

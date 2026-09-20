@@ -26,8 +26,16 @@ import {
   hasAnyDuplicateInconsistency,
   revalidateImportPreviewRecords,
 } from '@/features/manage-user-import/lib/validateImportPreviewRow';
+import { Tooltip } from '@/shared/ui';
 import { ImportedUserRecord } from '../mocks/importedUsersMock';
 import styles from '../UserImportPreviewPage/UserImportPreview.module.css';
+
+function rowIssueTooltip(row: ImportedUserRecord): string {
+  const parts = [...(row.errorMessages ?? []), ...(row.warningMessages ?? [])]
+    .map((msg) => msg.trim())
+    .filter(Boolean);
+  return parts.join(' · ') || 'Inconsistencia detectada en esta fila';
+}
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;
 
@@ -336,7 +344,7 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
       <div className={styles.pinnedTop}>
         <section className={styles.kpiGrid} aria-label="Resumen de validación">
           <div className={`${styles.kpiCard} ${styles.kpiTotal}`}>
-            <span className={styles.kpiLabel}>Total Registros</span>
+            <span className={styles.kpiLabel}>Total registros</span>
             <p className={styles.kpiValue}>{currentKPIs.totalRows}</p>
             <span className={styles.kpiSubText}>
               <span className={`${styles.kpiDot} ${styles.kpiDotNeutral}`} />
@@ -344,7 +352,7 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
             </span>
           </div>
           <div className={`${styles.kpiCard} ${styles.kpiValid}`}>
-            <span className={styles.kpiLabel}>Registros Válidos</span>
+            <span className={styles.kpiLabel}>Registros válidos</span>
             <p className={styles.kpiValue}>{currentKPIs.validRows}</p>
             <span className={`${styles.kpiSubText} ${styles.textGreen}`}>
               <span className={`${styles.kpiDot} ${styles.kpiDotGreen}`} />
@@ -360,7 +368,7 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
             </span>
           </div>
           <div className={`${styles.kpiCard} ${styles.kpiError}`}>
-            <span className={styles.kpiLabel}>Con Errores</span>
+            <span className={styles.kpiLabel}>Con errores</span>
             <p className={styles.kpiValue}>{currentKPIs.errorRows}</p>
             <span className={`${styles.kpiSubText} ${styles.textRed}`}>
               <span className={`${styles.kpiDot} ${styles.kpiDotRed}`} />
@@ -459,9 +467,9 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
             aria-label="Filtrar por estado de validación"
           >
             <option value="ALL">Todos los Estados</option>
-            <option value="VALID">Solo Válidos</option>
-            <option value="WARNING">Solo Advertencias</option>
-            <option value="ERROR">Solo Errores</option>
+            <option value="VALID">Solo válidos</option>
+            <option value="WARNING">Solo advertencias</option>
+            <option value="ERROR">Solo errores</option>
           </select>
 
           <label className={styles.checkboxLabel}>
@@ -493,9 +501,9 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
                 <th className={styles.colRow}># Fila</th>
                 <th className={styles.colId}>Identificación</th>
                 <th>Nombres</th>
-                <th>Primer Apellido</th>
-                <th>Segundo Apellido</th>
-                <th className={styles.colEmail}>Correo Institucional</th>
+                <th>Primer apellido</th>
+                <th>Segundo apellido</th>
+                <th className={styles.colEmail}>Correo institucional</th>
                 <th className={styles.colRole}>Rol</th>
                 <th className={styles.colSection}>Sección</th>
                 <th className={styles.colStatus}>Estado cuenta</th>
@@ -614,14 +622,18 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
                         </span>
                       )}
                       {row.status === 'WARNING' && (
-                        <span className={styles.badgeStatusWarning}>
-                          <AlertTriangle size={12} /> Advertencia
-                        </span>
+                        <Tooltip content={rowIssueTooltip(row)}>
+                          <span className={styles.badgeStatusWarning}>
+                            <AlertTriangle size={12} /> Advertencia
+                          </span>
+                        </Tooltip>
                       )}
                       {row.status === 'ERROR' && (
-                        <span className={styles.badgeStatusError}>
-                          <AlertCircle size={12} /> Error
-                        </span>
+                        <Tooltip content={rowIssueTooltip(row)}>
+                          <span className={styles.badgeStatusError}>
+                            <AlertCircle size={12} /> Error
+                          </span>
+                        </Tooltip>
                       )}
                     </td>
                     <td className={styles.actionCell}>

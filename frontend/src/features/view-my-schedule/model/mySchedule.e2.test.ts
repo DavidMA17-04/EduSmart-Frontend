@@ -121,7 +121,7 @@ describe('my-schedule presentation (E2)', () => {
 
   it('14–15. empty/error copy shared for student', () => {
     expect(MY_SCHEDULE_COPY.emptyDescription).toBe(
-      'No tienes clases asignadas para este período.',
+      'No tienes clases asignadas para este curso lectivo.',
     );
     expect(MY_SCHEDULE_COPY.errorMessage).toBe('No se pudo cargar tu horario.');
     expect(MY_SCHEDULE_COPY.retryLabel).toBe('Reintentar');

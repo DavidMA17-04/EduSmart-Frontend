@@ -1,6 +1,7 @@
 export { userApi } from './api/userApi';
 export type { UsersListQuery, UsersPageResult } from './api/userApi';
 export { UserForm } from './ui/UserForm';
+export { UserDeactivationModal } from './ui/UserDeactivationModal';
 export { UserAuditPanel } from './ui/UserAuditPanel';
 export {
   useUserForm,

@@ -1,4 +1,4 @@
-export const PERMISSION_ACTIONS = [
+﻿export const PERMISSION_ACTIONS = [
   'VIEW',
   'CREATE',
   'EDIT',
@@ -38,7 +38,7 @@ export const PERMISSION_ACTION_LABELS: Record<PermissionAction, string> = {
 export const PERMISSION_MODULE_LABELS: Record<PermissionModule, string> = {
   ADMINISTRATOR: 'Administrativo',
   ACADEMIC_STRUCTURE: 'Estructura académica',
-  PERIODS: 'Períodos',
+  PERIODS: 'Cursos lectivos',
   ATTENDANCE: 'Asistencias',
   STUDENTS: 'Estudiantes',
   DISCIPLINARY: 'Amonestaciones',

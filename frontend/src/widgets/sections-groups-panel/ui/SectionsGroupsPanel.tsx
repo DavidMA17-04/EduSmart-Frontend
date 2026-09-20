@@ -184,6 +184,7 @@ export const SectionsGroupsPanel = () => {
           onChange={model.groupForm.setField}
           onSubmit={model.groupForm.submit}
           sections={model.sections}
+          showStudentCount={model.groupFormMode === 'edit'}
           specialties={model.specialties}
           submitLabel={groupSubmitLabel}
           values={model.groupForm.values}

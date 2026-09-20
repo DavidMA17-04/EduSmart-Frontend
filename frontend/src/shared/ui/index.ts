@@ -17,6 +17,8 @@ export { StatusBadge } from './StatusBadge';
 export type { StatusTone } from './StatusBadge';
 export { ConfirmDialog } from './ConfirmDialog';
 export type { ConfirmDialogProps } from './ConfirmDialog';
+export { Tooltip } from './Tooltip';
+export type { TooltipProps } from './Tooltip';
 export { ToastProvider, useToast } from './Toast';
 export { DataToolbar } from './DataToolbar';
 export type { DataToolbarProps } from './DataToolbar';

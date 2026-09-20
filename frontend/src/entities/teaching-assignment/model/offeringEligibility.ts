@@ -1,4 +1,4 @@
-import type { AcademicOfferingKind } from './types';
+﻿import type { AcademicOfferingKind } from './types';
 
 /**
  * UX mirror of AcademicOfferingEligibilityPolicy (backend is authority).
@@ -25,7 +25,7 @@ export function offeringKindLabel(kind: AcademicOfferingKind): string {
     case 'EXPLORATORY_WORKSHOP':
       return 'Taller exploratorio';
     case 'TECHNICAL_SPECIALTY':
-      return 'Especialidad técnica';
+      return 'Carrera Técnica';
     default:
       return kind;
   }

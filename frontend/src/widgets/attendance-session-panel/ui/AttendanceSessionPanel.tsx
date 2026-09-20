@@ -12,6 +12,7 @@ import {
 import { Link } from 'react-router-dom';
 import {
   ATTENDANCE_HOME_PATH,
+  formatCalendarExceptionBanner,
   useAttendanceSession,
 } from '@/features/manage-attendance';
 import { formatFinalizeSummaryLines } from '@/features/manage-attendance/model/attendanceClose';
@@ -169,10 +170,15 @@ export const AttendanceSessionPanel = ({
   const showDirtyBanner =
     model.saveButton.visible &&
     (model.dirtyCount > 0 || model.saving || model.closing);
+  const exceptionBanner = formatCalendarExceptionBanner(
+    model.session.calendarException,
+  );
 
   return (
     <div className={styles.layout}>
       <SessionHeader session={model.session} />
+
+      {exceptionBanner ? <Alert>{exceptionBanner}</Alert> : null}
 
       {showDirtyBanner ? (
         <p className={styles.dirtyBanner} role="status">

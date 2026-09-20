@@ -176,7 +176,7 @@ describe('my-schedule matrix behavior (D2)', () => {
   });
 
   it('25–28. empty / period copy sin hardcode 2026', () => {
-    expect(MY_SCHEDULE_COPY.emptyDescription).toContain('período');
+    expect(MY_SCHEDULE_COPY.emptyDescription).toContain('curso lectivo');
     expect(MY_SCHEDULE_COPY.emptyDescription).not.toContain('2026');
     const hookSrc = readFileSync(
       resolve(__dirname, '../model/useMySchedulePanel.ts'),

@@ -1,5 +1,6 @@
 import type {
   AttendanceAvailableOffering,
+  AttendanceCalendarException,
   AttendanceGroup,
   AttendanceHistoryFilters,
   AttendanceHistoryPage,
@@ -9,6 +10,7 @@ import type {
   AttendanceSessionDetail,
   AttendanceSessionMutationResult,
   AttendanceSessionTokenResult,
+  CreateAttendanceCalendarExceptionInput,
   CreateAttendanceSessionFromScheduleInput,
   CreateAttendanceSessionInput,
   CreateJustificationInput,
@@ -18,10 +20,12 @@ import type {
   JustificationListFilters,
   JustificationListItem,
   JustificationListPageResult,
+  ListAttendanceCalendarExceptionsFilters,
   RedeemAttendanceTokenInput,
   RedeemAttendanceTokenResult,
   ReviewJustificationInput,
   SaveAttendanceRecordsInput,
+  UpdateAttendanceCalendarExceptionInput,
 } from '@/entities/attendance';
 import { useAuthStore } from '@/features/auth';
 import { HttpError, httpClient } from '@/shared/api';
@@ -364,4 +368,40 @@ export const attendanceApi = {
 
   exportAttendanceSession: (sessionId: number, format: 'pdf' | 'excel') =>
     downloadAttendanceExport(sessionId, format),
+
+  listCalendarExceptions: (
+    filters: ListAttendanceCalendarExceptionsFilters = {},
+  ) => {
+    const params = new URLSearchParams();
+    if (filters.academicPeriodId != null) {
+      params.set('academicPeriodId', String(filters.academicPeriodId));
+    }
+    if (filters.sectionId != null) {
+      params.set('sectionId', String(filters.sectionId));
+    }
+    const qs = params.toString();
+    return request<AttendanceCalendarException[]>(
+      `/attendance/exceptions${qs ? `?${qs}` : ''}`,
+    );
+  },
+
+  createCalendarException: (input: CreateAttendanceCalendarExceptionInput) =>
+    request<AttendanceCalendarException>('/attendance/exceptions', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
+
+  updateCalendarException: (
+    id: number,
+    input: UpdateAttendanceCalendarExceptionInput,
+  ) =>
+    request<AttendanceCalendarException>(`/attendance/exceptions/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+    }),
+
+  deleteCalendarException: (id: number) =>
+    request<{ id: number; deleted: true }>(`/attendance/exceptions/${id}`, {
+      method: 'DELETE',
+    }),
 };

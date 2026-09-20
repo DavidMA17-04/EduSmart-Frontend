@@ -32,7 +32,7 @@ export const teachingAssignmentApi = {
     request<TeachingAssignment>(`/teaching-assignments/${id}`),
 
   create: (payload: CreateTeachingAssignmentPayload) =>
-    request<TeachingAssignment>('/teaching-assignments', {
+    request<TeachingAssignment | TeachingAssignment[]>('/teaching-assignments', {
       method: 'POST',
       body: JSON.stringify(payload),
     }),

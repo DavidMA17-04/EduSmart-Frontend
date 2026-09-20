@@ -43,6 +43,8 @@ export const UserDetailPage = () => {
   const [displayName, setDisplayName] = useState('');
   const [createdAt, setCreatedAt] = useState('');
   const [updatedAt, setUpdatedAt] = useState('');
+  const [deactivationReason, setDeactivationReason] = useState('');
+  const [initialStatus, setInitialStatus] = useState<string>('ACTIVE');
 
   const loadAuditLogs = async (id: number) => {
     setIsAuditLoading(true);
@@ -71,6 +73,8 @@ export const UserDetailPage = () => {
         setCreatedAt(user.createdAt);
         setUpdatedAt(user.updatedAt);
         setValues(userToFormValues(user));
+        setInitialStatus(user.status);
+        setDeactivationReason('');
         setLoadError(null);
       })
       .catch((error) => {
@@ -89,13 +93,25 @@ export const UserDetailPage = () => {
     setFormError(null);
     setSaveMessage(null);
     if (!validate('edit')) return;
+    if (values.status === 'INACTIVE' && initialStatus !== 'INACTIVE' && !deactivationReason.trim()) {
+      setFormError('Indique el motivo de baja antes de guardar la inactivación.');
+      return;
+    }
     setIsSubmitting(true);
     try {
-      const updated = await userApi.update(Number(userId), toCreatePayload(values));
+      const payload = {
+        ...toCreatePayload(values),
+        ...(values.status === 'INACTIVE' && initialStatus !== 'INACTIVE'
+          ? { reason: deactivationReason.trim() }
+          : {}),
+      };
+      const updated = await userApi.update(Number(userId), payload);
       setDisplayName(updated.name ?? updated.email ?? String(updated.id));
       setCreatedAt(updated.createdAt);
       setUpdatedAt(updated.updatedAt);
       setValues(userToFormValues(updated));
+      setInitialStatus(updated.status);
+      setDeactivationReason('');
       setMode('view');
       setSaveMessage('Los cambios se guardaron correctamente y quedaron registrados en auditoría.');
       await loadAuditLogs(Number(userId));
@@ -193,9 +209,15 @@ export const UserDetailPage = () => {
                 isSubmitting={isSubmitting}
                 submitLabel="Guardar cambios"
                 formError={formError}
+                deactivationReason={deactivationReason}
+                onDeactivationReasonChange={setDeactivationReason}
                 onChange={onChange}
                 onSubmit={onSubmit}
-                onCancel={() => { setFormError(null); setMode('view'); }}
+                onCancel={() => {
+                  setFormError(null);
+                  setDeactivationReason('');
+                  setMode('view');
+                }}
               />
             </div>
           </Card>

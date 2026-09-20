@@ -45,7 +45,7 @@ export const GroupsTabView = ({ model }: GroupsTabViewProps) => (
               <th>Sección</th>
               <th>Nivel</th>
               <th>Especialidad</th>
-              <th>Cantidad de estudiantes</th>
+              <th>Inscritos / cupo</th>
               <th>Docente guía</th>
               <th>Acciones</th>
             </tr>

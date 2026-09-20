@@ -8,8 +8,11 @@ interface GroupTableRowProps { group: AcademicGroup; isSelected?: boolean; onSel
 export const GroupTableRow = ({ group, isSelected = false, onSelect, actions }: GroupTableRowProps) => (
   <tr className={`${styles.row} ${isSelected ? styles.selected : ''}`} onClick={() => onSelect?.(group.id)}>
     <td><strong>{group.name}</strong></td>
-    <td>{group.specialty?.name ?? 'Sin especialidad'}</td>
-    <td>{formatStudentCount(group.studentCount)}</td>
+    <td>{group.specialty?.name ?? 'Sin carrera / especialidad'}</td>
+    <td>
+      {formatStudentCount(group.studentCount)}
+      {group.maxCapacity != null ? ` / ${group.maxCapacity}` : ''}
+    </td>
     <td>{group.guideTeacher?.name || 'Sin asignar'}</td>
     {actions && <td onClick={(event) => event.stopPropagation()}>{actions}</td>}
   </tr>

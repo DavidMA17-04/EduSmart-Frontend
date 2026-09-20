@@ -52,8 +52,22 @@ export function TeachingAssignmentForm({
       : form.offeringKind === 'EXPLORATORY_WORKSHOP'
         ? 'Taller exploratorio'
         : form.offeringKind === 'TECHNICAL_SPECIALTY'
-          ? 'Especialidad técnica'
+          ? 'Carrera Técnica'
           : 'Oferta';
+
+  const selectedGroupIds = isEdit
+    ? form.groupId
+      ? [form.groupId]
+      : []
+    : form.groupIds;
+  const hasGroupsSelected = selectedGroupIds.length > 0;
+
+  const toggleGroupId = (id: string) => {
+    const next = form.groupIds.includes(id)
+      ? form.groupIds.filter((g) => g !== id)
+      : [...form.groupIds, id];
+    onChange({ groupIds: next });
+  };
 
   return (
     <form
@@ -81,26 +95,53 @@ export function TeachingAssignmentForm({
         </Select>
       </label>
 
-      <label className={styles.field}>
-        <span>Grupo</span>
-        <Select
-          aria-label="Grupo"
-          disabled={isEdit || isSaving}
-          onChange={(e) => onChange({ groupId: e.target.value })}
-          required={!isEdit}
-          value={form.groupId}
-        >
-          <option value="">Seleccione un grupo…</option>
-          {groups.map((g) => (
-            <option key={g.id} value={g.id}>
-              {g.name}
-              {g.section?.gradeLevel != null ? ` (grado ${g.section.gradeLevel})` : ''}
-            </option>
-          ))}
-        </Select>
-      </label>
+      {isEdit ? (
+        <label className={styles.field}>
+          <span>Grupo</span>
+          <Select
+            aria-label="Grupo"
+            disabled
+            value={form.groupId}
+          >
+            <option value="">Seleccione un grupo…</option>
+            {groups.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.name}
+                {g.section?.gradeLevel != null ? ` (grado ${g.section.gradeLevel})` : ''}
+              </option>
+            ))}
+          </Select>
+        </label>
+      ) : (
+        <fieldset className={styles.field} disabled={isSaving}>
+          <legend>Grupos / secciones</legend>
+          <p className={styles.hint}>Seleccione una o más secciones para asignar al docente.</p>
+          <div className={styles.groupChecklist} role="group" aria-label="Grupos">
+            {groups.map((g) => {
+              const id = String(g.id);
+              const checked = form.groupIds.includes(id);
+              return (
+                <label key={g.id} className={styles.checkItem}>
+                  <input
+                    checked={checked}
+                    onChange={() => toggleGroupId(id)}
+                    type="checkbox"
+                  />
+                  <span>
+                    {g.name}
+                    {g.section?.gradeLevel != null ? ` (grado ${g.section.gradeLevel})` : ''}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+          {groups.length === 0 ? (
+            <p className={styles.hint}>No hay grupos disponibles.</p>
+          ) : null}
+        </fieldset>
+      )}
 
-      {form.groupId ? (
+      {hasGroupsSelected ? (
         <p className={styles.hint} role="status">
           Grado del grupo:{' '}
           <strong>{gradeLevel != null ? gradeLevel : 'no disponible'}</strong>
@@ -111,15 +152,15 @@ export function TeachingAssignmentForm({
       ) : null}
 
       <label className={styles.field}>
-        <span>Período académico</span>
+        <span>Curso lectivo</span>
         <Select
-          aria-label="Período académico"
+          aria-label="Curso lectivo"
           disabled={isSaving}
           onChange={(e) => onChange({ academicPeriodId: e.target.value })}
           required
           value={form.academicPeriodId}
         >
-          <option value="">Seleccione un período…</option>
+          <option value="">Seleccione un curso lectivo…</option>
           {periods.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name} ({p.status})
@@ -132,7 +173,7 @@ export function TeachingAssignmentForm({
         <span>Tipo de oferta</span>
         <Select
           aria-label="Tipo de oferta"
-          disabled={isSaving || (!isEdit && !form.groupId)}
+          disabled={isSaving || (!isEdit && !hasGroupsSelected)}
           onChange={(e) =>
             onChange({
               offeringKind: e.target.value as AcademicOfferingKind | '',
@@ -222,7 +263,7 @@ export function TeachingAssignmentForm({
             <option value="">
               {form.offeringKind === 'EXPLORATORY_WORKSHOP'
                 ? 'Seleccione un taller…'
-                : 'Seleccione una especialidad…'}
+                : 'Seleccione una carrera técnica…'}
             </option>
             {offeringOptions.map((item) => (
               <option key={item.id} value={item.id}>
@@ -247,7 +288,9 @@ export function TeachingAssignmentForm({
             ? 'Guardando…'
             : isEdit
               ? 'Guardar cambios'
-              : 'Crear asignación'}
+              : form.groupIds.length > 1
+                ? `Crear ${form.groupIds.length} asignaciones`
+                : 'Crear asignación'}
         </Button>
       </div>
     </form>

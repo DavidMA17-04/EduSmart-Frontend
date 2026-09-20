@@ -10,7 +10,7 @@ import { academicPeriodApi } from '@/features/manage-academic-period/api/academi
 import { groupApi } from '@/features/manage-group/api/groupApi';
 import { guideTeacherApi } from '@/features/manage-group/api/guideTeacherApi';
 import { teachingAssignmentApi } from '@/features/manage-teaching-assignment/api/teachingAssignmentApi';
-import { sessionHasPermission } from '@/shared/auth';
+import { filterPeriodsForSessionRole, sessionHasPermission } from '@/shared/auth';
 import { HttpError } from '@/shared/api/httpClient';
 import { useToast } from '@/shared/ui';
 import { scheduleApi } from '../api/scheduleApi';
@@ -122,9 +122,10 @@ export function useSchedulePanel() {
       ]);
       setTeachers(teacherList);
       setGroups(groupList);
-      setPeriods(periodList);
+      const visiblePeriods = filterPeriodsForSessionRole(periodList);
+      setPeriods(visiblePeriods);
       setFilterPeriodId((prev) =>
-        prev ? prev : pickDefaultPeriodId(periodList),
+        prev ? prev : pickDefaultPeriodId(visiblePeriods),
       );
     } catch (err) {
       setCatalogError(
