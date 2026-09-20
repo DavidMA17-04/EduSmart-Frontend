@@ -1,5 +1,6 @@
 export { attendanceApi } from './api/attendanceApi';
 export {
+  ATTENDANCE_ALERTS_PATH,
   ATTENDANCE_HOME_PATH,
   ATTENDANCE_HISTORY_PATH,
   ATTENDANCE_JUSTIFICATIONS_PATH,
@@ -11,6 +12,7 @@ export {
   STUDENT_ATTENDANCE_PATH,
   canCreateAttendanceClass,
   canReviewJustifications,
+  canViewAttendanceHistory,
   parseAttendanceSessionId,
 } from './model/attendanceRouting';
 export {
@@ -26,6 +28,7 @@ export {
   useAttendanceHistoryPanel,
   type HistoryPageSize,
 } from './model/useAttendanceHistoryPanel';
+export { useAbsenteeismAlertsPanel } from './model/useAbsenteeismAlertsPanel';
 export {
   formatRedeemSuccessMessage,
   isValidAttendanceCode,

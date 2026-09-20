@@ -1,5 +1,6 @@
 export { AttendanceHomePage } from './ui/AttendanceHomePage';
 export { AttendanceHistoryPage } from './ui/AttendanceHistoryPage';
+export { AbsenteeismAlertsPage } from './ui/AbsenteeismAlertsPage';
 export { AttendanceJustificationsPage } from './ui/AttendanceJustificationsPage';
 export { AttendanceNewPage } from './ui/AttendanceNewPage';
 export { AttendanceRedeemPage } from './ui/AttendanceRedeemPage';

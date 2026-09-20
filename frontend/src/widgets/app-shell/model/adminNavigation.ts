@@ -1,10 +1,12 @@
 import {
+  AlertTriangle,
   BookMarked,
   BookOpen,
   CalendarClock,
   CalendarRange,
   FileBarChart,
   GraduationCap,
+  History,
   KeyRound,
   Layers,
   LayoutDashboard,
@@ -22,6 +24,8 @@ export type AdminNavItem = {
   icon: LucideIcon;
   to: string;
   permission?: string;
+  /** Show if the session has ANY of these permissions. */
+  anyOfPermissions?: readonly string[];
   /** Hide when the session also has this permission (e.g. Admin bypass vs Docente own). */
   hideWhenPermission?: string;
   /** Show only when the session has an Estudiante / STUDENT role. */
@@ -103,6 +107,18 @@ export const adminNavigationItems: AdminNavItem[] = [
     requireStudentRole: true,
   },
   {
+    label: 'Historial de asistencia',
+    icon: History,
+    to: '/admin/attendance/history',
+    anyOfPermissions: ['attendance.view_own', 'attendance.view'],
+  },
+  {
+    label: 'Alertas de ausentismo',
+    icon: AlertTriangle,
+    to: '/admin/attendance/alerts',
+    permission: 'attendance.view',
+  },
+  {
     label: 'Asistencias',
     icon: UserCheck,
     to: '/admin/attendance',
@@ -124,7 +140,13 @@ export function filterAdminNavigation(
 ): AdminNavItem[] {
   const effectiveRoles = roles ?? getSessionUser()?.roles ?? [];
   return items.filter((item) => {
-    if (item.permission && !hasPermission(item.permission)) return false;
+    if (item.anyOfPermissions?.length) {
+      if (!item.anyOfPermissions.some((code) => hasPermission(code))) {
+        return false;
+      }
+    } else if (item.permission && !hasPermission(item.permission)) {
+      return false;
+    }
     if (item.hideWhenPermission && hasPermission(item.hideWhenPermission)) {
       return false;
     }

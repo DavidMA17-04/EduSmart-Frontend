@@ -11,6 +11,7 @@ import { SpecialtiesPage } from '@/pages/specialties';
 import { SpecialtyKindPage } from '@/pages/specialty-kind';
 import { AcademicPeriodsPage } from '@/pages/academic-periods';
 import {
+  AbsenteeismAlertsPage,
   AttendanceHistoryPage,
   AttendanceHomePage,
   AttendanceJustificationsPage,
@@ -19,8 +20,8 @@ import {
   AttendanceSessionPage,
 } from '@/pages/attendance';
 import {
+  ATTENDANCE_HISTORY_PATH,
   ATTENDANCE_PERMISSIONS,
-  ATTENDANCE_REDEEM_PATH,
   STUDENT_ATTENDANCE_PATH,
 } from '@/features/manage-attendance';
 import { SectionsGroupsPage } from '@/pages/sections-groups';
@@ -117,13 +118,29 @@ export const AppRouter = () => (
 
         <Route
           element={
+            <RequirePermission
+              anyOf={[
+                ATTENDANCE_PERMISSIONS.view,
+                ATTENDANCE_PERMISSIONS.viewOwn,
+              ]}
+            />
+          }
+        >
+          <Route
+            element={<AttendanceHistoryPage />}
+            path="attendance/history"
+          />
+        </Route>
+
+        <Route
+          element={
             <RequirePermission permission={ATTENDANCE_PERMISSIONS.view} />
           }
         >
           <Route element={<AttendanceHomePage />} path="attendance" />
           <Route
-            element={<AttendanceHistoryPage />}
-            path="attendance/history"
+            element={<AbsenteeismAlertsPage />}
+            path="attendance/alerts"
           />
           <Route
             element={<AttendanceJustificationsPage />}
@@ -162,7 +179,7 @@ export const AppRouter = () => (
 
     <Route element={<Navigate replace to="/admin/users" />} path="/onboarding" />
     <Route
-      element={<Navigate replace to={ATTENDANCE_REDEEM_PATH} />}
+      element={<Navigate replace to={ATTENDANCE_HISTORY_PATH} />}
       path={STUDENT_ATTENDANCE_PATH}
     />
     <Route element={<RootRedirect />} path="/" />

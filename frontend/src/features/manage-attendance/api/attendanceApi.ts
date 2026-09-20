@@ -1,8 +1,12 @@
 import type {
+  AbsenteeismDashboard,
+  AbsenteeismRiskLevel,
+  AbsenteeismStudentRisk,
   AttendanceAvailableOffering,
   AttendanceGroup,
   AttendanceHistoryFilters,
   AttendanceHistoryPage,
+  AttendanceHistorySummary,
   AttendanceRecordMutationResult,
   AttendanceRosterStudent,
   AttendanceScheduleContext,
@@ -69,16 +73,12 @@ function applyListFilters(
 }
 
 async function downloadAttendanceExport(
-  sessionId: number,
-  format: 'pdf' | 'excel',
+  path: string,
+  fileName: string,
 ): Promise<void> {
   const token = getAccessToken();
   const headers = new Headers();
   if (token) headers.set('Authorization', `Bearer ${token}`);
-
-  const path = `/attendance/sessions/${sessionId}/export/${format}`;
-  const fileName =
-    format === 'pdf' ? 'reporte-asistencia.pdf' : 'reporte-asistencia.xlsx';
 
   let response: Response;
   try {
@@ -169,6 +169,41 @@ export const attendanceApi = {
   searchAttendanceHistory: (filters: AttendanceHistoryFilters = {}) =>
     request<AttendanceHistoryPage>(
       `/attendance/history${buildHistoryQuery(filters)}`,
+    ),
+
+  getAttendanceHistorySummary: (filters: AttendanceHistoryFilters = {}) =>
+    request<AttendanceHistorySummary>(
+      `/attendance/history/summary${buildHistoryQuery(filters)}`,
+    ),
+
+  exportAttendanceHistory: (
+    filters: AttendanceHistoryFilters,
+    format: 'pdf' | 'excel',
+  ) => {
+    const fileName =
+      format === 'pdf'
+        ? 'historial-asistencia.pdf'
+        : 'historial-asistencia.xlsx';
+    return downloadAttendanceExport(
+      `/attendance/history/export/${format}${buildHistoryQuery(filters)}`,
+      fileName,
+    );
+  },
+
+  getAbsenteeismDashboard: () =>
+    request<AbsenteeismDashboard>('/attendance/absenteeism/dashboard'),
+
+  listAbsenteeismStudents: (risk?: AbsenteeismRiskLevel) => {
+    const qs = risk ? `?risk=${risk}` : '';
+    return request<AbsenteeismStudentRisk[]>(
+      `/attendance/absenteeism/students${qs}`,
+    );
+  },
+
+  markAbsenteeismNotificationRead: (notificationId: number) =>
+    request<{ id: number; readAt: string }>(
+      `/attendance/absenteeism/notifications/${notificationId}/read`,
+      { method: 'POST' },
     ),
 
   createAttendanceSession: (input: CreateAttendanceSessionInput) =>
@@ -362,6 +397,12 @@ export const attendanceApi = {
     });
   },
 
-  exportAttendanceSession: (sessionId: number, format: 'pdf' | 'excel') =>
-    downloadAttendanceExport(sessionId, format),
+  exportAttendanceSession: (sessionId: number, format: 'pdf' | 'excel') => {
+    const fileName =
+      format === 'pdf' ? 'reporte-asistencia.pdf' : 'reporte-asistencia.xlsx';
+    return downloadAttendanceExport(
+      `/attendance/sessions/${sessionId}/export/${format}`,
+      fileName,
+    );
+  },
 };
