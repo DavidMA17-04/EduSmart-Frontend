@@ -16,8 +16,9 @@ import {
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { dashboardApi } from '@/features/dashboard';
 import type { DashboardSummary } from '@/features/dashboard';
-import { getSessionUser } from '@/shared/auth';
+import { getSessionUser, sessionHasPermission } from '@/shared/auth';
 import { brandColors } from '@/styles/brandColors';
+import { AttendanceDashboardPanel } from '@/widgets/attendance-dashboard-panel';
 import styles from './AdminHomePage.module.css';
 
 function getGreeting(date: Date): string {
@@ -179,6 +180,7 @@ const quickAccess = [
 export const AdminHomePage = () => {
   const sessionUser = getSessionUser();
   const displayName = sessionUser?.roles[0] ?? 'Administrador';
+  const canViewAttendance = sessionHasPermission('attendance.view');
 
   const [now, setNow] = useState(() => new Date());
   const [data, setData] = useState<DashboardSummary | null>(null);
@@ -282,6 +284,10 @@ export const AdminHomePage = () => {
           <span className={styles.time}>{formatTime(now)}</span>
         </div>
       </header>
+
+      {canViewAttendance ? (
+        <AttendanceDashboardPanel variant="compact" />
+      ) : null}
 
       {loading && <p className={styles.muted}>Cargando estadísticas…</p>}
       {error && (

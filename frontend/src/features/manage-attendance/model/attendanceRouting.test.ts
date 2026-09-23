@@ -9,8 +9,10 @@ import {
   ATTENDANCE_HOME_PATH,
   ATTENDANCE_NEW_PATH,
   ATTENDANCE_PERMISSIONS,
+  ATTENDANCE_REPORTS_PATH,
   ATTENDANCE_ROUTE_GUARDS,
   canCreateAttendanceClass,
+  canViewAttendanceHistory,
   parseAttendanceSessionId,
 } from './attendanceRouting';
 
@@ -77,9 +79,20 @@ describe('attendanceRouting — route guards', () => {
     expect(guard?.permission).toBe(ATTENDANCE_PERMISSIONS.view);
   });
 
-  it('history /admin/attendance/history requiere attendance.view', () => {
+  it('history /admin/attendance/history acepta view o view_own', () => {
     const guard = ATTENDANCE_ROUTE_GUARDS.find(
       (r) => r.path === ATTENDANCE_HISTORY_PATH,
+    );
+    expect(guard?.permission).toBe(ATTENDANCE_PERMISSIONS.view);
+    expect(guard?.anyOf).toEqual([
+      ATTENDANCE_PERMISSIONS.view,
+      ATTENDANCE_PERMISSIONS.viewOwn,
+    ]);
+  });
+
+  it('reports /admin/attendance/reports requiere attendance.view', () => {
+    const guard = ATTENDANCE_ROUTE_GUARDS.find(
+      (r) => r.path === ATTENDANCE_REPORTS_PATH,
     );
     expect(guard?.permission).toBe(ATTENDANCE_PERMISSIONS.view);
   });
@@ -116,6 +129,19 @@ describe('attendanceRouting — CTA Nueva clase', () => {
 
   it('7. CTA navega a /admin/attendance/new', () => {
     expect(ATTENDANCE_NEW_PATH).toBe('/admin/attendance/new');
+  });
+
+  it('historial accesible con attendance.view_own', () => {
+    setSessionTokens(
+      encodeJwt({
+        sub: 501,
+        email: 'estudiante@ctphojancha.ed.cr',
+        roles: ['Estudiante'],
+        permissions: ['attendance.view_own'],
+      }),
+    );
+    expect(canViewAttendanceHistory(sessionHasPermission)).toBe(true);
+    expect(canCreateAttendanceClass(sessionHasPermission)).toBe(false);
   });
 });
 

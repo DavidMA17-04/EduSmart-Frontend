@@ -1,5 +1,6 @@
 export { attendanceApi } from './api/attendanceApi';
 export {
+  ATTENDANCE_ALERTS_PATH,
   ATTENDANCE_HOME_PATH,
   ATTENDANCE_HISTORY_PATH,
   ATTENDANCE_EXCEPTIONS_PATH,
@@ -7,12 +8,14 @@ export {
   ATTENDANCE_NEW_PATH,
   ATTENDANCE_PERMISSIONS,
   ATTENDANCE_REDEEM_PATH,
+  ATTENDANCE_REPORTS_PATH,
   ATTENDANCE_ROUTE_GUARDS,
   ATTENDANCE_SESSION_PATH,
   STUDENT_ATTENDANCE_PATH,
   canCreateAttendanceClass,
   canManageAttendanceExceptions,
   canReviewJustifications,
+  canViewAttendanceHistory,
   parseAttendanceSessionId,
 } from './model/attendanceRouting';
 export {
@@ -24,10 +27,13 @@ export {
 } from './model/createAttendanceSessionFlow';
 export { useCreateAttendanceSessionFlow } from './model/useCreateAttendanceSessionFlow';
 export { useAttendanceSession } from './model/useAttendanceSession';
+export { useAttendanceDashboardKpis } from './model/useAttendanceDashboardKpis';
+export { useAttendanceReportsPanel } from './model/useAttendanceReportsPanel';
 export {
   useAttendanceHistoryPanel,
   type HistoryPageSize,
 } from './model/useAttendanceHistoryPanel';
+export { useAbsenteeismAlertsPanel } from './model/useAbsenteeismAlertsPanel';
 export {
   formatRedeemSuccessMessage,
   isValidAttendanceCode,

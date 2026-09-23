@@ -1,6 +1,12 @@
 .layout {
   display: grid;
   gap: 16px;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
+  align-items: start;
+}
+
+.main {
+  min-width: 0;
 }
 
 .filters {
@@ -62,6 +68,16 @@
   }
 }
 
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .studentCell {
   display: grid;
   gap: 2px;
@@ -69,6 +85,23 @@
 
 .studentId {
   font-size: 0.8rem;
+  color: var(--admin-muted, var(--brand-muted));
+}
+
+.resultMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.exportHint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
   color: var(--admin-muted, var(--brand-muted));
 }
 
@@ -101,6 +134,146 @@
 
 .linkButton:hover {
   text-decoration: underline;
+}
+
+.sidebar {
+  display: grid;
+  gap: 12px;
+}
+
+.summaryCard,
+.percentCard,
+.infoCard,
+.quickCard {
+  border: 1px solid color-mix(in srgb, var(--brand-primary, #002e7a) 12%, #fff);
+  border-radius: 12px;
+  background: #fff;
+  padding: 14px;
+}
+
+.summaryTitle {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+  color: var(--brand-primary, #002e7a);
+}
+
+.donutWrap {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+
+.donut {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.donutHole {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: #fff;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  gap: 2px;
+}
+
+.donutHole strong {
+  font-size: 1.35rem;
+  line-height: 1;
+  color: var(--brand-primary, #002e7a);
+}
+
+.donutHole span {
+  font-size: 0.75rem;
+  color: var(--admin-muted, var(--brand-muted));
+}
+
+.legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: grid;
+  gap: 6px;
+  font-size: 0.86rem;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.dotPresent {
+  background: #1f9d55;
+}
+
+.dotLate {
+  background: #e6a700;
+}
+
+.dotAbsent {
+  background: #d64545;
+}
+
+.dotJustified {
+  background: #6b5ce7;
+}
+
+.percentLabel {
+  margin: 0 0 4px;
+  font-size: 0.85rem;
+  color: var(--admin-muted, var(--brand-muted));
+}
+
+.percentValue {
+  margin: 0;
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: #1f9d55;
+}
+
+.percentValue span {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.quickLinks {
+  display: grid;
+  gap: 8px;
+}
+
+.quickLink {
+  color: var(--brand-primary, #002e7a);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.92rem;
+}
+
+.quickLink:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 980px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
 }
 
 @media (max-width: 720px) {

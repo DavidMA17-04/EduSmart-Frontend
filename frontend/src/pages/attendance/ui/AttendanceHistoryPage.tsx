@@ -7,13 +7,13 @@ import styles from './AttendanceHistoryPage.module.css';
 export const AttendanceHistoryPage = () => (
   <section className={styles.page}>
     <PageHeader
-      back={{ label: 'Volver a Asistencias', to: ATTENDANCE_HOME_PATH }}
+      back={{ label: 'Volver', to: ATTENDANCE_HOME_PATH }}
       breadcrumbs={[
         { label: 'Asistencias', to: ATTENDANCE_HOME_PATH },
-        { label: 'Historial' },
+        { label: 'Historial de asistencia' },
       ]}
       icon={History}
-      subtitle="Consulta y filtra registros de asistencia por fecha, grupo, estado y método."
+      subtitle="Consulta el registro histórico de asistencias por curso y lección."
       title="Historial de asistencia"
     />
     <AttendanceHistoryPanel />

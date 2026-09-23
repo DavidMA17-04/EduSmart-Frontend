@@ -1,9 +1,16 @@
 import type {
+  AbsenteeismDashboard,
+  AbsenteeismRiskLevel,
+  AbsenteeismStudentRisk,
+  AttendanceAnalyticsFilters,
+  AttendanceAnalyticsSummary,
   AttendanceAvailableOffering,
   AttendanceCalendarException,
+  AttendanceDashboardKpis,
   AttendanceGroup,
   AttendanceHistoryFilters,
   AttendanceHistoryPage,
+  AttendanceHistorySummary,
   AttendanceRecordMutationResult,
   AttendanceRosterStudent,
   AttendanceScheduleContext,
@@ -72,17 +79,13 @@ function applyListFilters(
   });
 }
 
-async function downloadAttendanceExport(
-  sessionId: number,
-  format: 'pdf' | 'excel',
+async function downloadAttendanceFile(
+  path: string,
+  fileName: string,
 ): Promise<void> {
   const token = getAccessToken();
   const headers = new Headers();
   if (token) headers.set('Authorization', `Bearer ${token}`);
-
-  const path = `/attendance/sessions/${sessionId}/export/${format}`;
-  const fileName =
-    format === 'pdf' ? 'reporte-asistencia.pdf' : 'reporte-asistencia.xlsx';
 
   let response: Response;
   try {
@@ -125,6 +128,31 @@ async function downloadAttendanceExport(
   } finally {
     URL.revokeObjectURL(objectUrl);
   }
+}
+
+function appendQuery(
+  params: URLSearchParams,
+  entries: Array<[string, string | number | undefined]>,
+): void {
+  for (const [key, value] of entries) {
+    if (value === undefined || value === '') continue;
+    params.set(key, String(value));
+  }
+}
+
+function buildAnalyticsQuery(filters: AttendanceAnalyticsFilters): string {
+  const params = new URLSearchParams();
+  appendQuery(params, [
+    ['startDate', filters.startDate],
+    ['endDate', filters.endDate],
+    ['groupId', filters.groupId],
+    ['courseId', filters.courseId],
+    ['academicPeriodId', filters.academicPeriodId],
+    ['teachingAssignmentId', filters.teachingAssignmentId],
+    ['status', filters.status],
+  ]);
+  const qs = params.toString();
+  return qs ? `?${qs}` : '';
 }
 
 function buildHistoryQuery(filters: AttendanceHistoryFilters): string {
@@ -173,6 +201,41 @@ export const attendanceApi = {
   searchAttendanceHistory: (filters: AttendanceHistoryFilters = {}) =>
     request<AttendanceHistoryPage>(
       `/attendance/history${buildHistoryQuery(filters)}`,
+    ),
+
+  getAttendanceHistorySummary: (filters: AttendanceHistoryFilters = {}) =>
+    request<AttendanceHistorySummary>(
+      `/attendance/history/summary${buildHistoryQuery(filters)}`,
+    ),
+
+  exportAttendanceHistory: (
+    filters: AttendanceHistoryFilters,
+    format: 'pdf' | 'excel',
+  ) => {
+    const fileName =
+      format === 'pdf'
+        ? 'historial-asistencia.pdf'
+        : 'historial-asistencia.xlsx';
+    return downloadAttendanceFile(
+      `/attendance/history/export/${format}${buildHistoryQuery(filters)}`,
+      fileName,
+    );
+  },
+
+  getAbsenteeismDashboard: () =>
+    request<AbsenteeismDashboard>('/attendance/absenteeism/dashboard'),
+
+  listAbsenteeismStudents: (risk?: AbsenteeismRiskLevel) => {
+    const qs = risk ? `?risk=${risk}` : '';
+    return request<AbsenteeismStudentRisk[]>(
+      `/attendance/absenteeism/students${qs}`,
+    );
+  },
+
+  markAbsenteeismNotificationRead: (notificationId: number) =>
+    request<{ id: number; readAt: string }>(
+      `/attendance/absenteeism/notifications/${notificationId}/read`,
+      { method: 'POST' },
     ),
 
   createAttendanceSession: (input: CreateAttendanceSessionInput) =>
@@ -366,8 +429,14 @@ export const attendanceApi = {
     });
   },
 
-  exportAttendanceSession: (sessionId: number, format: 'pdf' | 'excel') =>
-    downloadAttendanceExport(sessionId, format),
+  exportAttendanceSession: (sessionId: number, format: 'pdf' | 'excel') => {
+    const fileName =
+      format === 'pdf' ? 'reporte-asistencia.pdf' : 'reporte-asistencia.xlsx';
+    return downloadAttendanceFile(
+      `/attendance/sessions/${sessionId}/export/${format}`,
+      fileName,
+    );
+  },
 
   listCalendarExceptions: (
     filters: ListAttendanceCalendarExceptionsFilters = {},
@@ -404,4 +473,23 @@ export const attendanceApi = {
     request<{ id: number; deleted: true }>(`/attendance/exceptions/${id}`, {
       method: 'DELETE',
     }),
+
+  getAttendanceDashboardKpis: (filters: AttendanceAnalyticsFilters = {}) =>
+    request<AttendanceDashboardKpis>(
+      `/attendance/analytics/dashboard-kpis${buildAnalyticsQuery(filters)}`,
+    ),
+
+  getAttendanceAnalyticsSummary: (filters: AttendanceAnalyticsFilters = {}) =>
+    request<AttendanceAnalyticsSummary>(
+      `/attendance/analytics/summary${buildAnalyticsQuery(filters)}`,
+    ),
+
+  exportAttendanceReport: (
+    format: 'pdf' | 'excel',
+    filters: AttendanceAnalyticsFilters = {},
+  ) =>
+    downloadAttendanceFile(
+      `/attendance/reports/export/${format}${buildAnalyticsQuery(filters)}`,
+      format === 'pdf' ? 'reporte-asistencia.pdf' : 'reporte-asistencia.xlsx',
+    ),
 };

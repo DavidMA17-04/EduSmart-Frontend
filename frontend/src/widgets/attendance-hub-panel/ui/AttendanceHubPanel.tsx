@@ -1,10 +1,21 @@
-import { History, KeyRound, ListOrdered, Plus, UserCheck } from 'lucide-react';
+import {
+  AlertTriangle,
+  FileBarChart,
+  History,
+  KeyRound,
+  ListOrdered,
+  Plus,
+  UserCheck,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
+  ATTENDANCE_ALERTS_PATH,
   ATTENDANCE_HISTORY_PATH,
   ATTENDANCE_NEW_PATH,
   ATTENDANCE_REDEEM_PATH,
+  ATTENDANCE_REPORTS_PATH,
   canCreateAttendanceClass,
+  canViewAttendanceHistory,
 } from '@/features/manage-attendance';
 import { sessionHasPermission } from '@/shared/auth';
 import { Button } from '@/shared/ui';
@@ -19,6 +30,9 @@ const FLOW_STEPS = [
 export const AttendanceHubPanel = () => {
   const navigate = useNavigate();
   const canCreate = canCreateAttendanceClass(sessionHasPermission);
+  const canHistory = canViewAttendanceHistory(sessionHasPermission);
+  const canAlerts = sessionHasPermission('attendance.view');
+  const canReports = sessionHasPermission('attendance.view');
 
   return (
     <div className={styles.layout}>
@@ -56,14 +70,36 @@ export const AttendanceHubPanel = () => {
               <KeyRound aria-hidden="true" size={16} />
               Ingresar código
             </Button>
-            <Button
-              onClick={() => navigate(ATTENDANCE_HISTORY_PATH)}
-              type="button"
-              variant="secondary"
-            >
-              <History aria-hidden="true" size={16} />
-              Ver historial
-            </Button>
+            {canHistory ? (
+              <Button
+                onClick={() => navigate(ATTENDANCE_HISTORY_PATH)}
+                type="button"
+                variant="secondary"
+              >
+                <History aria-hidden="true" size={16} />
+                Ver historial
+              </Button>
+            ) : null}
+            {canAlerts ? (
+              <Button
+                onClick={() => navigate(ATTENDANCE_ALERTS_PATH)}
+                type="button"
+                variant="secondary"
+              >
+                <AlertTriangle aria-hidden="true" size={16} />
+                Alertas de ausentismo
+              </Button>
+            ) : null}
+            {canReports ? (
+              <Button
+                onClick={() => navigate(ATTENDANCE_REPORTS_PATH)}
+                type="button"
+                variant="secondary"
+              >
+                <FileBarChart aria-hidden="true" size={16} />
+                Reportes
+              </Button>
+            ) : null}
           </div>
         </div>
       </article>

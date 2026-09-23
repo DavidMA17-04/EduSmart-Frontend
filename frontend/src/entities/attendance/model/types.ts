@@ -296,6 +296,12 @@ export interface AttendanceHistoryItem {
   teacher: { id: number; fullName: string };
   student: { id: number; nationalId: string; fullName: string };
   teachingAssignmentId: number;
+  lessonNumber: number | null;
+  lessonTotal: number | null;
+  scheduleStartTime: string | null;
+  scheduleEndTime: string | null;
+  registeredBy: { id: number | null; fullName: string };
+  lateMinutes: number | null;
 }
 
 export interface AttendanceHistoryPage {
@@ -304,6 +310,62 @@ export interface AttendanceHistoryPage {
   page: number;
   limit: number;
   totalPages: number;
+}
+
+/** GET /attendance/history/summary */
+export interface AttendanceHistorySummary {
+  total: number;
+  present: number;
+  late: number;
+  absent: number;
+  justified: number;
+  attendancePercent: number;
+  band: 'Excelente' | 'Bueno' | 'Regular' | 'En riesgo' | 'Sin datos';
+}
+
+export type AbsenteeismRiskLevel = 'HIGH' | 'MEDIUM' | 'LOW';
+
+export interface AbsenteeismStudentRisk {
+  studentUserId: number;
+  fullName: string;
+  nationalId: string;
+  group: { id: number; name: string } | null;
+  unjustifiedAbsencesMonth: number;
+  absencesPeriod: number;
+  consecutiveAbsences: number;
+  attendancePercent: number;
+  lastAbsenceDate: string | null;
+  riskLevel: AbsenteeismRiskLevel;
+  triggeredRules: string[];
+  alertId: number | null;
+}
+
+export interface AbsenteeismDashboard {
+  kpis: {
+    highRisk: number;
+    mediumRisk: number;
+    normal: number;
+    absencesThisMonth: number;
+  };
+  riskDistribution: {
+    high: number;
+    medium: number;
+    low: number;
+    total: number;
+  };
+  highRiskStudents: AbsenteeismStudentRisk[];
+  recentAlerts: Array<{
+    id: number;
+    studentFullName: string;
+    riskLevel: AbsenteeismRiskLevel;
+    title: string;
+    body: string;
+    triggeredAt: string;
+    readAt: string | null;
+  }>;
+  criteria: Array<{ code: string; label: string; thresholdValue: number }>;
+  trend: Array<{ month: string; high: number; medium: number; low: number }>;
+  evaluatedAt: string;
 }
 
 /** POST /attendance/sessions/:id/token */
@@ -331,4 +393,93 @@ export interface RedeemAttendanceTokenResult {
   groupName: string;
   offeringName: string;
   offeringLabelKind: string;
+}
+
+/** GET /attendance/analytics/* and /attendance/reports/export/* */
+export interface AttendanceAnalyticsFilters {
+  startDate?: string;
+  endDate?: string;
+  groupId?: number;
+  courseId?: number;
+  academicPeriodId?: number;
+  teachingAssignmentId?: number;
+  status?: AttendanceStatus;
+}
+
+export interface AttendanceStatusCounts {
+  present: number;
+  absent: number;
+  late: number;
+  justified: number;
+  total: number;
+  attendanceRate: number;
+}
+
+export interface AttendanceGroupRate {
+  groupId: number;
+  groupName: string;
+  totalRecords: number;
+  totalPresent: number;
+  totalAbsent: number;
+  totalLate: number;
+  totalJustified: number;
+  attendanceRate: number;
+}
+
+export interface AttendanceTrendPoint {
+  period: string;
+  attendanceRate: number;
+  present: number;
+  absent: number;
+  late: number;
+  justified: number;
+  total: number;
+}
+
+export interface AttendanceAlert {
+  studentUserId: number;
+  fullName: string;
+  nationalId: string;
+  groupName: string;
+  totalAbsent: number;
+  totalRecords: number;
+  absenceRate: number;
+  consecutiveAbsences: number;
+}
+
+export interface AttendanceAnalyticsSummary {
+  scope: 'institutional' | 'teacher';
+  startDate: string | null;
+  endDate: string | null;
+  totalSessions: number;
+  averageAttendanceRate: number;
+  totalJustifications: number;
+  counts: AttendanceStatusCounts;
+  byGroup: AttendanceGroupRate[];
+  trend: AttendanceTrendPoint[];
+}
+
+export interface AttendanceDashboardKpis {
+  scope: 'institutional' | 'teacher';
+  asOfDate: string;
+  criticalAbsenceRate: number;
+  today: {
+    attendanceRate: number;
+    expectedStudents: number;
+    registeredStudents: number;
+    present: number;
+    absent: number;
+    late: number;
+    justified: number;
+  };
+  kpis: {
+    todayRate: number;
+    presentCount: number;
+    criticalAbsences: number;
+    openSessions: number;
+  };
+  trend: AttendanceTrendPoint[];
+  distribution: AttendanceStatusCounts;
+  groupRates: AttendanceGroupRate[];
+  alerts: AttendanceAlert[];
 }
