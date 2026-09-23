@@ -1,0 +1,142 @@
+.layout {
+  display: grid;
+  gap: 16px;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.kpi {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--admin-surface, #fff);
+  border: 1px solid color-mix(in srgb, var(--brand-border, #c1c5c8) 55%, transparent);
+  border-top: 3px solid var(--brand-primary, #002e7a);
+}
+
+.kpiValue {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--brand-navy, #021a53);
+  font-variant-numeric: tabular-nums;
+}
+
+.kpiLabel {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--admin-muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.kpiSub {
+  font-size: 0.8rem;
+  color: var(--admin-muted, #6b7280);
+}
+
+.charts {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.card {
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--admin-surface, #fff);
+  border: 1px solid color-mix(in srgb, var(--brand-border, #c1c5c8) 55%, transparent);
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--brand-navy, #021a53);
+}
+
+.cardHead h2,
+.cardHead h3 {
+  margin: 0;
+  font-size: 0.98rem;
+}
+
+.muted {
+  margin: 0;
+  color: var(--admin-muted, #6b7280);
+  font-size: 0.9rem;
+}
+
+.legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.legend li {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.alerts {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.alerts th,
+.alerts td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid color-mix(in srgb, var(--brand-border, #c1c5c8) 50%, transparent);
+}
+
+.alerts th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--admin-muted, #6b7280);
+}
+
+.studentMeta {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--admin-muted, #6b7280);
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.scope {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--brand-primary, #002e7a);
+}
+
+@media (max-width: 960px) {
+  .kpis,
+  .charts {
+    grid-template-columns: 1fr;
+  }
+}

@@ -2,7 +2,10 @@ import type {
   AbsenteeismDashboard,
   AbsenteeismRiskLevel,
   AbsenteeismStudentRisk,
+  AttendanceAnalyticsFilters,
+  AttendanceAnalyticsSummary,
   AttendanceAvailableOffering,
+  AttendanceDashboardKpis,
   AttendanceGroup,
   AttendanceHistoryFilters,
   AttendanceHistoryPage,
@@ -72,7 +75,7 @@ function applyListFilters(
   });
 }
 
-async function downloadAttendanceExport(
+async function downloadAttendanceFile(
   path: string,
   fileName: string,
 ): Promise<void> {
@@ -121,6 +124,31 @@ async function downloadAttendanceExport(
   } finally {
     URL.revokeObjectURL(objectUrl);
   }
+}
+
+function appendQuery(
+  params: URLSearchParams,
+  entries: Array<[string, string | number | undefined]>,
+): void {
+  for (const [key, value] of entries) {
+    if (value === undefined || value === '') continue;
+    params.set(key, String(value));
+  }
+}
+
+function buildAnalyticsQuery(filters: AttendanceAnalyticsFilters): string {
+  const params = new URLSearchParams();
+  appendQuery(params, [
+    ['startDate', filters.startDate],
+    ['endDate', filters.endDate],
+    ['groupId', filters.groupId],
+    ['courseId', filters.courseId],
+    ['academicPeriodId', filters.academicPeriodId],
+    ['teachingAssignmentId', filters.teachingAssignmentId],
+    ['status', filters.status],
+  ]);
+  const qs = params.toString();
+  return qs ? `?${qs}` : '';
 }
 
 function buildHistoryQuery(filters: AttendanceHistoryFilters): string {
@@ -184,7 +212,7 @@ export const attendanceApi = {
       format === 'pdf'
         ? 'historial-asistencia.pdf'
         : 'historial-asistencia.xlsx';
-    return downloadAttendanceExport(
+    return downloadAttendanceFile(
       `/attendance/history/export/${format}${buildHistoryQuery(filters)}`,
       fileName,
     );
@@ -400,9 +428,28 @@ export const attendanceApi = {
   exportAttendanceSession: (sessionId: number, format: 'pdf' | 'excel') => {
     const fileName =
       format === 'pdf' ? 'reporte-asistencia.pdf' : 'reporte-asistencia.xlsx';
-    return downloadAttendanceExport(
+    return downloadAttendanceFile(
       `/attendance/sessions/${sessionId}/export/${format}`,
       fileName,
     );
   },
+
+  getAttendanceDashboardKpis: (filters: AttendanceAnalyticsFilters = {}) =>
+    request<AttendanceDashboardKpis>(
+      `/attendance/analytics/dashboard-kpis${buildAnalyticsQuery(filters)}`,
+    ),
+
+  getAttendanceAnalyticsSummary: (filters: AttendanceAnalyticsFilters = {}) =>
+    request<AttendanceAnalyticsSummary>(
+      `/attendance/analytics/summary${buildAnalyticsQuery(filters)}`,
+    ),
+
+  exportAttendanceReport: (
+    format: 'pdf' | 'excel',
+    filters: AttendanceAnalyticsFilters = {},
+  ) =>
+    downloadAttendanceFile(
+      `/attendance/reports/export/${format}${buildAnalyticsQuery(filters)}`,
+      format === 'pdf' ? 'reporte-asistencia.pdf' : 'reporte-asistencia.xlsx',
+    ),
 };

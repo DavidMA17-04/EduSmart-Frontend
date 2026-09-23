@@ -125,6 +125,12 @@ export const adminNavigationItems: AdminNavItem[] = [
     permission: 'attendance.view',
   },
   {
+    label: 'Indicadores',
+    icon: FileBarChart,
+    to: '/admin/attendance/reports',
+    permission: 'attendance.view',
+  },
+  {
     label: 'Reportes',
     icon: FileBarChart,
     to: '/admin/reports',

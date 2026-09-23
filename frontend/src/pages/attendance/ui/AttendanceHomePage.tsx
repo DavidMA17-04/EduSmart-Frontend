@@ -6,6 +6,7 @@ import {
   canCreateAttendanceClass,
 } from '@/features/manage-attendance';
 import { AttendanceHubPanel } from '@/widgets/attendance-hub-panel';
+import { AttendanceDashboardPanel } from '@/widgets/attendance-dashboard-panel';
 import { sessionHasPermission } from '@/shared/auth';
 import { Button, PageHeader } from '@/shared/ui';
 import styles from './AttendanceHomePage.module.css';
@@ -42,6 +43,7 @@ export const AttendanceHomePage = () => {
         title="Asistencias"
       />
       <AttendanceHubPanel />
+      <AttendanceDashboardPanel />
     </section>
   );
 };

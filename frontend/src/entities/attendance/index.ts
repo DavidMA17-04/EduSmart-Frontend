@@ -38,4 +38,11 @@ export type {
   ReviewJustificationInput,
   SaveAttendanceRecordInput,
   SaveAttendanceRecordsInput,
+  AttendanceAnalyticsFilters,
+  AttendanceAnalyticsSummary,
+  AttendanceDashboardKpis,
+  AttendanceAlert,
+  AttendanceGroupRate,
+  AttendanceStatusCounts,
+  AttendanceTrendPoint,
 } from './model/types';

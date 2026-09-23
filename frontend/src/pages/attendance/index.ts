@@ -4,4 +4,5 @@ export { AbsenteeismAlertsPage } from './ui/AbsenteeismAlertsPage';
 export { AttendanceJustificationsPage } from './ui/AttendanceJustificationsPage';
 export { AttendanceNewPage } from './ui/AttendanceNewPage';
 export { AttendanceRedeemPage } from './ui/AttendanceRedeemPage';
+export { AttendanceReportsPage } from './ui/AttendanceReportsPage';
 export { AttendanceSessionPage } from './ui/AttendanceSessionPage';

@@ -7,6 +7,7 @@ export {
   ATTENDANCE_NEW_PATH,
   ATTENDANCE_PERMISSIONS,
   ATTENDANCE_REDEEM_PATH,
+  ATTENDANCE_REPORTS_PATH,
   ATTENDANCE_ROUTE_GUARDS,
   ATTENDANCE_SESSION_PATH,
   STUDENT_ATTENDANCE_PATH,
@@ -24,6 +25,8 @@ export {
 } from './model/createAttendanceSessionFlow';
 export { useCreateAttendanceSessionFlow } from './model/useCreateAttendanceSessionFlow';
 export { useAttendanceSession } from './model/useAttendanceSession';
+export { useAttendanceDashboardKpis } from './model/useAttendanceDashboardKpis';
+export { useAttendanceReportsPanel } from './model/useAttendanceReportsPanel';
 export {
   useAttendanceHistoryPanel,
   type HistoryPageSize,

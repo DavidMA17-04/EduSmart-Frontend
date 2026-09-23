@@ -9,6 +9,7 @@ import {
   ATTENDANCE_HOME_PATH,
   ATTENDANCE_NEW_PATH,
   ATTENDANCE_PERMISSIONS,
+  ATTENDANCE_REPORTS_PATH,
   ATTENDANCE_ROUTE_GUARDS,
   canCreateAttendanceClass,
   canViewAttendanceHistory,
@@ -87,6 +88,13 @@ describe('attendanceRouting — route guards', () => {
       ATTENDANCE_PERMISSIONS.view,
       ATTENDANCE_PERMISSIONS.viewOwn,
     ]);
+  });
+
+  it('reports /admin/attendance/reports requiere attendance.view', () => {
+    const guard = ATTENDANCE_ROUTE_GUARDS.find(
+      (r) => r.path === ATTENDANCE_REPORTS_PATH,
+    );
+    expect(guard?.permission).toBe(ATTENDANCE_PERMISSIONS.view);
   });
 });
 

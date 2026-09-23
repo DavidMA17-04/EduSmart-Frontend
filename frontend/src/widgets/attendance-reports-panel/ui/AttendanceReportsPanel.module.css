@@ -1,0 +1,65 @@
+.layout {
+  display: grid;
+  gap: 16px;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--admin-surface, #fff);
+  border: 1px solid color-mix(in srgb, var(--brand-border, #c1c5c8) 55%, transparent);
+}
+
+.field {
+  display: grid;
+  gap: 4px;
+}
+
+.fieldLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--admin-muted, #6b7280);
+}
+
+.actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.kpi {
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--admin-surface, #fff);
+  border: 1px solid color-mix(in srgb, var(--brand-border, #c1c5c8) 55%, transparent);
+  display: grid;
+  gap: 4px;
+}
+
+.kpiValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--brand-navy, #021a53);
+}
+
+.kpiLabel {
+  font-size: 0.82rem;
+  color: var(--admin-muted, #6b7280);
+}
+
+@media (max-width: 860px) {
+  .filters,
+  .kpis {
+    grid-template-columns: 1fr;
+  }
+}

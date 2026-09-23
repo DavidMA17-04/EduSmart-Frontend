@@ -354,4 +354,76 @@ describe('attendanceApi history and tokens', () => {
       body: JSON.stringify({ code: 'ABCD1234' }),
     });
   });
+
+  it('getAttendanceDashboardKpis → GET /attendance/analytics/dashboard-kpis', async () => {
+    const data = {
+      scope: 'teacher' as const,
+      asOfDate: '2026-09-22',
+      criticalAbsenceRate: 20,
+      today: {
+        attendanceRate: 90,
+        expectedStudents: 10,
+        registeredStudents: 9,
+        present: 8,
+        absent: 1,
+        late: 0,
+        justified: 0,
+      },
+      kpis: {
+        todayRate: 90,
+        presentCount: 8,
+        criticalAbsences: 1,
+        openSessions: 1,
+      },
+      trend: [],
+      distribution: {
+        present: 8,
+        absent: 1,
+        late: 0,
+        justified: 0,
+        total: 9,
+        attendanceRate: 88.89,
+      },
+      groupRates: [],
+      alerts: [],
+    };
+    mockedHttp.mockResolvedValueOnce({ success: true, data });
+    await expect(attendanceApi.getAttendanceDashboardKpis()).resolves.toEqual(data);
+    expect(mockedHttp).toHaveBeenCalledWith(
+      '/attendance/analytics/dashboard-kpis',
+      undefined,
+    );
+  });
+
+  it('getAttendanceAnalyticsSummary aplica courseId y groupId', async () => {
+    mockedHttp.mockResolvedValueOnce({
+      success: true,
+      data: {
+        scope: 'institutional',
+        startDate: '2026-09-01',
+        endDate: '2026-09-30',
+        totalSessions: 2,
+        averageAttendanceRate: 80,
+        totalJustifications: 1,
+        counts: {
+          present: 8,
+          absent: 2,
+          late: 0,
+          justified: 0,
+          total: 10,
+          attendanceRate: 80,
+        },
+        byGroup: [],
+        trend: [],
+      },
+    });
+    await attendanceApi.getAttendanceAnalyticsSummary({
+      groupId: 12,
+      courseId: 7,
+    });
+    const path = String(mockedHttp.mock.calls[0]?.[0]);
+    expect(path).toMatch(/^\/attendance\/analytics\/summary\?/);
+    expect(path).toContain('groupId=12');
+    expect(path).toContain('courseId=7');
+  });
 });

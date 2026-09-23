@@ -1,10 +1,19 @@
-import { AlertTriangle, History, KeyRound, ListOrdered, Plus, UserCheck } from 'lucide-react';
+import {
+  AlertTriangle,
+  FileBarChart,
+  History,
+  KeyRound,
+  ListOrdered,
+  Plus,
+  UserCheck,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   ATTENDANCE_ALERTS_PATH,
   ATTENDANCE_HISTORY_PATH,
   ATTENDANCE_NEW_PATH,
   ATTENDANCE_REDEEM_PATH,
+  ATTENDANCE_REPORTS_PATH,
   canCreateAttendanceClass,
   canViewAttendanceHistory,
 } from '@/features/manage-attendance';
@@ -23,6 +32,7 @@ export const AttendanceHubPanel = () => {
   const canCreate = canCreateAttendanceClass(sessionHasPermission);
   const canHistory = canViewAttendanceHistory(sessionHasPermission);
   const canAlerts = sessionHasPermission('attendance.view');
+  const canReports = sessionHasPermission('attendance.view');
 
   return (
     <div className={styles.layout}>
@@ -78,6 +88,16 @@ export const AttendanceHubPanel = () => {
               >
                 <AlertTriangle aria-hidden="true" size={16} />
                 Alertas de ausentismo
+              </Button>
+            ) : null}
+            {canReports ? (
+              <Button
+                onClick={() => navigate(ATTENDANCE_REPORTS_PATH)}
+                type="button"
+                variant="secondary"
+              >
+                <FileBarChart aria-hidden="true" size={16} />
+                Reportes
               </Button>
             ) : null}
           </div>

@@ -17,6 +17,7 @@ import {
   AttendanceJustificationsPage,
   AttendanceNewPage,
   AttendanceRedeemPage,
+  AttendanceReportsPage,
   AttendanceSessionPage,
 } from '@/pages/attendance';
 import {
@@ -141,6 +142,10 @@ export const AppRouter = () => (
           <Route
             element={<AbsenteeismAlertsPage />}
             path="attendance/alerts"
+          />
+          <Route
+            element={<AttendanceReportsPage />}
+            path="attendance/reports"
           />
           <Route
             element={<AttendanceJustificationsPage />}
