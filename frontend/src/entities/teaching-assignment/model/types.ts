@@ -63,7 +63,10 @@ export interface TeachingAssignmentListFilters {
 
 export interface CreateTeachingAssignmentPayload {
   userId: number;
-  groupId: number;
+  /** Single-group create (edit / legacy). Prefer `groupIds` on multi create. */
+  groupId?: number;
+  /** Multi-group create: backend creates one assignment per id. */
+  groupIds?: number[];
   offeringKind: AcademicOfferingKind;
   subjectId?: number | null;
   specialtyId?: number | null;
@@ -72,7 +75,7 @@ export interface CreateTeachingAssignmentPayload {
 }
 
 export type UpdateTeachingAssignmentPayload = Partial<
-  Omit<CreateTeachingAssignmentPayload, 'userId' | 'groupId'>
+  Omit<CreateTeachingAssignmentPayload, 'userId' | 'groupId' | 'groupIds'>
 >;
 
 export interface SubjectCatalogItem {

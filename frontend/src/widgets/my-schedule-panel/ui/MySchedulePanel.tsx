@@ -185,11 +185,11 @@ export const MySchedulePanel = () => {
       <div className={styles.toolbar}>
         <div className={styles.filters}>
           <Select
-            aria-label="Período académico"
+            aria-label="Curso lectivo"
             onChange={(e) => model.setPeriodId(e.target.value)}
             value={model.periodId}
           >
-            <option value="">Período: seleccionar…</option>
+            <option value="">Curso lectivo: seleccionar…</option>
             {model.periods.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}

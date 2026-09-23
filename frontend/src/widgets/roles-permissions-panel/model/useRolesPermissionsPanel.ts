@@ -43,9 +43,13 @@ export function useRolesPermissionsPanel() {
   const { values, setField, toPayload } = useRoleForm(dialogMode === 'create' ? undefined : formRole);
   const { create, update, deactivate, duplicate, error: mutationError, isSubmitting } = useManageRole(() => refreshRoles(true));
   const { permissions, isLoading: isLoadingPermissions, error: permissionsError, reload: reloadPermissions } = usePermissions();
-  const rolePermissions = useRolePermissions(selectedRole, (updatedRole) => {
-    setRoles((current) => current.map((item) => item.id === updatedRole.id ? updatedRole : item));
-  });
+  const rolePermissions = useRolePermissions(
+    selectedRole,
+    (updatedRole) => {
+      setRoles((current) => current.map((item) => item.id === updatedRole.id ? updatedRole : item));
+    },
+    permissions,
+  );
 
   const filteredRoles = useMemo(() => {
     const activeRoles = roles.filter((role) => role.status === 'ACTIVE');

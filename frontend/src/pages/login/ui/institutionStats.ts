@@ -26,7 +26,7 @@ export function buildInstitutionMetrics(
     {
       key: 'specialties',
       value: snapshot.totalSpecialties,
-      label: 'Especialidades técnicas',
+      label: 'Carreras Técnicas',
     },
     {
       key: 'workshops',

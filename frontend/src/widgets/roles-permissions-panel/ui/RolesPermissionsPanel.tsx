@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Edit3, Plus, Search, ShieldCheck, Trash2 } from 'lucide-react';
+import { Edit3, Plus, RotateCcw, Search, ShieldCheck, Trash2 } from 'lucide-react';
 import { Alert, Button, Card, ConfirmDialog, EmptyState, Input, ModalCrud, useToast } from '@/shared/ui';
 import { RoleListItem, RoleStatusBadge } from '@/entities/role';
 import { DuplicateRoleAction, RoleForm } from '@/features/manage-role';
@@ -11,6 +11,7 @@ export const RolesPermissionsPanel = () => {
   const model = useRolesPermissionsPanel();
   const toast = useToast();
   const [confirmDeactivateOpen, setConfirmDeactivateOpen] = useState(false);
+  const [confirmResetOpen, setConfirmResetOpen] = useState(false);
   const dialogTitle = model.dialogMode === 'create' ? 'Nuevo rol' : model.dialogMode === 'duplicate' ? 'Duplicar rol' : 'Editar rol';
 
   useEffect(() => {
@@ -22,6 +23,15 @@ export const RolesPermissionsPanel = () => {
   const handleConfirmDeactivate = async () => {
     await model.deactivateSelectedRole();
     setConfirmDeactivateOpen(false);
+  };
+
+  const handleConfirmReset = async () => {
+    try {
+      await model.resetToDefaults();
+      setConfirmResetOpen(false);
+    } catch {
+      // El hook publica el error en la UI.
+    }
   };
 
   return (
@@ -148,7 +158,8 @@ export const RolesPermissionsPanel = () => {
                   <p className={styles.muted}>Cargando catálogo de permisos…</p>
                 ) : (
                   <PermissionMatrix
-                    disabled={model.isSaving}
+                    disabled={model.isSaving || model.isResetting}
+                    lockProtectedAdminPermissions={model.lockProtectedAdminPermissions}
                     onToggle={model.togglePermission}
                     permissions={model.permissions}
                     readOnly={!model.isEditing}
@@ -157,14 +168,14 @@ export const RolesPermissionsPanel = () => {
                 )}
                 {model.isEditing && (
                   <div className={styles.savePermissions}>
-                    <Button disabled={model.isSaving || model.isLoadingPermissions || !model.hasChanges} onClick={() => void model.save()} type="button">
+                    <Button disabled={model.isSaving || model.isResetting || model.isLoadingPermissions || !model.hasChanges} onClick={() => void model.save()} type="button">
                       {model.isSaving ? 'Guardando…' : 'Guardar permisos'}
                     </Button>
-                    <Button disabled={model.isSaving || model.isLoadingPermissions} onClick={model.cancelEditing} type="button" variant="secondary">
+                    <Button disabled={model.isSaving || model.isResetting || model.isLoadingPermissions} onClick={model.cancelEditing} type="button" variant="secondary">
                       Cancelar
                     </Button>
-                    <Button disabled={model.isSaving || model.isLoadingPermissions} onClick={model.clearAll} type="button" variant="secondary">
-                      Quitar todos
+                    <Button disabled={model.isSaving || model.isResetting || model.isLoadingPermissions} onClick={() => setConfirmResetOpen(true)} type="button" variant="secondary">
+                      <RotateCcw size={14} /> Restablecer a predeterminado
                     </Button>
                   </div>
                 )}
@@ -202,6 +213,24 @@ export const RolesPermissionsPanel = () => {
         secondary="El rol dejará de estar disponible para asignaciones."
         title="Inactivar rol"
         tone="danger"
+      />
+
+      <ConfirmDialog
+        cancelLabel="Cancelar"
+        confirmLabel="Restablecer"
+        icon={RotateCcw}
+        isOpen={confirmResetOpen}
+        isSubmitting={model.isResetting}
+        message={
+          model.selectedRole
+            ? `¿Restablecer los permisos de ${model.selectedRole.name} a los valores predeterminados?`
+            : '¿Restablecer los permisos a los valores predeterminados?'
+        }
+        onCancel={() => setConfirmResetOpen(false)}
+        onConfirm={() => void handleConfirmReset()}
+        secondary="Se reemplazará la matriz actual por la plantilla oficial del rol. Esta acción no deja el rol sin permisos."
+        title="Restablecer permisos"
+        tone="warning"
       />
     </section>
   );

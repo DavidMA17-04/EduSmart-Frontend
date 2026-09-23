@@ -1,4 +1,4 @@
-import type { Specialty, SpecialtyKind, SpecialtyStatus } from './types';
+﻿import type { Specialty, SpecialtyKind, SpecialtyStatus } from './types';
 
 export const SPECIALTY_STATUS_LABELS: Record<SpecialtyStatus, string> = {
   ACTIVE: 'Activa',
@@ -8,7 +8,7 @@ export const SPECIALTY_STATUS_LABELS: Record<SpecialtyStatus, string> = {
 
 export const SPECIALTY_KIND_LABELS: Record<SpecialtyKind, string> = {
   EXPLORATORY_WORKSHOP: 'Taller exploratorio',
-  TECHNICAL_SPECIALTY: 'Especialidad técnica',
+  TECHNICAL_SPECIALTY: 'Carrera Técnica',
 };
 
 export function formatSpecialtyDuration(_duration?: number): string {

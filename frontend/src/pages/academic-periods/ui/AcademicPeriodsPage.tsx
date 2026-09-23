@@ -1,4 +1,4 @@
-import { CalendarRange } from 'lucide-react';
+﻿import { CalendarRange } from 'lucide-react';
 import { AcademicPeriodsPanel } from '@/widgets/academic-periods-panel';
 import { PageHeader } from '@/shared/ui';
 import styles from './AcademicPeriodsPage.module.css';
@@ -10,11 +10,11 @@ export const AcademicPeriodsPage = () => (
       breadcrumbs={[
         { label: 'Administrativo' },
         { label: 'Estructura académica', to: '/admin/specialties' },
-        { label: 'Períodos académicos' },
+        { label: 'Cursos lectivos' },
       ]}
       icon={CalendarRange}
-      subtitle="Defina los períodos lectivos institucionales y controle su activación y cierre."
-      title="Gestión de Períodos Académicos"
+      subtitle="Defina los cursos lectivos institucionales y controle su activación y cierre."
+      title="Gestión de Cursos lectivos"
     />
     <AcademicPeriodsPanel />
   </section>

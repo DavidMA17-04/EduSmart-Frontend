@@ -136,7 +136,7 @@ export const UserBulkImportPage: React.FC = () => {
         back={{ label: 'Volver a selección de método', to: '/admin/users' }}
         icon={FileSpreadsheet}
         subtitle="Cargue y sincronice la nómina estudiantil mediante archivo Excel o CSV estructurado."
-        title="Importación Masiva de Estudiantes"
+        title="Importación masiva de estudiantes"
         primaryAction={
           <span className={styles.cycleBadge}>
             <span className={styles.cycleDot} />
@@ -153,7 +153,7 @@ export const UserBulkImportPage: React.FC = () => {
             </div>
             <div>
               <div className={styles.templateTitleRow}>
-                <h2 className={styles.templateTitle}>Plantillas Oficiales de Registro</h2>
+                <h2 className={styles.templateTitle}>Plantillas oficiales de registro</h2>
                 <span className={styles.formatBadge}>Formato oficial</span>
               </div>
               <p className={styles.templateSub}>

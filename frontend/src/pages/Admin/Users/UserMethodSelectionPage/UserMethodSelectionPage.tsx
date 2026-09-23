@@ -72,7 +72,7 @@ export const UserMethodSelectionPage: React.FC = () => {
         ]}
         icon={Users}
         subtitle="Seleccione el método para incorporar nuevos usuarios a la plataforma del CTP de Hojancha."
-        title="Incorporación de Usuarios"
+        title="Incorporación de usuarios"
       />
 
       {/* Grid de tarjetas (WF-13 + WF-18) */}
@@ -84,7 +84,7 @@ export const UserMethodSelectionPage: React.FC = () => {
             <FileSpreadsheet size={24} />
           </div>
           <h2 className={styles.cardTitle}>
-            Importación Masiva desde Archivo (Excel / CSV)
+            Importación masiva desde archivo (Excel / CSV)
           </h2>
           <p className={styles.cardDesc}>
             Cargue múltiples estudiantes, docentes y funcionarios simultáneamente utilizando la plantilla oficial estandarizada.
@@ -131,7 +131,7 @@ export const UserMethodSelectionPage: React.FC = () => {
             <UserPlus size={24} />
           </div>
           <h2 className={styles.cardTitle}>
-            Agregar Usuario Manualmente
+            Agregar usuario manualmente
           </h2>
           <p className={styles.cardDesc}>
             Registre un usuario de forma individual completando un formulario interactivo con asignación directa de rol y permisos.
@@ -170,7 +170,7 @@ export const UserMethodSelectionPage: React.FC = () => {
             <Users size={24} />
           </div>
           <h2 className={styles.cardTitle}>
-            Consultar y Editar Usuarios
+            Consultar y editar usuarios
           </h2>
           <p className={styles.cardDesc}>
             Acceda al directorio institucional, consulte la ficha de cada usuario y actualice sus datos con registro de auditoría.

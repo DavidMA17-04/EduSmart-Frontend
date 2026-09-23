@@ -70,9 +70,15 @@ export const adminNavigationItems: AdminNavItem[] = [
     permission: 'academic_structure.view',
   },
   {
-    label: 'Períodos académicos',
+    label: 'Cursos lectivos',
     icon: CalendarRange,
     to: '/admin/academic-periods',
+    permission: 'periods.view',
+  },
+  {
+    label: 'Configurar ciclo',
+    icon: CalendarClock,
+    to: '/admin/academic-structure-wizard',
     permission: 'periods.view',
   },
   {

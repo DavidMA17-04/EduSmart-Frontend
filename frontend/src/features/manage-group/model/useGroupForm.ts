@@ -4,14 +4,17 @@ import { type EmptyableNumber, toOptionalCount } from '@/shared/lib/number-input
 
 export interface GroupFormValues {
   name: string;
+  maxCapacity: EmptyableNumber;
   studentCount: EmptyableNumber;
   sectionId: string;
   specialtyId: string;
   guideTeacherId: string;
 }
+
 const defaultValues: GroupFormValues = {
   name: '',
-  studentCount: '',
+  maxCapacity: '',
+  studentCount: 0,
   sectionId: '',
   specialtyId: '',
   guideTeacherId: '',
@@ -23,6 +26,7 @@ export function useGroupForm(group?: AcademicGroup) {
     setValues(group
       ? {
           name: group.name,
+          maxCapacity: group.maxCapacity ?? '',
           studentCount: group.studentCount,
           sectionId: String(group.sectionId),
           specialtyId: group.specialtyId == null ? '' : String(group.specialtyId),
@@ -33,7 +37,7 @@ export function useGroupForm(group?: AcademicGroup) {
   const setField = useCallback(<K extends keyof GroupFormValues>(field: K, value: GroupFormValues[K]) => setValues((current) => ({ ...current, [field]: value })), []);
   const toPayload = useCallback((): CreateGroupPayload => ({
     name: values.name.trim(),
-    studentCount: toOptionalCount(values.studentCount),
+    maxCapacity: toOptionalCount(values.maxCapacity, Number.NaN),
     sectionId: Number(values.sectionId),
     specialtyId: values.specialtyId ? Number(values.specialtyId) : null,
     guideTeacherId: values.guideTeacherId ? Number(values.guideTeacherId) : null,

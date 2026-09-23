@@ -3,6 +3,7 @@ export {
   ATTENDANCE_ALERTS_PATH,
   ATTENDANCE_HOME_PATH,
   ATTENDANCE_HISTORY_PATH,
+  ATTENDANCE_EXCEPTIONS_PATH,
   ATTENDANCE_JUSTIFICATIONS_PATH,
   ATTENDANCE_NEW_PATH,
   ATTENDANCE_PERMISSIONS,
@@ -12,6 +13,7 @@ export {
   ATTENDANCE_SESSION_PATH,
   STUDENT_ATTENDANCE_PATH,
   canCreateAttendanceClass,
+  canManageAttendanceExceptions,
   canReviewJustifications,
   canViewAttendanceHistory,
   parseAttendanceSessionId,
@@ -61,8 +63,10 @@ export { SessionHeader } from './ui/SessionHeader';
 export { RosterRow } from './ui/RosterRow';
 export { JustificationStatusBadge } from './ui/JustificationStatusBadge';
 export { JustificationsInboxPanel } from './ui/JustificationsInboxPanel';
+export { AttendanceExceptionsPanel } from './ui/AttendanceExceptionsPanel';
 export { RequestJustificationModal } from './ui/RequestJustificationModal';
 export { ReviewJustificationModal } from './ui/ReviewJustificationModal';
+export { formatCalendarExceptionBanner } from './model/calendarExceptionBanner';
 export {
   justifiableAbsencesMock,
   justificationsMock,

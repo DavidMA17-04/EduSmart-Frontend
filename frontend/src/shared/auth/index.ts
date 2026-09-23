@@ -20,3 +20,8 @@ export {
   setStoredSessionUser,
 } from './session';
 export type { AuthUser, LoginResult, SessionUser } from './session';
+export {
+  canBrowseAcademicYearHistory,
+  filterPeriodsForSessionRole,
+  isTeacherWithoutAdminAccess,
+} from './academicVisibility';

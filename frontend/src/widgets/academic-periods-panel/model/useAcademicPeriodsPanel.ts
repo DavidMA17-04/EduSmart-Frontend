@@ -81,7 +81,7 @@ export function useAcademicPeriodsPanel() {
         const created = await create(payload);
         setSelectedPeriodId(created.id);
         setDialogMode(null);
-        toast.push('Período académico creado.');
+        toast.push('Curso lectivo creado.');
       } else if (selectedPeriod) {
         await update(selectedPeriod.id, payload);
         setDialogMode(null);

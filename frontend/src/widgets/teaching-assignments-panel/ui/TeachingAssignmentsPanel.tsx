@@ -48,7 +48,7 @@ export const TeachingAssignmentsPanel = () => {
         <p>
           <strong>Asignaciones académicas (qué imparte)</strong> definen las
           materias, talleres o especialidades que un docente puede impartir en un
-          grupo y período. Alimentan Asistencias.
+          grupo y curso lectivo. Alimentan Asistencias.
         </p>
         <p className={styles.muted}>
           El catálogo de materias se administra en{' '}
@@ -91,11 +91,11 @@ export const TeachingAssignmentsPanel = () => {
                     ))}
                   </Select>
                   <Select
-                    aria-label="Filtrar por período"
+                    aria-label="Filtrar por curso lectivo"
                     onChange={(e) => model.setFilterPeriodId(e.target.value)}
                     value={model.filterPeriodId}
                   >
-                    <option value="">Período: Todos</option>
+                    <option value="">Curso lectivo: Todos</option>
                     {model.periods.map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.name}
@@ -112,7 +112,7 @@ export const TeachingAssignmentsPanel = () => {
                     <option value="ALL">Tipo: Todos</option>
                     <option value="SUBJECT">Materia</option>
                     <option value="EXPLORATORY_WORKSHOP">Taller exploratorio</option>
-                    <option value="TECHNICAL_SPECIALTY">Especialidad técnica</option>
+                    <option value="TECHNICAL_SPECIALTY">Carrera Técnica</option>
                   </Select>
                 </div>
               }
@@ -137,7 +137,7 @@ export const TeachingAssignmentsPanel = () => {
                 onClick: model.openCreate,
                 icon: Plus,
               }}
-              description="Configure qué imparte cada docente en un grupo y período. No incluye asignaciones de solo docente guía."
+              description="Configure qué imparte cada docente en un grupo y curso lectivo. No incluye asignaciones de solo docente guía."
               icon={BookOpen}
               title="Sin asignaciones académicas"
             />
@@ -151,8 +151,8 @@ export const TeachingAssignmentsPanel = () => {
                   <th>Grupo</th>
                   <th>Grado</th>
                   <th>Tipo</th>
-                  <th>Materia / Taller / Especialidad</th>
-                  <th>Período</th>
+                  <th>Materia / Taller / Carrera</th>
+                  <th>Curso lectivo</th>
                   <th>Profesor guía</th>
                   <th>Acciones</th>
                 </tr>
@@ -174,7 +174,7 @@ export const TeachingAssignmentsPanel = () => {
                     <td>
                       {row.academicPeriod?.name ??
                         (row.academicPeriodId != null
-                          ? `Período #${row.academicPeriodId}`
+                          ? `Curso #${row.academicPeriodId}`
                           : '—')}
                     </td>
                     <td>{row.isGuideTeacher ? 'Sí' : 'No'}</td>

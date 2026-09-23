@@ -39,7 +39,7 @@ export const SectionDetailPanel = ({ model, onGoToTeachersTab }: SectionDetailPa
             <tr>
               <th>Sección</th>
               <th>Especialidad</th>
-              <th>Cantidad de estudiantes</th>
+              <th>Inscritos / cupo</th>
               <th>Docente guía</th>
               <th>Acciones</th>
             </tr>

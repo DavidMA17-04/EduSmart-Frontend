@@ -11,7 +11,7 @@ import {
   groupEntriesByCell,
   visibleSlotsForMatrix,
 } from '@/features/manage-schedule';
-import { getSessionUser, sessionHasPermission } from '@/shared/auth';
+import { filterPeriodsForSessionRole, getSessionUser, sessionHasPermission } from '@/shared/auth';
 import { getMySchedule } from '../api/myScheduleApi';
 import {
   indexOccurrencesByEntryId,
@@ -29,7 +29,7 @@ export const MY_SCHEDULE_COPY = {
   title: 'Mi horario',
   subtitle: 'Consulta tus clases asignadas durante la semana.',
   emptyTitle: 'Sin clases asignadas',
-  emptyDescription: 'No tienes clases asignadas para este período.',
+  emptyDescription: 'No tienes clases asignadas para este curso lectivo.',
   errorMessage: 'No se pudo cargar tu horario.',
   retryLabel: 'Reintentar',
 } as const;
@@ -72,11 +72,11 @@ export function useMySchedulePanel() {
     setCatalogLoading(true);
     setCatalogError(null);
     try {
-      const list = await academicPeriodApi.list();
+      const list = filterPeriodsForSessionRole(await academicPeriodApi.list());
       setPeriods(list);
       setPeriodId((prev) => prev || pickDefaultPeriodId(list));
     } catch {
-      setCatalogError('No se pudieron cargar los períodos académicos.');
+      setCatalogError('No se pudieron cargar los cursos lectivos.');
       setPeriods([]);
     } finally {
       setCatalogLoading(false);

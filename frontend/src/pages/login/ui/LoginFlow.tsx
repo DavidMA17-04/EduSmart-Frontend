@@ -16,6 +16,10 @@ import {
   isValidEmail,
   useVerificationActions,
 } from '@/features/auth/model/useVerificationActions';
+import {
+  digitsOnly,
+  isValidNationalId,
+} from '@/features/manage-user/model/userFormRules';
 import { VERIFICATION_UI } from '@/pages/verify-account/model/verificationUi.constants';
 import { OtpCodeInput } from '@/pages/verify-account/ui/OtpCodeInput';
 import {
@@ -178,6 +182,15 @@ export const LoginFlow = ({ resetDone = false }: LoginFlowProps) => {
       setIdentifierError('Este campo es obligatorio.');
       return;
     }
+    if (isValidEmail(trimmed) || trimmed.includes('@')) {
+      setIdentifierError('Ingrese su número de cédula. El acceso por correo ya no está permitido.');
+      return;
+    }
+    if (!isValidNationalId(trimmed)) {
+      setIdentifierError('La cédula debe tener entre 9 y 12 dígitos.');
+      return;
+    }
+    setIdentifier(digitsOnly(trimmed));
     setIdentifierError(null);
     goToPassword();
   };
@@ -373,18 +386,20 @@ export const LoginFlow = ({ resetDone = false }: LoginFlowProps) => {
         {step === 'email' ? (
           <form className={styles.stepForm} onSubmit={onContinueFromEmail} noValidate>
             <label className={loginStyles.field}>
-              Correo o identificación
+              Cédula
               <span className={`${loginStyles.inputWrap} ${identifierError ? loginStyles.inputInvalid : ''}`}>
                 <User aria-hidden="true" className={loginStyles.inputIcon} size={16} />
                 <Input
                   autoComplete="username"
                   autoFocus
                   className={loginStyles.input}
+                  inputMode="numeric"
+                  maxLength={12}
                   onChange={(event) => {
                     setIdentifier(event.target.value);
                     if (identifierError) setIdentifierError(null);
                   }}
-                  placeholder="usuario@ctphojancha.ed.cr o cédula"
+                  placeholder="Ingrese su número de cédula"
                   type="text"
                   value={identifier}
                 />

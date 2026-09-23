@@ -42,9 +42,9 @@ export const SectionForm = ({
       />
     </label>
     <label>
-      Período académico
+      Curso lectivo
       <Select onChange={(event) => onChange('academicPeriodId', event.target.value)} required value={values.academicPeriodId}>
-        <option disabled value="">Seleccione un período</option>
+        <option disabled value="">Seleccione un curso lectivo</option>
         {academicPeriods.map((period) => (
           <option key={period.id} value={period.id}>{period.name}</option>
         ))}

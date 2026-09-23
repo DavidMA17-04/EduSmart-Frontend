@@ -3,7 +3,10 @@ import type { CreateTeachingAssignmentPayload } from '@/entities/teaching-assign
 
 export type TeachingAssignmentFormValues = {
   userId: string;
+  /** Edit mode / legacy single group */
   groupId: string;
+  /** Create mode: one or more groups */
+  groupIds: string[];
   academicPeriodId: string;
   offeringKind: AcademicOfferingKind | '';
   subjectId: string;
@@ -13,6 +16,7 @@ export type TeachingAssignmentFormValues = {
 export const EMPTY_TEACHING_ASSIGNMENT_FORM: TeachingAssignmentFormValues = {
   userId: '',
   groupId: '',
+  groupIds: [],
   academicPeriodId: '',
   offeringKind: '',
   subjectId: '',
@@ -23,9 +27,13 @@ export function buildCreatePayload(
   values: TeachingAssignmentFormValues,
 ): CreateTeachingAssignmentPayload {
   const offeringKind = values.offeringKind as AcademicOfferingKind;
+  const groupIds = values.groupIds
+    .map((id) => Number(id))
+    .filter((id) => Number.isFinite(id) && id > 0);
+
   const base: CreateTeachingAssignmentPayload = {
     userId: Number(values.userId),
-    groupId: Number(values.groupId),
+    groupIds,
     offeringKind,
     academicPeriodId: values.academicPeriodId
       ? Number(values.academicPeriodId)
@@ -49,9 +57,28 @@ export function buildCreatePayload(
 
 export function buildUpdatePayload(
   values: TeachingAssignmentFormValues,
-): Omit<CreateTeachingAssignmentPayload, 'userId' | 'groupId'> {
-  const { userId: _u, groupId: _g, ...rest } = buildCreatePayload(values);
-  return rest;
+): Omit<CreateTeachingAssignmentPayload, 'userId' | 'groupId' | 'groupIds'> {
+  const offeringKind = values.offeringKind as AcademicOfferingKind;
+  const base = {
+    offeringKind,
+    academicPeriodId: values.academicPeriodId
+      ? Number(values.academicPeriodId)
+      : null,
+  };
+
+  if (offeringKind === 'SUBJECT') {
+    return {
+      ...base,
+      subjectId: Number(values.subjectId),
+      specialtyId: null,
+    };
+  }
+
+  return {
+    ...base,
+    subjectId: null,
+    specialtyId: Number(values.specialtyId),
+  };
 }
 
 export function validateTeachingAssignmentForm(
@@ -60,16 +87,16 @@ export function validateTeachingAssignmentForm(
 ): string | null {
   if (options.requireTeacherAndGroup) {
     if (!values.userId) return 'Seleccione un docente.';
-    if (!values.groupId) return 'Seleccione un grupo.';
+    if (!values.groupIds.length) return 'Seleccione al menos un grupo.';
   }
-  if (!values.academicPeriodId) return 'Seleccione un período académico.';
+  if (!values.academicPeriodId) return 'Seleccione un curso lectivo.';
   if (!values.offeringKind) return 'Seleccione el tipo de oferta.';
   if (values.offeringKind === 'SUBJECT') {
     if (!values.subjectId) return 'Seleccione una materia.';
   } else if (!values.specialtyId) {
     return values.offeringKind === 'EXPLORATORY_WORKSHOP'
       ? 'Seleccione un taller exploratorio.'
-      : 'Seleccione una especialidad técnica.';
+      : 'Seleccione una carrera técnica.';
   }
   return null;
 }

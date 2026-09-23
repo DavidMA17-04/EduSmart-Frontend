@@ -10,10 +10,12 @@ import { RolesPermissionsPage } from '@/pages/roles-permissions';
 import { SpecialtiesPage } from '@/pages/specialties';
 import { SpecialtyKindPage } from '@/pages/specialty-kind';
 import { AcademicPeriodsPage } from '@/pages/academic-periods';
+import { AcademicStructureWizardPage } from '@/pages/academic-structure-wizard';
 import {
   AbsenteeismAlertsPage,
   AttendanceHistoryPage,
   AttendanceHomePage,
+  AttendanceExceptionsPage,
   AttendanceJustificationsPage,
   AttendanceNewPage,
   AttendanceRedeemPage,
@@ -89,6 +91,10 @@ export const AppRouter = () => (
 
         <Route element={<RequirePermission permission="periods.view" />}>
           <Route element={<AcademicPeriodsPage />} path="academic-periods" />
+          <Route
+            element={<AcademicStructureWizardPage />}
+            path="academic-structure-wizard"
+          />
         </Route>
 
         <Route element={<RequirePermission permission="sections.view" />}>
@@ -154,6 +160,17 @@ export const AppRouter = () => (
           <Route
             element={<AttendanceSessionPage />}
             path="attendance/sessions/:sessionId"
+          />
+        </Route>
+
+        <Route
+          element={
+            <RequirePermission permission={ATTENDANCE_PERMISSIONS.edit} />
+          }
+        >
+          <Route
+            element={<AttendanceExceptionsPage />}
+            path="attendance/exceptions"
           />
         </Route>
 

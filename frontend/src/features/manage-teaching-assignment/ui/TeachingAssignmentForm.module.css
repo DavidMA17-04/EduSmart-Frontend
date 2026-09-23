@@ -8,9 +8,14 @@
   gap: 6px;
   font-size: 13px;
   color: var(--admin-text, #1a1a1a);
+  border: none;
+  margin: 0;
+  padding: 0;
+  min-inline-size: 0;
 }
 
-.field span {
+.field span,
+.field legend {
   font-weight: 600;
 }
 
@@ -19,6 +24,29 @@
   font-size: 13px;
   color: var(--admin-muted, #667085);
   line-height: 1.4;
+}
+
+.groupChecklist {
+  display: grid;
+  gap: 8px;
+  max-height: 180px;
+  overflow: auto;
+  padding: 8px 10px;
+  border: 1px solid var(--admin-border, #e4e7ec);
+  border-radius: 8px;
+  background: var(--admin-surface, #fff);
+}
+
+.checkItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.checkItem input {
+  margin: 0;
 }
 
 .subjectBlock {

@@ -32,25 +32,25 @@ const TRANSITION_COPY: Record<
   }
 > = {
   activate: {
-    title: 'Activar período académico',
-    message: (name) => `¿Desea activar el período ${name}?`,
-    secondary: 'El período pasará al estado Activo.',
+    title: 'Activar curso lectivo',
+    message: (name) => `¿Desea activar el curso lectivo ${name}?`,
+    secondary: 'El curso lectivo pasará al estado Activo.',
     confirmLabel: 'Activar',
     tone: 'primary',
     icon: Play,
   },
   close: {
-    title: 'Cerrar período académico',
-    message: (name) => `¿Desea cerrar el período ${name}?`,
-    secondary: 'Una vez cerrado, el período no podrá editarse mientras permanezca en este estado.',
+    title: 'Cerrar curso lectivo',
+    message: (name) => `¿Desea cerrar el curso lectivo ${name}?`,
+    secondary: 'Una vez cerrado, el curso lectivo no podrá editarse mientras permanezca en este estado.',
     confirmLabel: 'Cerrar',
     tone: 'danger',
     icon: Lock,
   },
   reopen: {
-    title: 'Reabrir período académico',
-    message: (name) => `¿Desea reabrir el período ${name}?`,
-    secondary: 'El período volverá al estado Planificado.',
+    title: 'Reabrir curso lectivo',
+    message: (name) => `¿Desea reabrir el curso lectivo ${name}?`,
+    secondary: 'El curso lectivo volverá al estado Planificado.',
     confirmLabel: 'Reabrir',
     tone: 'primary',
     icon: RotateCcw,
@@ -59,7 +59,7 @@ const TRANSITION_COPY: Record<
 
 export const AcademicPeriodsPanel = () => {
   const model = useAcademicPeriodsPanel();
-  const dialogTitle = model.dialogMode === 'create' ? 'Nuevo período' : 'Editar período';
+  const dialogTitle = model.dialogMode === 'create' ? 'Nuevo curso lectivo' : 'Editar curso lectivo';
   const submitLabel = model.dialogMode === 'create' ? 'Guardar' : 'Guardar cambios';
   const formStatus = model.dialogMode === 'edit' ? model.selectedPeriod?.status : undefined;
   const pending = model.pendingTransition;
@@ -98,18 +98,18 @@ export const AcademicPeriodsPanel = () => {
               onSearchChange={model.setSearch}
               primaryAction={
                 <Button onClick={model.openCreateDialog} type="button">
-                  <Plus size={16} /> Nuevo período
+                  <Plus size={16} /> Nuevo curso lectivo
                 </Button>
               }
               search={model.search}
-              searchPlaceholder="Buscar período…"
+              searchPlaceholder="Buscar curso lectivo…"
             />
           }
         >
           {model.error && <Alert>{model.error}</Alert>}
           {model.mutationError && <Alert>{model.mutationError}</Alert>}
           {model.isLoading ? (
-            <p className={styles.muted}>Cargando períodos académicos…</p>
+            <p className={styles.muted}>Cargando cursos lectivos…</p>
           ) : null}
 
           {!model.isLoading && model.periods.length === 0 ? (
@@ -117,15 +117,15 @@ export const AcademicPeriodsPanel = () => {
               action={
                 hasFilters
                   ? undefined
-                  : { label: 'Nuevo período', onClick: model.openCreateDialog, icon: Plus }
+                  : { label: 'Nuevo curso lectivo', onClick: model.openCreateDialog, icon: Plus }
               }
               description={
                 hasFilters
-                  ? 'No hay períodos que coincidan con la búsqueda o el filtro de estado.'
-                  : 'Aún no hay períodos académicos registrados.'
+                  ? 'No hay cursos lectivos que coincidan con la búsqueda o el filtro de estado.'
+                  : 'Aún no hay cursos lectivos registrados.'
               }
               icon={CalendarRange}
-              title="Sin períodos académicos"
+              title="Sin cursos lectivos"
             />
           ) : null}
 
@@ -199,7 +199,7 @@ export const AcademicPeriodsPanel = () => {
             </Table>
           ) : null}
         </DataTableShell>
-        <Alert>El estado de un período solo se modifica con las acciones Activar, Cerrar o Reabrir.</Alert>
+        <Alert>El estado de un curso lectivo solo se modifica con las acciones Activar, Cerrar o Reabrir.</Alert>
       </div>
 
       <ModalCrud

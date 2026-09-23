@@ -172,7 +172,7 @@ const quickAccess = [
   { label: 'Directorio', to: '/admin/users/directory', icon: FolderOpen },
   { label: 'Roles y permisos', to: '/admin/roles-permissions', icon: ShieldCheck },
   { label: 'Oferta académica', to: '/admin/specialties', icon: GraduationCap },
-  { label: 'Períodos', to: '/admin/academic-periods', icon: CalendarRange },
+  { label: 'Cursos lectivos', to: '/admin/academic-periods', icon: CalendarRange },
   { label: 'Secciones', to: '/admin/sections-groups', icon: Layers },
   { label: 'Importar', to: '/admin/users', icon: FileSpreadsheet },
 ];
@@ -262,8 +262,8 @@ export const AdminHomePage = () => {
         color: '#0E7490',
       },
       {
-        name: 'Especialidades técnicas',
-        shortName: 'Especialidades',
+        name: 'Carreras Técnicas',
+        shortName: 'Carreras',
         count: data.totalSpecialties,
         color: brandColors.goldDark,
       },
@@ -345,9 +345,9 @@ export const AdminHomePage = () => {
               <div className={styles.kpiBody}>
                 <span className={styles.kpiValue}>{data.totalAcademicPeriods}</span>
                 <span className={styles.kpiLabel}>
-                  {countLabel(data.totalAcademicPeriods, 'período', 'períodos')}
+                  {countLabel(data.totalAcademicPeriods, 'curso lectivo', 'cursos lectivos')}
                 </span>
-                <span className={styles.kpiSub}>Académicos registrados</span>
+                <span className={styles.kpiSub}>Registrados</span>
               </div>
             </div>
             <div className={`${styles.kpi} ${styles.kpi5}`}>

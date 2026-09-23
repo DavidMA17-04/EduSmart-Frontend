@@ -1,5 +1,9 @@
 import { BookOpen, ClipboardPlus, Layers, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import type { AttendanceCalendarException } from '@/entities/attendance';
+import { attendanceApi } from '@/features/manage-attendance';
+import { formatCalendarExceptionBanner } from '@/features/manage-attendance/model/calendarExceptionBanner';
 import { formatAttendanceGroupOptionLabel } from '@/features/manage-attendance/model/createAttendanceSessionFlow';
 import { useCreateAttendanceSessionFlow } from '@/features/manage-attendance/model/useCreateAttendanceSessionFlow';
 import { OfferingCard } from '@/features/manage-attendance/ui/OfferingCard';
@@ -10,6 +14,25 @@ export const AttendanceNewPanel = () => {
   const navigate = useNavigate();
   const toast = useToast();
   const flow = useCreateAttendanceSessionFlow();
+  const [calendarException, setCalendarException] =
+    useState<AttendanceCalendarException | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void attendanceApi
+      .getScheduleContext()
+      .then((ctx) => {
+        if (!cancelled) {
+          setCalendarException(ctx.calendarException ?? null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setCalendarException(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const onStart = async () => {
     const result = await flow.startClass();
@@ -63,9 +86,12 @@ export const AttendanceNewPanel = () => {
   }
 
   const selectorsDisabled = flow.creating;
+  const exceptionBanner = formatCalendarExceptionBanner(calendarException);
 
   return (
     <div className={styles.panel}>
+      {exceptionBanner ? <Alert>{exceptionBanner}</Alert> : null}
+
       <section aria-labelledby="attendance-step-group" className={styles.step}>
         <header className={styles.stepHeader}>
           <span aria-hidden="true" className={styles.stepIndex}>

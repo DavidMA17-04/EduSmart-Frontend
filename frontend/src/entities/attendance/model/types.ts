@@ -53,6 +53,7 @@ export interface AttendanceSessionDetail {
   attendanceTokenExpiresAt?: string | null;
   group: AttendanceSessionGroupSummary;
   offering: AttendanceSessionOfferingSummary;
+  calendarException?: AttendanceCalendarException | null;
 }
 
 /**
@@ -127,6 +128,7 @@ export interface AttendanceScheduleOccurrence {
     id: number;
     status: AttendanceSessionStatus;
   };
+  calendarException?: AttendanceCalendarException | null;
 }
 
 /** GET /attendance/schedule-context */
@@ -134,6 +136,43 @@ export interface AttendanceScheduleContext {
   date: string;
   dayOfWeek: number;
   occurrences: AttendanceScheduleOccurrence[];
+  calendarException?: AttendanceCalendarException | null;
+}
+
+/** Calendar exception for exam weeks (PO-02-15 / fase 4). */
+export type AttendanceCalendarExceptionType = 'SUSPENDED' | 'AUTO_JUSTIFIED';
+
+export interface AttendanceCalendarException {
+  id: number;
+  academicPeriodId: number;
+  sectionId: number | null;
+  title: string;
+  description: string | null;
+  startDate: string;
+  endDate: string;
+  exceptionType: AttendanceCalendarExceptionType;
+  createdByUserId: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateAttendanceCalendarExceptionInput {
+  academicPeriodId: number;
+  sectionId?: number | null;
+  title: string;
+  description?: string | null;
+  startDate: string;
+  endDate: string;
+  exceptionType: AttendanceCalendarExceptionType;
+}
+
+export type UpdateAttendanceCalendarExceptionInput = Partial<
+  Omit<CreateAttendanceCalendarExceptionInput, 'academicPeriodId'>
+>;
+
+export interface ListAttendanceCalendarExceptionsFilters {
+  academicPeriodId?: number;
+  sectionId?: number;
 }
 
 /** PUT /attendance/sessions/:sessionId/records item */

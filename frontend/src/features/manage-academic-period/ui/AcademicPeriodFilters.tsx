@@ -21,9 +21,9 @@ export const AcademicPeriodFilters = ({
     <label className={styles.search}>
       <Search size={16} />
       <Input
-        aria-label="Buscar período académico"
+        aria-label="Buscar curso lectivo"
         onChange={(event) => onSearchChange(event.target.value)}
-        placeholder="Buscar período…"
+        placeholder="Buscar curso lectivo…"
         value={search}
       />
     </label>

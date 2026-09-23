@@ -26,6 +26,8 @@ export interface AcademicGroup {
   id: number;
   name: string;
   studentCount: number;
+  /** Required on create; may be missing on legacy list rows until backend migrates. */
+  maxCapacity?: number;
   sectionId: number;
   academicPeriodId?: number;
   status?: 'ACTIVE' | 'INACTIVE';
@@ -40,6 +42,7 @@ export interface AcademicGroup {
 
 export interface CreateGroupPayload {
   name: string;
+  maxCapacity: number;
   studentCount?: number;
   sectionId: number;
   specialtyId?: number | null;

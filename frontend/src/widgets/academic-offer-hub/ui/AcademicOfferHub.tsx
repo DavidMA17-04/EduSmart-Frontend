@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+﻿import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, ImagePlus, Layers, Wrench } from 'lucide-react';
 import type { SpecialtyHubCover, SpecialtyKind } from '@/entities/specialty';
@@ -23,7 +23,7 @@ const SPECIALTY_CARDS: Array<{
   },
   {
     kind: 'TECHNICAL_SPECIALTY',
-    title: 'Especialidades técnicas',
+    title: 'Carreras Técnicas',
     subtitle: 'Oferta para décimo a duodécimo',
     to: '/admin/specialties/technical',
     icon: Wrench,

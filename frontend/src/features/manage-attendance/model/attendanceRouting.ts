@@ -6,6 +6,7 @@ export const ATTENDANCE_HISTORY_PATH = '/admin/attendance/history';
 export const ATTENDANCE_ALERTS_PATH = '/admin/attendance/alerts';
 export const ATTENDANCE_REPORTS_PATH = '/admin/attendance/reports';
 export const ATTENDANCE_JUSTIFICATIONS_PATH = '/admin/attendance/justifications';
+export const ATTENDANCE_EXCEPTIONS_PATH = '/admin/attendance/exceptions';
 export const ATTENDANCE_REDEEM_PATH = '/admin/attendance/redeem';
 /** Alias amigable para estudiantes (redirige al canje en AdminShell). */
 export const STUDENT_ATTENDANCE_PATH = '/student/attendance';
@@ -60,6 +61,11 @@ export const ATTENDANCE_ROUTE_GUARDS = [
     page: 'AttendanceJustificationsPage',
   },
   {
+    path: ATTENDANCE_EXCEPTIONS_PATH,
+    permission: ATTENDANCE_PERMISSIONS.edit,
+    page: 'AttendanceExceptionsPage',
+  },
+  {
     path: ATTENDANCE_REDEEM_PATH,
     permission: null,
     page: 'AttendanceRedeemPage',
@@ -85,6 +91,12 @@ export function canReviewJustifications(
   hasPermission: (code: string) => boolean,
 ): boolean {
   return hasPermission(ATTENDANCE_PERMISSIONS.review);
+}
+
+export function canManageAttendanceExceptions(
+  hasPermission: (code: string) => boolean,
+): boolean {
+  return hasPermission(ATTENDANCE_PERMISSIONS.edit);
 }
 
 /** Parse `:sessionId` from the route; invalid → null. */

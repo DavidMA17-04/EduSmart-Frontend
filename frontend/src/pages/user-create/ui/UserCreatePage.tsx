@@ -203,7 +203,7 @@ export const UserCreatePage = () => {
                 La contraseña temporal es obligatoria. El usuario deberá cambiarla al iniciar
                 sesión por primera vez.
               </li>
-              <li>El correo institucional es el identificador de acceso (login).</li>
+              <li>El acceso al sistema se realiza con la cédula (no con el correo).</li>
             </ul>
           </Card>
         </aside>
