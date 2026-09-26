@@ -308,18 +308,106 @@ export const AbsenteeismAlertsPanel = () => {
 
           <article className={styles.card}>
             <header className={styles.cardHeader}>
-              <h3>Criterios de alerta</h3>
+              <h3>Reglas de ausentismo</h3>
             </header>
-            <ul className={styles.criteria}>
-              {data.criteria.map((c) => (
-                <li key={c.code}>{c.label}</li>
-              ))}
-            </ul>
+            {model.rules.length === 0 ? (
+              <p className={styles.muted}>Sin reglas configuradas.</p>
+            ) : (
+              <ul className={styles.rulesList}>
+                {model.rules.map((rule) => (
+                  <li className={styles.ruleRow} key={rule.id}>
+                    <div className={styles.ruleMeta}>
+                      <strong>{rule.label}</strong>
+                      <small>
+                        {rule.code} ·{' '}
+                        {RISK_LABEL[rule.riskLevel] ?? rule.riskLevel}
+                      </small>
+                    </div>
+                    <label className={styles.ruleThreshold}>
+                      Umbral
+                      <input
+                        aria-label={`Umbral de ${rule.label}`}
+                        defaultValue={rule.thresholdValue}
+                        disabled={!model.canEditRules || model.isSavingRule}
+                        key={`${rule.id}-${rule.thresholdValue}`}
+                        min={1}
+                        onBlur={(e) => {
+                          const value = Number(e.target.value);
+                          if (
+                            !Number.isInteger(value) ||
+                            value < 1 ||
+                            value === rule.thresholdValue
+                          ) {
+                            return;
+                          }
+                          void model.updateRule(rule.id, {
+                            thresholdValue: value,
+                          });
+                        }}
+                        type="number"
+                      />
+                    </label>
+                    <label className={styles.ruleActive}>
+                      <input
+                        checked={rule.isActive}
+                        disabled={!model.canEditRules || model.isSavingRule}
+                        onChange={(e) =>
+                          void model.updateRule(rule.id, {
+                            isActive: e.target.checked,
+                          })
+                        }
+                        type="checkbox"
+                      />
+                      Activa
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {!model.canEditRules ? (
+              <p className={styles.muted}>
+                Solo administradores con permiso de edición pueden modificar
+                umbrales.
+              </p>
+            ) : null}
           </article>
 
           <article className={styles.card}>
             <header className={styles.cardHeader}>
-              <h3>Alertas recientes</h3>
+              <h3>Alertas persistidas</h3>
+            </header>
+            {model.alerts.length === 0 ? (
+              <p className={styles.muted}>Sin alertas registradas.</p>
+            ) : (
+              <ul className={styles.recent}>
+                {model.alerts.slice(0, 12).map((alert) => (
+                  <li key={alert.id}>
+                    <div>
+                      <strong>{alert.student.fullName}</strong>
+                      <p>
+                        {alert.group?.name ?? 'Sin grupo'} · Ausencias mes:{' '}
+                        {alert.unjustifiedAbsencesMonth} · Asistencia:{' '}
+                        {alert.attendancePercent}%
+                      </p>
+                      <small>
+                        {new Intl.DateTimeFormat('es-CR', {
+                          dateStyle: 'short',
+                          timeStyle: 'short',
+                        }).format(new Date(alert.triggeredAt))}
+                      </small>
+                    </div>
+                    <Badge tone={RISK_TONE[alert.riskLevel]}>
+                      {RISK_LABEL[alert.riskLevel]}
+                    </Badge>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </article>
+
+          <article className={styles.card}>
+            <header className={styles.cardHeader}>
+              <h3>Alertas recientes (notificaciones)</h3>
             </header>
             {data.recentAlerts.length === 0 ? (
               <p className={styles.muted}>Sin notificaciones recientes.</p>

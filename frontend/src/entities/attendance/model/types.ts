@@ -340,6 +340,32 @@ export interface AbsenteeismStudentRisk {
   alertId: number | null;
 }
 
+export interface AbsenteeismAlertRule {
+  id: number;
+  code: string;
+  label: string;
+  thresholdValue: number;
+  riskLevel: AbsenteeismRiskLevel;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AbsenteeismPersistedAlert {
+  id: number;
+  riskLevel: AbsenteeismRiskLevel;
+  status: string;
+  ruleCodes: string[];
+  unjustifiedAbsencesMonth: number;
+  absencesPeriod: number;
+  consecutiveAbsences: number;
+  attendancePercent: number;
+  lastAbsenceDate: string | null;
+  triggeredAt: string;
+  student: { id: number; fullName: string; nationalId: string };
+  group: { id: number; name: string } | null;
+}
+
 export interface AbsenteeismDashboard {
   kpis: {
     highRisk: number;

@@ -61,8 +61,8 @@ export function JustificationsInboxPanel() {
   const [reviewItem, setReviewItem] = useState<JustificationListItem | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const mockMode = attendanceApi.isJustificationsMockMode();
-
   const canReview = sessionHasPermission(ATTENDANCE_PERMISSIONS.review);
+  const canJustify = sessionHasPermission(ATTENDANCE_PERMISSIONS.justify);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -199,10 +199,16 @@ export function JustificationsInboxPanel() {
             ) : null}
           </div>
           <div className={styles.actions}>
-            {mockMode ? <span className={styles.mockChip}>Modo demo (mocks)</span> : null}
-            <Button type="button" onClick={() => setRequestOpen(true)}>
-              Nueva justificación
-            </Button>
+            {mockMode ? (
+              <span className={styles.mockChip}>
+                Modo demo (mocks) — no usar en cierre QA
+              </span>
+            ) : null}
+            {canJustify ? (
+              <Button type="button" onClick={() => setRequestOpen(true)}>
+                Nueva justificación
+              </Button>
+            ) : null}
           </div>
         </div>
 
@@ -257,7 +263,7 @@ export function JustificationsInboxPanel() {
                     <JustificationStatusBadge status={row.status} />
                   </td>
                   <td>
-                    {(canReview || mockMode) && row.status === 'PENDING' ? (
+                    {canReview && row.status === 'PENDING' ? (
                       <Button
                         type="button"
                         variant="secondary"
@@ -265,9 +271,7 @@ export function JustificationsInboxPanel() {
                       >
                         Revisar
                       </Button>
-                    ) : (
-                      '—'
-                    )}
+                    ) : null}
                   </td>
                 </tr>
               ))}

@@ -328,6 +328,64 @@
   color: var(--admin-muted, var(--brand-muted));
 }
 
+.rulesList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.ruleRow {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #edf1f7;
+}
+
+.ruleRow:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.ruleMeta {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ruleMeta strong {
+  font-size: 0.9rem;
+}
+
+.ruleMeta small {
+  color: var(--admin-muted, var(--brand-muted));
+  font-size: 0.78rem;
+}
+
+.ruleThreshold {
+  display: grid;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: var(--admin-muted, var(--brand-muted));
+}
+
+.ruleThreshold input {
+  width: 72px;
+  padding: 4px 6px;
+  border: 1px solid var(--admin-border, #d9e2ef);
+  border-radius: 6px;
+}
+
+.ruleActive {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+}
+
 @media (max-width: 1100px) {
   .kpiRow {
     grid-template-columns: repeat(2, minmax(0, 1fr));

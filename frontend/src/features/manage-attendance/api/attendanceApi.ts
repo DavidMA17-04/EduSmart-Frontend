@@ -1,5 +1,7 @@
 import type {
+  AbsenteeismAlertRule,
   AbsenteeismDashboard,
+  AbsenteeismPersistedAlert,
   AbsenteeismRiskLevel,
   AbsenteeismStudentRisk,
   AttendanceAnalyticsFilters,
@@ -229,6 +231,28 @@ export const attendanceApi = {
     const qs = risk ? `?risk=${risk}` : '';
     return request<AbsenteeismStudentRisk[]>(
       `/attendance/absenteeism/students${qs}`,
+    );
+  },
+
+  listAbsenteeismRules: () =>
+    request<AbsenteeismAlertRule[]>('/attendance/absenteeism/rules'),
+
+  updateAbsenteeismRule: (
+    id: number,
+    input: { thresholdValue?: number; isActive?: boolean },
+  ) =>
+    request<AbsenteeismAlertRule>(`/attendance/absenteeism/rules/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+    }),
+
+  listAbsenteeismAlerts: (filters: { groupId?: number; riskLevel?: AbsenteeismRiskLevel } = {}) => {
+    const params = new URLSearchParams();
+    if (filters.groupId != null) params.set('groupId', String(filters.groupId));
+    if (filters.riskLevel) params.set('riskLevel', filters.riskLevel);
+    const qs = params.toString();
+    return request<AbsenteeismPersistedAlert[]>(
+      `/attendance/absenteeism/alerts${qs ? `?${qs}` : ''}`,
     );
   },
 

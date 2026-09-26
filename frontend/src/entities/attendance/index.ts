@@ -9,6 +9,8 @@ export type {
   AttendanceHistoryPage,
   AttendanceHistorySummary,
   AbsenteeismDashboard,
+  AbsenteeismAlertRule,
+  AbsenteeismPersistedAlert,
   AbsenteeismRiskLevel,
   AbsenteeismStudentRisk,
   AttendanceJustificationStatus,

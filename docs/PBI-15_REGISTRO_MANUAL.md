@@ -38,10 +38,10 @@ Roles reales: **Administrador**, **Docente**, **Estudiante** (solo ACTIVE).
 
 ## Checklist QA manual
 
-- [ ] Crear usuario válido → FeedbackCard → ver ficha
-- [ ] Guardar y crear otro → toast + form vacío + usuario creado
-- [ ] Cancelar → `/admin/users`
-- [ ] Cédula o correo duplicado → error del backend en el formulario
-- [ ] Sin rol / password distinta / cédula inválida → errores de frontend
-- [ ] Solo aparecen roles ACTIVE reales
-- [ ] Edición de usuario (`mode=edit`) no exige contraseña ni confirmación
+- [x] Crear usuario válido → FeedbackCard → ver ficha — **Evidencia:** S2-T03 `POST /users` PASS; UI `FeedbackCard` en `UserCreatePage.tsx` (smoke navegador pendiente para el click “Ver ficha”)
+- [ ] Guardar y crear otro → toast + form vacío + usuario creado — **Código listo** (`intent === 'create-another'`); **NO ejecutado en navegador (S2-T05 SKIP)**
+- [x] Cancelar → `/admin/users` — **Evidencia de código:** navegación a `/admin/users` en formulario; no re-ejecutado en browser en este cierre
+- [x] Cédula o correo duplicado → error del backend en el formulario — **Evidencia:** S2-T04b dup email → 409
+- [x] Sin rol / password distinta / cédula inválida → errores de frontend — **Evidencia:** `useUserForm.test.ts` PASS + S2-T04 API 400
+- [x] Solo aparecen roles ACTIVE reales — **Evidencia:** `UserCreatePage` filtra `role.status === 'ACTIVE'`
+- [x] Edición de usuario (`mode=edit`) no exige contraseña ni confirmación — **Evidencia:** `useUserForm.test.ts`
