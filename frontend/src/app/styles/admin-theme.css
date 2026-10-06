@@ -18,3 +18,12 @@
   color: var(--admin-text);
   background: var(--admin-background);
 }
+
+/* Títulos en oración: primera letra en mayúscula, el resto en minúscula. */
+.admin-shell :is(h1, h2, h3, h4, th) {
+  text-transform: lowercase !important;
+}
+
+.admin-shell :is(h1, h2, h3, h4, th)::first-letter {
+  text-transform: uppercase !important;
+}

@@ -23,6 +23,7 @@
 
 .nameHighlight {
   color: var(--brand-gold);
+  text-transform: none;
 }
 
 .subtitle {

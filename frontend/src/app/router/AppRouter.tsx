@@ -2,7 +2,6 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { UserMethodSelectionPage } from '@/pages/Admin/Users/UserMethodSelectionPage/UserMethodSelectionPage';
 import { UserBulkImportPage } from '@/pages/Admin/Users/UserBulkImportPage/UserBulkImportPage';
 import { UserImportPreviewPage } from '@/pages/Admin/Users/UserImportPreviewPage/UserImportPreviewPage';
-import { AdminHomePage } from '@/pages/admin-home';
 import { ForgotPasswordPage } from '@/pages/forgot-password';
 import { LoginPage } from '@/pages/login';
 import { VerifyAccountPage } from '@/pages/verify-account';
@@ -39,10 +38,11 @@ import { AdministrativeReportsPage } from '@/pages/administrative-reports';
 import { ProfileSettingsPage } from '@/pages/profile-settings';
 import { ResetPasswordPage } from '@/pages/reset-password';
 import { ImportResultPage } from '@/pages/import-result';
-import { AdminShell } from '@/widgets/app-shell';
+import { RoleShell, StaffOnly } from '@/widgets/app-shell';
 import { SCHEDULE_PERMISSIONS } from '@/features/manage-schedule';
 import { RequireAuth } from './RequireAuth';
 import { RequirePermission } from './RequirePermission';
+import { RoleHome } from './RoleHome';
 import { RootRedirect } from './RootRedirect';
 
 export const AppRouter = () => (
@@ -53,9 +53,9 @@ export const AppRouter = () => (
     <Route element={<ResetPasswordPage />} path="/reset-password" />
 
     <Route element={<RequireAuth />}>
-      <Route element={<AdminShell />} path="/admin">
-        <Route element={<AdminHomePage />} index />
-        <Route element={<AdminHomePage />} path="dashboard" />
+      <Route element={<RoleShell />} path="/admin">
+        <Route element={<RoleHome />} index />
+        <Route element={<RoleHome />} path="dashboard" />
 
         <Route element={<RequirePermission permission="administrator.view" />}>
           <Route element={<UserMethodSelectionPage />} path="users" />
@@ -141,50 +141,65 @@ export const AppRouter = () => (
 
         <Route
           element={
-            <RequirePermission permission={ATTENDANCE_PERMISSIONS.view} />
+            <RequirePermission
+              anyOf={[
+                ATTENDANCE_PERMISSIONS.view,
+                ATTENDANCE_PERMISSIONS.viewOwn,
+                ATTENDANCE_PERMISSIONS.justify,
+              ]}
+            />
           }
         >
-          <Route element={<AttendanceHomePage />} path="attendance" />
-          <Route
-            element={<AbsenteeismAlertsPage />}
-            path="attendance/alerts"
-          />
-          <Route
-            element={<AttendanceReportsPage />}
-            path="attendance/reports"
-          />
           <Route
             element={<AttendanceJustificationsPage />}
             path="attendance/justifications"
           />
-          <Route
-            element={<AttendanceSessionPage />}
-            path="attendance/sessions/:sessionId"
-          />
         </Route>
 
-        <Route
-          element={
-            <RequirePermission permission={ATTENDANCE_PERMISSIONS.edit} />
-          }
-        >
+        <Route element={<StaffOnly />}>
           <Route
-            element={<AttendanceExceptionsPage />}
-            path="attendance/exceptions"
-          />
-        </Route>
+            element={
+              <RequirePermission permission={ATTENDANCE_PERMISSIONS.view} />
+            }
+          >
+            <Route element={<AttendanceHomePage />} path="attendance" />
+            <Route
+              element={<AbsenteeismAlertsPage />}
+              path="attendance/alerts"
+            />
+            <Route
+              element={<AttendanceReportsPage />}
+              path="attendance/reports"
+            />
+            <Route
+              element={<AttendanceSessionPage />}
+              path="attendance/sessions/:sessionId"
+            />
+          </Route>
 
-        <Route
-          element={
-            <RequirePermission permission={ATTENDANCE_PERMISSIONS.create} />
-          }
-        >
-          <Route element={<AttendanceNewPage />} path="attendance/new" />
+          <Route
+            element={
+              <RequirePermission permission={ATTENDANCE_PERMISSIONS.edit} />
+            }
+          >
+            <Route
+              element={<AttendanceExceptionsPage />}
+              path="attendance/exceptions"
+            />
+          </Route>
+
+          <Route
+            element={
+              <RequirePermission permission={ATTENDANCE_PERMISSIONS.create} />
+            }
+          >
+            <Route element={<AttendanceNewPage />} path="attendance/new" />
+          </Route>
         </Route>
 
         <Route element={<ProfileSettingsPage />} path="settings" />
         <Route element={<ProfileSettingsPage />} path="profile" />
-        <Route element={<AdminHomePage />} path="*" />
+        <Route element={<RoleHome />} path="*" />
       </Route>
     </Route>
 

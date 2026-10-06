@@ -4,7 +4,12 @@ import {
   sessionHasPermission,
   setSessionTokens,
 } from '@/shared/auth';
-import { adminNavigationItems, filterAdminNavigation } from './adminNavigation';
+import {
+  adminNavigationItems,
+  filterAdminNavigation,
+  groupAdminNavigation,
+  resolveRoleAudience,
+} from './adminNavigation';
 
 if (typeof globalThis.atob !== 'function') {
   globalThis.atob = (value: string) => Buffer.from(value, 'base64').toString('binary');
@@ -50,6 +55,46 @@ function encodeJwt(payload: Record<string, unknown>): string {
     Buffer.from(JSON.stringify(value)).toString('base64url');
   return `${encode({ alg: 'none', typ: 'JWT' })}.${encode(payload)}.sig`;
 }
+
+describe('resolveRoleAudience', () => {
+  it('separa administrador, docente y estudiante', () => {
+    expect(resolveRoleAudience(['Administrador'])).toBe('admin');
+    expect(resolveRoleAudience(['Docente'])).toBe('teacher');
+    expect(resolveRoleAudience(['Estudiante'])).toBe('student');
+    expect(resolveRoleAudience(['Estudiante', 'Docente'])).toBe('teacher');
+  });
+});
+
+describe('groupAdminNavigation', () => {
+  it('agrupa asistencias bajo el enlace principal cuando el lead está visible', () => {
+    const entries = groupAdminNavigation(
+      adminNavigationItems.filter((item) => item.group === 'attendance'),
+    );
+    expect(entries).toHaveLength(1);
+    expect(entries[0]).toMatchObject({
+      type: 'group',
+      id: 'attendance',
+      lead: { label: 'Asistencias', to: '/admin/attendance' },
+    });
+    if (entries[0]?.type !== 'group') return;
+    expect(entries[0].children.map((child) => child.label)).toEqual([
+      'Historial de asistencia',
+      'Alertas de ausentismo',
+      'Indicadores',
+      'Justificaciones',
+      'Ingresar código',
+    ]);
+  });
+
+  it('deja sueltos los hijos si el lead no está visible', () => {
+    const entries = groupAdminNavigation(
+      adminNavigationItems.filter(
+        (item) => item.group === 'attendance' && !item.groupLead,
+      ),
+    );
+    expect(entries.every((entry) => entry.type === 'link')).toBe(true);
+  });
+});
 
 describe('adminNavigation — Asistencias', () => {
   afterEach(() => {
@@ -281,6 +326,35 @@ describe('adminNavigation — Horario / Mi horario (D2)', () => {
     expect(visible.some((nav) => nav.to === '/admin/attendance/redeem')).toBe(
       true,
     );
+  });
+
+  it('Estudiante no ve alertas, indicadores ni el panel administrativo', () => {
+    setSessionTokens(
+      encodeJwt({
+        sub: 523,
+        email: 'estudiante@edusmart.test',
+        roles: ['Estudiante'],
+        permissions: [
+          'attendance.view',
+          'attendance.view_own',
+          'attendance.justify',
+          'schedules.view_own',
+        ],
+      }),
+    );
+    const visible = filterAdminNavigation(
+      adminNavigationItems,
+      sessionHasPermission,
+    ).map((item) => item.to);
+    expect(visible).not.toContain('/admin');
+    expect(visible).not.toContain('/admin/attendance');
+    expect(visible).not.toContain('/admin/attendance/alerts');
+    expect(visible).not.toContain('/admin/attendance/reports');
+    expect(visible).toContain('/admin/attendance/history');
+    expect(visible).toContain('/admin/attendance/justifications');
+    expect(visible).toContain('/admin/attendance/redeem');
+    expect(visible).toContain('/admin/my-schedule');
+    expect(visible).toContain('/admin/settings');
   });
 
   it('Docente NO ve Ingresar código en el menú', () => {
