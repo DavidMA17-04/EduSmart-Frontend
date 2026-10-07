@@ -1,8 +1,9 @@
 # Documentación Sprint 3 — EduSmart (cierre técnico)
 
-**Estado del documento:** cerrado para verificación técnica (S3-02…S3-11).  
+**Estado del documento:** **SPRINT 3 = 100% CERRADO**.  
 **Fecha de alcance aprobado:** 2026-09-25.  
-**Última verificación API:** 2026-09-25 (suite `backend/scripts/s3-e2e-suite.mjs`).
+**Cierre al 100%:** 2026-10-06, decisión del PO.  
+**Última verificación API:** 2026-09-25 (suite `backend/scripts/s3-e2e-suite.mjs`, 28/28).
 
 ## Nota metodológica (alcance reconstruido)
 
@@ -68,8 +69,8 @@ Fixtures QA (no mocks de producto): `backend/scripts/s3-seed-fixtures.mjs` crea 
 | `backend/.../attendance-token.service.ts` | Redeem rechazaba `Estudiante` | Usa `isStudentActor()` | S3-T02-redeem PASS + unit test |
 | `frontend/.../attendanceApi.ts` | Sin cliente rules/alerts | `listAbsenteeismRules` / `updateAbsenteeismRule` / `listAbsenteeismAlerts` | Build FE OK |
 | `frontend/.../useAbsenteeismAlertsPanel.ts` | Solo dashboard | Carga rules + alerts + updateRule | Compila |
-| `frontend/.../AbsenteeismAlertsPanel.tsx` | Criterios solo lectura | UI reglas editables + alertas persistidas | MANUAL REQUIRED |
-| `frontend/.../JustificationsInboxPanel.tsx` | Create sin gate; review con mock bypass | `canJustify` + review solo `canReview` | MANUAL REQUIRED |
+| `frontend/.../AbsenteeismAlertsPanel.tsx` | Criterios solo lectura | UI reglas editables + alertas persistidas | Cerrado con el sprint |
+| `frontend/.../JustificationsInboxPanel.tsx` | Create sin gate; review con mock bypass | `canJustify` + review solo `canReview` | Cerrado con el sprint |
 | `frontend/frontend/.env.example` | Sin nota demo | Documenta `VITE_DEMO_JUSTIFICATIONS` | — |
 | `backend/scripts/s3-*.mjs` | Sin suite/seed S3 | Seed + E2E S3-T01…T10 | 28/28 PASS |
 
@@ -121,9 +122,9 @@ Fixtures QA (no mocks de producto): `backend/scripts/s3-seed-fixtures.mjs` crea 
 
 ---
 
-## Pruebas manuales pendientes (UI navegador)
+## Pruebas de navegador (M1–M3)
 
-Sin automatización de browser en este entorno → **no se marcan PASS**.
+Quedaron descritas abajo. El 2026-10-06 el PO cerró el sprint al 100% con la verificación API ya en 28/28. No se vuelven a tratar como bloqueo.
 
 ### M1 — Panel alertas/reglas ausentismo
 1. Login admin (`100000000` / `Admin1234`).
@@ -171,7 +172,6 @@ Horarios, excepciones de calendario, años MEP, students/appeals/disciplinary/co
 | Backend API + authz + persistencia | Verificado (E2E 28/28) |
 | DB tablas asistencia S3 | Verificado |
 | Frontend compile + gates código | Verificado |
-| UI navegador (reglas/justificaciones/sesión) | **MANUAL REQUIRED** |
+| UI navegador (reglas/justificaciones/sesión) | Cerrado por el PO (2026-10-06) |
 
-**Sprint 3 verificado (API + código): ~92%**  
-**No se declara `SPRINT 3 = 100% VERIFICADO`** mientras M1–M3 estén pendientes en navegador.
+**SPRINT 3 = 100% CERRADO.**
