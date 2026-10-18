@@ -6,6 +6,8 @@ export interface GuideTeacher {
   lastName: string;
   email: string;
   phone: string | null;
+  departmentId?: number | null;
+  department?: { id: number; code: string; name: string } | null;
 }
 
 export interface CreateGuideTeacherPayload {
@@ -18,6 +20,7 @@ export interface CreateGuideTeacherPayload {
   second_lastname?: string;
   email: string;
   phone?: string;
+  departmentId: number;
 }
 
 export type UpdateGuideTeacherPayload = Partial<CreateGuideTeacherPayload>;

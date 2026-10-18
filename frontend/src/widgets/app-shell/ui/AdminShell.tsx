@@ -242,6 +242,9 @@ export const AdminShell = () => {
           <p className={styles.logoutMessage}>¿Seguro que desea salir del sistema?</p>
           <p className={styles.logoutSecondary}>Se cerrará la sesión de EduSmart.</p>
           <div className={styles.logoutActions}>
+            <Button disabled={isLoggingOut} onClick={onLogout} type="button" variant="danger">
+              {isLoggingOut ? 'Saliendo…' : 'Salir'}
+            </Button>
             <Button
               disabled={isLoggingOut}
               onClick={() => setLogoutOpen(false)}
@@ -249,9 +252,6 @@ export const AdminShell = () => {
               variant="secondary"
             >
               Cancelar
-            </Button>
-            <Button disabled={isLoggingOut} onClick={onLogout} type="button" variant="danger">
-              {isLoggingOut ? 'Saliendo…' : 'Salir'}
             </Button>
           </div>
         </div>

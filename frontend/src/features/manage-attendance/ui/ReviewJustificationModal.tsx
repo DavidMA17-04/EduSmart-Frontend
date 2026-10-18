@@ -72,22 +72,6 @@ export function ReviewJustificationModal({
         </label>
 
         <footer className={styles.footer}>
-          <Button type="button" variant="secondary" onClick={onClose} disabled={submitting}>
-            Cerrar
-          </Button>
-          <button
-            type="button"
-            className={styles.reject}
-            disabled={submitting || notes.trim().length < 3}
-            onClick={() =>
-              void onDecide({
-                status: 'REJECTED',
-                decisionNotes: notes.trim(),
-              })
-            }
-          >
-            Rechazar
-          </button>
           <button
             type="button"
             className={styles.approve}
@@ -101,6 +85,22 @@ export function ReviewJustificationModal({
           >
             Aprobar
           </button>
+          <button
+            type="button"
+            className={styles.reject}
+            disabled={submitting || notes.trim().length < 3}
+            onClick={() =>
+              void onDecide({
+                status: 'REJECTED',
+                decisionNotes: notes.trim(),
+              })
+            }
+          >
+            Rechazar
+          </button>
+          <Button type="button" variant="secondary" onClick={onClose} disabled={submitting}>
+            Cerrar
+          </Button>
         </footer>
       </div>
     </div>

@@ -224,18 +224,18 @@ export const AttendanceExceptionsPanel = () => {
           <div className={styles.formActions}>
             <Button
               disabled={model.saving}
+              onClick={() => void onSubmit()}
+              type="button"
+            >
+              {model.saving ? 'Guardando…' : 'Guardar'}
+            </Button>
+            <Button
+              disabled={model.saving}
               onClick={model.closeModal}
               type="button"
               variant="secondary"
             >
               Cancelar
-            </Button>
-            <Button
-              disabled={model.saving}
-              onClick={() => void onSubmit()}
-              type="button"
-            >
-              {model.saving ? 'Guardando…' : 'Guardar'}
             </Button>
           </div>
         </div>

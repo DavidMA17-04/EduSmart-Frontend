@@ -16,6 +16,7 @@ const base: UserFormValues = {
   confirmPassword: 'Secret123',
   status: 'ACTIVE',
   roleIds: [1],
+  departmentId: '',
 };
 
 describe('splitLastNames', () => {

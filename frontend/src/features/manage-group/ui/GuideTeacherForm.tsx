@@ -1,11 +1,13 @@
 import type { FormEventHandler } from 'react';
-import { FormActions, Input } from '@/shared/ui';
+import type { Department } from '@/entities/department';
+import { FormActions, Input, Select } from '@/shared/ui';
 import type { GuideTeacherFormValues } from '../model/useGuideTeacherForm';
 import styles from './GroupForm.module.css';
 
 interface GuideTeacherFormProps {
   values: GuideTeacherFormValues;
   errors: Partial<Record<keyof GuideTeacherFormValues, string>>;
+  departments?: Department[];
   isSubmitting?: boolean;
   submitLabel?: string;
   onChange: <K extends keyof GuideTeacherFormValues>(field: K, value: GuideTeacherFormValues[K]) => void;
@@ -16,6 +18,7 @@ interface GuideTeacherFormProps {
 export const GuideTeacherForm = ({
   values,
   errors,
+  departments = [],
   isSubmitting = false,
   submitLabel = 'Guardar cambios',
   onChange,
@@ -80,6 +83,24 @@ export const GuideTeacherForm = ({
         onChange={(event) => onChange('phone', event.target.value)}
         value={values.phone}
       />
+    </label>
+    <label>
+      Departamento *
+      <Select
+        required
+        value={values.departmentId === '' ? '' : String(values.departmentId)}
+        onChange={(event) =>
+          onChange('departmentId', event.target.value ? Number(event.target.value) : '')
+        }
+      >
+        <option value="">Seleccione un departamento</option>
+        {departments.map((department) => (
+          <option key={department.id} value={department.id}>
+            {department.name}
+          </option>
+        ))}
+      </Select>
+      {errors.departmentId && <span className={styles.error}>{errors.departmentId}</span>}
     </label>
     <span className={styles.hint}>El docente queda con rol Docente y podrá asignarse a una sección.</span>
     <FormActions isSubmitting={isSubmitting} onCancel={onCancel} submitLabel={submitLabel} />

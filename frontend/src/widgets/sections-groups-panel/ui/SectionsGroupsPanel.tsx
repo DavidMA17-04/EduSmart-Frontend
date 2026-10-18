@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Edit3, Layers, Plus, Trash2 } from 'lucide-react';
 import {
   Alert,
@@ -12,6 +13,8 @@ import {
   Table,
 } from '@/shared/ui';
 import { SectionTableRow } from '@/entities/section';
+import type { Department } from '@/entities/department';
+import { departmentApi } from '@/features/manage-department/api/departmentApi';
 import { GroupForm, GuideTeacherForm } from '@/features/manage-group';
 import { SectionForm } from '@/features/manage-section';
 import { useSectionsGroupsPanel } from '../model/useSectionsGroupsPanel';
@@ -23,12 +26,28 @@ import styles from './SectionsGroupsPanel.module.css';
 
 export const SectionsGroupsPanel = () => {
   const model = useSectionsGroupsPanel();
+  const [departments, setDepartments] = useState<Department[]>([]);
   const sectionDialogTitle = model.sectionDialogMode === 'create' ? 'Nuevo nivel' : 'Editar nivel';
   const sectionSubmitLabel = model.sectionDialogMode === 'create' ? 'Crear nivel' : 'Guardar cambios';
   const groupDialogTitle = model.groupFormMode === 'create' ? 'Nueva sección' : 'Editar sección';
   const groupSubmitLabel = model.groupFormMode === 'create' ? 'Crear sección' : 'Guardar cambios';
   const teacherDialogTitle = model.teacherFormMode === 'create' ? 'Nuevo docente guía' : 'Editar docente guía';
   const teacherSubmitLabel = model.teacherFormMode === 'create' ? 'Crear docente' : 'Guardar cambios';
+
+  useEffect(() => {
+    let active = true;
+    departmentApi
+      .listActive()
+      .then((items) => {
+        if (active) setDepartments(items);
+      })
+      .catch(() => {
+        if (active) setDepartments([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const pending = model.pendingConfirm;
   const confirmBusy =
@@ -198,6 +217,7 @@ export const SectionsGroupsPanel = () => {
       >
         {model.teacherMutationError && <Alert>{model.teacherMutationError}</Alert>}
         <GuideTeacherForm
+          departments={departments}
           errors={model.teacherForm.errors}
           isSubmitting={model.isTeacherSubmitting}
           onCancel={model.closeTeacherDialog}

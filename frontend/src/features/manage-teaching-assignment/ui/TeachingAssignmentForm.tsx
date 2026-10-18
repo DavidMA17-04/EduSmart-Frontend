@@ -275,14 +275,6 @@ export function TeachingAssignmentForm({
       ) : null}
 
       <div className={styles.actions}>
-        <Button
-          disabled={isSaving}
-          onClick={onCancel}
-          type="button"
-          variant="secondary"
-        >
-          Cancelar
-        </Button>
         <Button disabled={isSaving} type="submit">
           {isSaving
             ? 'Guardando…'
@@ -291,6 +283,14 @@ export function TeachingAssignmentForm({
               : form.groupIds.length > 1
                 ? `Crear ${form.groupIds.length} asignaciones`
                 : 'Crear asignación'}
+        </Button>
+        <Button
+          disabled={isSaving}
+          onClick={onCancel}
+          type="button"
+          variant="secondary"
+        >
+          Cancelar
         </Button>
       </div>
     </form>

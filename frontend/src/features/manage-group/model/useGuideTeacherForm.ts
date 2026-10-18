@@ -10,6 +10,7 @@ export interface GuideTeacherFormValues {
   secondLastname: string;
   email: string;
   phone: string;
+  departmentId: number | '';
 }
 
 const defaultValues: GuideTeacherFormValues = {
@@ -19,6 +20,7 @@ const defaultValues: GuideTeacherFormValues = {
   secondLastname: '',
   email: '',
   phone: '',
+  departmentId: '',
 };
 
 function teacherToFormValues(teacher: GuideTeacher): GuideTeacherFormValues {
@@ -30,6 +32,7 @@ function teacherToFormValues(teacher: GuideTeacher): GuideTeacherFormValues {
     secondLastname: split.second_lastname ?? '',
     email: teacher.email,
     phone: teacher.phone ?? '',
+    departmentId: teacher.departmentId ?? teacher.department?.id ?? '',
   };
 }
 
@@ -54,6 +57,7 @@ export function useGuideTeacherForm(teacher?: GuideTeacher) {
     if (!values.firstLastname.trim()) next.firstLastname = 'El primer apellido es requerido.';
     if (!values.email.trim()) next.email = 'El correo es requerido.';
     else if (!isValidEmail(values.email)) next.email = 'El formato de correo no es válido.';
+    if (!values.departmentId) next.departmentId = 'El departamento es obligatorio.';
     setErrors(next);
     return Object.keys(next).length === 0;
   }, [values]);
@@ -67,6 +71,7 @@ export function useGuideTeacherForm(teacher?: GuideTeacher) {
       second_lastname: second || undefined,
       email: values.email.trim().toLowerCase(),
       phone: values.phone.trim() || undefined,
+      departmentId: Number(values.departmentId),
     };
   }, [values]);
 

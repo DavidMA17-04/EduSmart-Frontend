@@ -1,4 +1,5 @@
 import type { AdministrativeUser, UserAccountStatus } from '@/entities/user';
+import type { UserFormValues } from './useUserForm';
 
 type RawUser = Partial<AdministrativeUser> & {
   national_id?: string | null;
@@ -31,12 +32,15 @@ export function normalizeUser(raw: RawUser): AdministrativeUser {
     status: (raw.status ?? 'ACTIVE') as UserAccountStatus,
     mustChangePassword: Boolean(raw.mustChangePassword),
     roles: raw.roles ?? [],
+    departmentId: raw.departmentId ?? raw.department?.id ?? null,
+    department: raw.department ?? null,
     createdAt: raw.createdAt ?? new Date().toISOString(),
     updatedAt: raw.updatedAt ?? new Date().toISOString(),
   };
 }
 
-export function userToFormValues(user: AdministrativeUser) {
+export function userToFormValues(user: AdministrativeUser): UserFormValues {
+  const departmentId = user.departmentId ?? user.department?.id;
   return {
     nationalId: user.nationalId ?? '',
     firstName: user.firstName ?? '',
@@ -47,5 +51,6 @@ export function userToFormValues(user: AdministrativeUser) {
     confirmPassword: '',
     status: user.status,
     roleIds: user.roles.map((role) => role.id),
+    departmentId: typeof departmentId === 'number' ? departmentId : '',
   };
 }

@@ -1,10 +1,12 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, UserPlus } from 'lucide-react';
-import { roleApi } from '@/features/manage-role';
-import { UserForm, emptyUserForm, toCreatePayload, useUserForm, userApi } from '@/features/manage-user';
+import type { Department } from '@/entities/department';
 import type { Role } from '@/entities/role';
 import type { AdministrativeUser } from '@/entities/user';
+import { departmentApi } from '@/features/manage-department/api/departmentApi';
+import { roleApi } from '@/features/manage-role';
+import { UserForm, emptyUserForm, toCreatePayload, useUserForm, userApi } from '@/features/manage-user';
 import { Card, FeedbackCard, PageHeader, useToast } from '@/shared/ui';
 import { HttpError } from '@/shared/api';
 import styles from './UserPages.module.css';
@@ -36,29 +38,36 @@ export const UserCreatePage = () => {
   const toast = useToast();
   const form = useUserForm();
   const [roles, setRoles] = useState<Role[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [createdUser, setCreatedUser] = useState<AdministrativeUser | null>(null);
 
   useEffect(() => {
     let active = true;
-    roleApi
-      .list()
-      .then((items) => {
-        if (active) setRoles(items.filter((role) => role.status === 'ACTIVE'));
-      })
-      .catch(() => {
-        if (active) setRoles([]);
-      });
+    Promise.all([
+      roleApi.list().catch(() => [] as Role[]),
+      departmentApi.listActive().catch(() => [] as Department[]),
+    ]).then(([roleItems, departmentItems]) => {
+      if (!active) return;
+      setRoles(roleItems.filter((role) => role.status === 'ACTIVE'));
+      setDepartments(departmentItems);
+    });
     return () => {
       active = false;
     };
   }, []);
 
+  const requiresDepartment = roles.some(
+    (role) =>
+      form.values.roleIds.includes(role.id) &&
+      (role.name === 'Docente' || role.name === 'TEACHER'),
+  );
+
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setFormError(null);
-    if (!form.validate('create')) return;
+    if (!form.validate('create', { requiresDepartment })) return;
 
     const intent = submitIntent(event);
     setIsSubmitting(true);
@@ -167,6 +176,7 @@ export const UserCreatePage = () => {
               values={form.values}
               errors={form.errors}
               roles={roles}
+              departments={departments}
               isSubmitting={isSubmitting}
               mode="create"
               submitLabel="Guardar usuario"

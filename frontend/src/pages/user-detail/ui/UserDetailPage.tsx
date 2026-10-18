@@ -1,6 +1,10 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useParams } from 'react-router-dom';
 import { UserRound } from 'lucide-react';
+import type { Department } from '@/entities/department';
+import type { Role } from '@/entities/role';
+import type { UserAuditLog } from '@/entities/user';
+import { departmentApi } from '@/features/manage-department/api/departmentApi';
 import { roleApi } from '@/features/manage-role';
 import {
   UserAuditPanel,
@@ -10,8 +14,6 @@ import {
   userApi,
   userToFormValues,
 } from '@/features/manage-user';
-import type { Role } from '@/entities/role';
-import type { UserAuditLog } from '@/entities/user';
 import { Alert, Button, Card, PageHeader, StatusBadge, type StatusTone } from '@/shared/ui';
 import { HttpError } from '@/shared/api';
 import styles from '../../user-create/ui/UserPages.module.css';
@@ -31,6 +33,7 @@ export const UserDetailPage = () => {
   const { userId = '' } = useParams();
   const { values, errors, setValues, onChange, validate } = useUserForm();
   const [roles, setRoles] = useState<Role[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [auditLogs, setAuditLogs] = useState<UserAuditLog[]>([]);
   const [mode, setMode] = useState<'view' | 'edit'>('view');
   const [isLoading, setIsLoading] = useState(true);
@@ -65,10 +68,15 @@ export const UserDetailPage = () => {
     setIsLoading(true);
     setSaveMessage(null);
 
-    Promise.all([userApi.getById(id), roleApi.list().catch(() => [] as Role[])])
-      .then(([user, roleItems]) => {
+    Promise.all([
+      userApi.getById(id),
+      roleApi.list().catch(() => [] as Role[]),
+      departmentApi.listActive().catch(() => [] as Department[]),
+    ])
+      .then(([user, roleItems, departmentItems]) => {
         if (!active) return;
         setRoles(roleItems);
+        setDepartments(departmentItems);
         setDisplayName(user.name ?? user.email ?? String(user.id));
         setCreatedAt(user.createdAt);
         setUpdatedAt(user.updatedAt);
@@ -92,7 +100,12 @@ export const UserDetailPage = () => {
     event.preventDefault();
     setFormError(null);
     setSaveMessage(null);
-    if (!validate('edit')) return;
+    const requiresDepartment = roles.some(
+      (role) =>
+        values.roleIds.includes(role.id) &&
+        (role.name === 'Docente' || role.name === 'TEACHER'),
+    );
+    if (!validate('edit', { requiresDepartment })) return;
     if (values.status === 'INACTIVE' && initialStatus !== 'INACTIVE' && !deactivationReason.trim()) {
       setFormError('Indique el motivo de baja antes de guardar la inactivación.');
       return;
@@ -205,6 +218,7 @@ export const UserDetailPage = () => {
                 values={values}
                 errors={errors}
                 roles={roles}
+                departments={departments}
                 mode="edit"
                 isSubmitting={isSubmitting}
                 submitLabel="Guardar cambios"
