@@ -4,6 +4,7 @@ import {
   hasDbEmailConflict,
   hasDbNationalIdConflict,
   hasDbRoleConflict,
+  isServerSectionWarning,
   mapBackendInvalidFields,
 } from './validateImportPreviewRow';
 
@@ -15,6 +16,7 @@ export function mapValidateResponseToRecords(
     const identification = r.national_id || r.identification || '';
     const email = r.email || '';
     const errorMessages = r.errorMessages || [];
+    const warningMessages = r.warningMessages || [];
     return {
       id: r.tempId || `tmp-row-${idx + 1}`,
       rowNumber: r.row || r.rowNumber || idx + 1,
@@ -30,7 +32,10 @@ export function mapValidateResponseToRecords(
       status: r.status || 'VALID',
       invalidFields: mapBackendInvalidFields(r.invalidFields),
       errorMessages,
-      warningMessages: r.warningMessages || [],
+      warningMessages,
+      resolvedGroupName: r.resolvedGroup?.groupName ?? null,
+      sectionAtValidation: r.section || '',
+      sectionWarning: warningMessages.find(isServerSectionWarning) ?? null,
       dbConflictNationalId: hasDbNationalIdConflict(errorMessages)
         ? identification.trim()
         : null,

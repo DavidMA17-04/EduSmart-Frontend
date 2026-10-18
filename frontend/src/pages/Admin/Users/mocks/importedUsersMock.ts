@@ -16,6 +16,12 @@ export interface ImportedUserRecord {
   dbConflictEmail?: string | null;
   /** Rol que falló contra catálogo BD en el validate inicial (se re-aplica al editar). */
   dbConflictRole?: string | null;
+  /** Grupo resuelto por el servidor para la sección validada. */
+  resolvedGroupName?: string | null;
+  /** Sección tal como la validó el servidor (para saber si se editó). */
+  sectionAtValidation?: string;
+  /** Advertencia de sección del servidor (no encontrada / ambigua / no activo). */
+  sectionWarning?: string | null;
   status: 'VALID' | 'WARNING' | 'ERROR';
   errorMessages?: string[];
   warningMessages?: string[];

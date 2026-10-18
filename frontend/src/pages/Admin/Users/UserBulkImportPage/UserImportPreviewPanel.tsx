@@ -16,16 +16,21 @@ import {
   Mail,
 } from 'lucide-react';
 import {
+  ConfirmBulkImportResponse,
   downloadValidationReportXlsx,
   mapValidateResponseToRecords,
+  rejectedRowsFromError,
   userImportApi,
   ValidateBulkImportResponse,
 } from '@/features/manage-user-import';
 import {
+  applyServerRejections,
   computeImportPreviewBreakdown,
   hasAnyDuplicateInconsistency,
+  isSectionUnchanged,
   revalidateImportPreviewRecords,
 } from '@/features/manage-user-import/lib/validateImportPreviewRow';
+import { HttpError } from '@/shared/api';
 import { Tooltip } from '@/shared/ui';
 import { ImportedUserRecord } from '../mocks/importedUsersMock';
 import styles from '../UserImportPreviewPage/UserImportPreview.module.css';
@@ -73,7 +78,7 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [importedCount, setImportedCount] = useState(0);
+  const [importResult, setImportResult] = useState<ConfirmBulkImportResponse | null>(null);
 
   useEffect(() => {
     setRecords(mapValidateResponseToRecords(importData));
@@ -158,7 +163,9 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
       const normalized: ImportedUserRecord['userStatus'] =
         value === 'INACTIVE' ? 'INACTIVE' : value === 'BLOCKED' ? 'BLOCKED' : 'ACTIVE';
       setRecords((prev) =>
-        prev.map((row) => (row.id === id ? { ...row, userStatus: normalized } : row)),
+        revalidateImportPreviewRecords(
+          prev.map((row) => (row.id === id ? { ...row, userStatus: normalized } : row)),
+        ),
       );
       return;
     }
@@ -205,7 +212,7 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
           userStatus: r.userStatus || 'ACTIVE',
         })),
       );
-      setImportedCount(result.importedCount);
+      setImportResult(result);
       setIsSuccessModalOpen(true);
 
       try {
@@ -214,7 +221,7 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
         const newEntry = {
           id: Date.now().toString(),
           name: fileName,
-          date: `Hoy a las ${timeStr} • ${result.importedCount} registros`,
+          date: `Hoy a las ${timeStr} • ${result.importedCount} registros, ${result.enrolledCount} matriculados`,
           status: 'Completado',
         };
         const existing = JSON.parse(localStorage.getItem('edusmart_recent_imports') || '[]');
@@ -224,11 +231,21 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
         // Ignorar fallos de localStorage
       }
     } catch (err: unknown) {
+      const rejected = err instanceof HttpError ? rejectedRowsFromError(err.details) : [];
+      if (rejected.length > 0) {
+        setRecords((prev) => applyServerRejections(prev, rejected));
+        setStatusFilter('ALL');
+        setShowErrorsOnly(true);
+      }
       const message =
         err instanceof Error
           ? err.message
           : 'Error al persistir los usuarios en la base de datos MySQL. Verifique la conexión con el servidor.';
-      setSaveError(message);
+      setSaveError(
+        rejected.length > 0
+          ? `${message} Corrija las filas marcadas y vuelva a intentar.`
+          : message,
+      );
     } finally {
       setIsSaving(false);
     }
@@ -601,7 +618,17 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
                         }`}
                         value={row.section || ''}
                         onChange={(e) => handleCellChange(row.id, 'section', e.target.value)}
+                        aria-describedby={`section-hint-${row.id}`}
                       />
+                      {row.section?.trim() && (
+                        <span id={`section-hint-${row.id}`} className={styles.sectionHint}>
+                          {!isSectionUnchanged(row)
+                            ? 'Se verificará al importar'
+                            : row.resolvedGroupName
+                              ? `Grupo: ${row.resolvedGroupName}`
+                              : 'Sin grupo activo'}
+                        </span>
+                      )}
                     </td>
                     <td>
                       <select
@@ -771,9 +798,24 @@ export const UserImportPreviewPanel: React.FC<UserImportPreviewPanelProps> = ({
             </div>
             <h2 className={styles.successTitle}>¡Importación Exitosa en MySQL!</h2>
             <p className={styles.successText}>
-              Se han registrado correctamente los {importedCount || currentKPIs.validRows} usuarios
-              en la base de datos oficial de EduSmart CTP Hojancha.
+              Se registraron {importResult?.importedCount ?? currentKPIs.validRows} usuarios y se
+              matricularon {importResult?.enrolledCount ?? 0} en su sección.
             </p>
+            {importResult && importResult.notEnrolled.length > 0 && (
+              <div className={styles.notEnrolledBox}>
+                <p className={styles.notEnrolledTitle}>
+                  Sin matrícula ({importResult.notEnrolled.length}): asígnelos desde Gestión de
+                  secciones.
+                </p>
+                <ul className={styles.notEnrolledList}>
+                  {importResult.notEnrolled.map((item) => (
+                    <li key={`${item.row}-${item.email}`}>
+                      <strong>Fila {item.row}</strong> · {item.email} — {item.reason}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <button
               type="button"
               className={styles.btnPrimaryGreen}

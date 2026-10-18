@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { JustificationListItem } from '@/entities/attendance';
 import { Button } from '@/shared/ui';
+import { EvidenceLink } from './EvidenceLink';
 import { JustificationStatusBadge } from './JustificationStatusBadge';
 import styles from './ReviewJustificationModal.module.css';
 
@@ -52,9 +53,7 @@ export function ReviewJustificationModal({
             <ul className={styles.evidenceList}>
               {item.evidences.map((e) => (
                 <li key={e.id}>
-                  <a href={e.url} target="_blank" rel="noreferrer">
-                    {e.fileName}
-                  </a>
+                  <EvidenceLink evidence={e} />
                   <span>{Math.round(e.fileSizeBytes / 1024)} KB</span>
                 </li>
               ))}

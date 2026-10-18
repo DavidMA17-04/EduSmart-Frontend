@@ -1,11 +1,14 @@
 export { importResultApi } from './api/importResultApi';
-export { userImportApi } from './api/userImportApi';
+export { userImportApi, rejectedRowsFromError } from './api/userImportApi';
 export type {
   ValidateBulkImportResponse,
   ConfirmBulkImportResponse,
   ImportedUserRecordApi,
   BulkImportBreakdown,
+  BulkImportRejectedRow,
   KPISummary,
+  NotEnrolledRow,
+  ResolvedGroup,
 } from './api/userImportApi';
 export {
   downloadOfficialTemplateCsv,
