@@ -1,4 +1,5 @@
 import { useState, type FormEventHandler } from 'react';
+import type { Department } from '@/entities/department';
 import type { Role } from '@/entities/role';
 import type { UserAccountStatus } from '@/entities/user';
 import { Alert, Button, Checkbox, FormActions, Input, Select } from '@/shared/ui';
@@ -10,6 +11,7 @@ interface UserFormProps {
   values: UserFormValues;
   errors: Partial<Record<keyof UserFormValues, string>>;
   roles: Role[];
+  departments?: Department[];
   isSubmitting?: boolean;
   submitLabel: string;
   formError?: string | null;
@@ -34,6 +36,7 @@ export const UserForm = ({
   values,
   errors,
   roles,
+  departments = [],
   isSubmitting = false,
   submitLabel,
   formError,
@@ -47,6 +50,11 @@ export const UserForm = ({
 }: UserFormProps) => {
   const [pendingStatus, setPendingStatus] = useState<UserAccountStatus | null>(null);
   const showDeactivationModal = pendingStatus === 'INACTIVE';
+  const teacherRoleSelected = roles.some(
+    (role) =>
+      values.roleIds.includes(role.id) &&
+      (role.name === 'Docente' || role.name === 'TEACHER'),
+  );
 
   const toggleRole = (roleId: number) => {
     const selected = values.roleIds.includes(roleId)
@@ -175,6 +183,34 @@ export const UserForm = ({
             )}
             {errors.roleIds && <span className={styles.error}>{errors.roleIds}</span>}
           </fieldset>
+          {teacherRoleSelected ? (
+            <label>
+              Departamento *
+              <Select
+                required
+                value={values.departmentId === '' ? '' : String(values.departmentId)}
+                onChange={(event) =>
+                  onChange(
+                    'departmentId',
+                    event.target.value ? Number(event.target.value) : '',
+                  )
+                }
+              >
+                <option value="">Seleccione un departamento</option>
+                {departments.map((department) => (
+                  <option key={department.id} value={department.id}>
+                    {department.name}
+                  </option>
+                ))}
+              </Select>
+              <span className={styles.hint}>
+                Obligatorio para docentes (ciencias, matemáticas, informática, cocina, etc.).
+              </span>
+              {errors.departmentId && (
+                <span className={styles.error}>{errors.departmentId}</span>
+              )}
+            </label>
+          ) : null}
         </section>
 
         <section className={styles.section} aria-labelledby="user-form-access">
@@ -216,11 +252,9 @@ export const UserForm = ({
 
         {mode === 'create' && secondarySubmitLabel ? (
           <div className={styles.actions}>
-            {onCancel ? (
-              <Button onClick={onCancel} type="button" variant="secondary">
-                Cancelar
-              </Button>
-            ) : null}
+            <Button data-intent="save" disabled={isSubmitting} type="submit">
+              {isSubmitting ? 'Guardando…' : submitLabel}
+            </Button>
             <Button
               data-intent="create-another"
               disabled={isSubmitting}
@@ -229,9 +263,11 @@ export const UserForm = ({
             >
               {isSubmitting ? 'Guardando…' : secondarySubmitLabel}
             </Button>
-            <Button data-intent="save" disabled={isSubmitting} type="submit">
-              {isSubmitting ? 'Guardando…' : submitLabel}
-            </Button>
+            {onCancel ? (
+              <Button onClick={onCancel} type="button" variant="secondary">
+                Cancelar
+              </Button>
+            ) : null}
           </div>
         ) : (
           <FormActions isSubmitting={isSubmitting} onCancel={onCancel} submitLabel={submitLabel} />

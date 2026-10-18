@@ -135,9 +135,6 @@ export function RequestJustificationModal({
         </div>
 
         <footer className={styles.footer}>
-          <Button type="button" variant="secondary" onClick={onClose} disabled={submitting}>
-            Cancelar
-          </Button>
           <Button
             type="button"
             disabled={!canSubmit}
@@ -149,7 +146,10 @@ export function RequestJustificationModal({
               })
             }
           >
-            {submitting ? 'Enviando…' : 'Enviar Justificación'}
+            {submitting ? 'Enviando…' : 'Enviar justificación'}
+          </Button>
+          <Button type="button" variant="secondary" onClick={onClose} disabled={submitting}>
+            Cancelar
           </Button>
         </footer>
       </div>

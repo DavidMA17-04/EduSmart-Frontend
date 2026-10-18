@@ -19,11 +19,14 @@
   background: var(--admin-background);
 }
 
-/* Títulos en oración: primera letra en mayúscula, el resto en minúscula. */
-.admin-shell :is(h1, h2, h3, h4, th) {
+/* Títulos en oración: primera letra en mayúscula, el resto en minúscula.
+   Marcas con data-preserve-case (p. ej. EduSmart) no se transforman. */
+:is(h1, h2, h3, h4):not([data-preserve-case]),
+.admin-shell th {
   text-transform: lowercase !important;
 }
 
-.admin-shell :is(h1, h2, h3, h4, th)::first-letter {
+:is(h1, h2, h3, h4):not([data-preserve-case])::first-letter,
+.admin-shell th::first-letter {
   text-transform: uppercase !important;
 }

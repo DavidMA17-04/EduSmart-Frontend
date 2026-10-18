@@ -20,6 +20,8 @@ export interface UserFormValues {
   confirmPassword: string;
   status: UserAccountStatus;
   roleIds: number[];
+  /** Obligatorio si el rol Docente está seleccionado. */
+  departmentId: number | '';
 }
 
 export const emptyUserForm: UserFormValues = {
@@ -32,11 +34,13 @@ export const emptyUserForm: UserFormValues = {
   confirmPassword: '',
   status: 'ACTIVE',
   roleIds: [],
+  departmentId: '',
 };
 
 export function validateUserForm(
   values: UserFormValues,
   mode: UserFormMode = 'create',
+  options?: { requiresDepartment?: boolean },
 ): Partial<Record<keyof UserFormValues, string>> {
   const errors: Partial<Record<keyof UserFormValues, string>> = {};
 
@@ -75,6 +79,10 @@ export function validateUserForm(
     errors.roleIds = 'Debe asignar al menos un rol.';
   }
 
+  if (options?.requiresDepartment && !values.departmentId) {
+    errors.departmentId = 'El departamento es obligatorio para docentes.';
+  }
+
   return errors;
 }
 
@@ -101,6 +109,8 @@ export function toCreatePayload(values: UserFormValues): CreateUserPayload {
     password: password || undefined,
     status: values.status,
     roleIds: values.roleIds,
+    departmentId:
+      typeof values.departmentId === 'number' ? values.departmentId : undefined,
   };
 }
 
@@ -112,8 +122,11 @@ export function useUserForm(initial: UserFormValues = emptyUserForm) {
     setValues((current) => ({ ...current, [field]: value }));
   };
 
-  const validate = (mode: UserFormMode = 'create') => {
-    const nextErrors = validateUserForm(values, mode);
+  const validate = (
+    mode: UserFormMode = 'create',
+    options?: { requiresDepartment?: boolean },
+  ) => {
+    const nextErrors = validateUserForm(values, mode, options);
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   };

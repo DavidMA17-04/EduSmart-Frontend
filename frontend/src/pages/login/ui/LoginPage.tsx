@@ -33,7 +33,9 @@ export const LoginPage = () => {
             src="/brand/ctp-hojancha-logo.jpeg"
           />
           <p className={styles.heroSchool}>C.T.P. de Hojancha</p>
-          <h1 className={styles.heroTitle}>EduSmart</h1>
+          <h1 className={styles.heroTitle} data-preserve-case>
+            EduSmart
+          </h1>
           <p className={styles.heroMotto}>Ciencia · Cultura · 1972</p>
           <p className={styles.heroCopy}>
             Panel institucional para usuarios, estructura académica y la gestión diaria del colegio.

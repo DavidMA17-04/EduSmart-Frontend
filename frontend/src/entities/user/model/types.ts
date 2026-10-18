@@ -6,6 +6,12 @@ export interface UserRoleRef {
   status: 'ACTIVE' | 'INACTIVE';
 }
 
+export interface UserDepartmentRef {
+  id: number;
+  code: string;
+  name: string;
+}
+
 export interface AdministrativeUser {
   id: number;
   name: string | null;
@@ -19,6 +25,8 @@ export interface AdministrativeUser {
   status: UserAccountStatus;
   mustChangePassword?: boolean;
   roles: UserRoleRef[];
+  departmentId?: number | null;
+  department?: UserDepartmentRef | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -36,6 +44,8 @@ export interface CreateUserPayload {
   password?: string;
   status?: UserAccountStatus;
   roleIds?: number[];
+  /** Obligatorio si el usuario tiene rol Docente. */
+  departmentId?: number;
 }
 
 export type UpdateUserPayload = Partial<CreateUserPayload> & {
