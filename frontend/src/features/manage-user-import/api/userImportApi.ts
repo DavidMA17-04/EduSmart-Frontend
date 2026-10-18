@@ -18,6 +18,13 @@ export interface KPISummary {
   errorPercentage: number;
 }
 
+export interface ResolvedGroup {
+  groupId: number;
+  groupName: string;
+  academicPeriodId: number;
+  academicPeriodName: string;
+}
+
 export interface ImportedUserRecordApi {
   row: number;
   rowNumber?: number;
@@ -38,6 +45,7 @@ export interface ImportedUserRecordApi {
   phone?: string | null;
   user_status?: 'ACTIVE' | 'INACTIVE' | 'BLOCKED';
   userStatus?: 'ACTIVE' | 'INACTIVE' | 'BLOCKED';
+  resolvedGroup?: ResolvedGroup | null;
   observations?: string[];
   invalidFields?: string[];
   errorMessages?: string[];
@@ -58,9 +66,33 @@ export interface ValidateBulkImportResponse {
   rows?: ImportedUserRecordApi[];
 }
 
+export interface NotEnrolledRow {
+  row: number;
+  email: string;
+  reason: string;
+}
+
 export interface ConfirmBulkImportResponse {
   importedCount: number;
+  enrolledCount: number;
+  notEnrolled: NotEnrolledRow[];
   message: string;
+}
+
+/** Detalle por fila cuando la confirmación responde 400/409. */
+export interface BulkImportRejectedRow {
+  row: number;
+  invalidFields: string[];
+  errorMessages: string[];
+}
+
+export function rejectedRowsFromError(details: unknown): BulkImportRejectedRow[] {
+  const rows = (details as { rows?: unknown } | null)?.rows;
+  if (!Array.isArray(rows)) return [];
+  return rows.filter(
+    (r): r is BulkImportRejectedRow =>
+      typeof r === 'object' && r !== null && typeof (r as { row?: unknown }).row === 'number',
+  );
 }
 
 type ApiEnvelope<T> = {

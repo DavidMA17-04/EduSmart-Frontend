@@ -66,6 +66,22 @@ export function hasDbRoleConflict(messages?: string[]): boolean {
   );
 }
 
+const INACTIVE_SECTION_WARNING_PREFIX = 'El usuario no está activo';
+
+/** Advertencias de sección que solo el servidor puede calcular (grupos activos). */
+export function isServerSectionWarning(message: string): boolean {
+  return message.startsWith('Sección "') || message.startsWith(INACTIVE_SECTION_WARNING_PREFIX);
+}
+
+function normalizeSection(value: string | undefined): string {
+  return (value ?? '').trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+/** True si la sección no se editó desde la validación del servidor. */
+export function isSectionUnchanged(row: ImportedUserRecord): boolean {
+  return normalizeSection(row.section) === normalizeSection(row.sectionAtValidation);
+}
+
 export function validateImportPreviewRow(
   row: ImportedUserRecord,
   allRows: ImportedUserRecord[],
@@ -164,6 +180,15 @@ export function validateImportPreviewRow(
       invalidFields.push('section');
     }
     warningMessages.push('Estudiante sin sección académica asignada.');
+  } else if (
+    row.sectionWarning &&
+    isSectionUnchanged(row) &&
+    !(row.sectionWarning.startsWith(INACTIVE_SECTION_WARNING_PREFIX) && row.userStatus === 'ACTIVE')
+  ) {
+    if (!row.sectionWarning.startsWith(INACTIVE_SECTION_WARNING_PREFIX)) {
+      invalidFields.push('section');
+    }
+    warningMessages.push(row.sectionWarning);
   }
 
   if (row.phone && row.phone.replace(/\D/g, '').length < 8) {
@@ -194,6 +219,34 @@ export function validateImportPreviewRow(
     warningMessages,
     invalidFields: invalidFields.length > 0 ? invalidFields : undefined,
   };
+}
+
+/**
+ * Marca como ERROR las filas que el servidor rechazó al confirmar (400/409).
+ * Los choques con BD se guardan como conflicto para que sobrevivan a la
+ * revalidación local al editar.
+ */
+export function applyServerRejections(
+  records: ImportedUserRecord[],
+  rejected: Array<{ row: number; invalidFields: string[]; errorMessages: string[] }>,
+): ImportedUserRecord[] {
+  const byRow = new Map(rejected.map((r) => [r.row, r]));
+  return records.map((row) => {
+    const hit = byRow.get(row.rowNumber);
+    if (!hit) return row;
+    return {
+      ...row,
+      status: 'ERROR',
+      errorMessages: hit.errorMessages,
+      invalidFields: mapBackendInvalidFields(hit.invalidFields),
+      dbConflictNationalId: hasDbNationalIdConflict(hit.errorMessages)
+        ? row.identification.trim()
+        : row.dbConflictNationalId,
+      dbConflictEmail: hasDbEmailConflict(hit.errorMessages)
+        ? row.email.trim().toLowerCase()
+        : row.dbConflictEmail,
+    };
+  });
 }
 
 export function revalidateImportPreviewRecords(

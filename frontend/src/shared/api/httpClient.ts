@@ -4,7 +4,12 @@ import { getAccessToken, refreshSessionTokens } from '@/shared/auth';
 const apiBaseUrl = (import.meta.env.VITE_API_URL ?? '/api/v1').replace(/\/$/, '');
 
 export class HttpError extends Error {
-  constructor(public readonly status: number, message: string) {
+  constructor(
+    public readonly status: number,
+    message: string,
+    /** Cuerpo JSON del error (p. ej. `rows[]` de importación masiva), si lo hay. */
+    public readonly details?: unknown,
+  ) {
     super(message);
     this.name = 'HttpError';
   }
@@ -22,17 +27,27 @@ function buildHeaders(init: RequestInit, token: string | null): Headers {
   return headers;
 }
 
-async function parseErrorMessage(response: Response): Promise<string> {
+async function parseError(response: Response): Promise<HttpError> {
   const payload = await response.json().catch(() => null) as {
     message?: string | string[];
   } | null;
+  return new HttpError(
+    response.status,
+    errorMessageFrom(response.status, payload),
+    payload ?? undefined,
+  );
+}
 
+function errorMessageFrom(
+  status: number,
+  payload: { message?: string | string[] } | null,
+): string {
   const rawMessage = payload?.message;
   const message = Array.isArray(rawMessage)
     ? rawMessage.filter(Boolean).join(' ')
     : rawMessage;
 
-  if (response.status === 401) {
+  if (status === 401) {
     if (
       message
       && message !== 'Unauthorized'
@@ -46,11 +61,11 @@ async function parseErrorMessage(response: Response): Promise<string> {
       : 'No autorizado. Inicie sesión para continuar.';
   }
 
-  if (response.status === 403) {
+  if (status === 403) {
     return message ?? 'Cuenta inactiva o bloqueada.';
   }
 
-  if (response.status === 409 && message) {
+  if (status === 409 && message) {
     return message;
   }
 
@@ -104,11 +119,11 @@ export async function httpClient<T>(path: string, init: RequestInit = {}): Promi
 
   if (response.status === 401 && !isPublicAuthPath(path)) {
     redirectToLogin();
-    throw new HttpError(response.status, await parseErrorMessage(response));
+    throw await parseError(response);
   }
 
   if (!response.ok) {
-    throw new HttpError(response.status, await parseErrorMessage(response));
+    throw await parseError(response);
   }
   if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;

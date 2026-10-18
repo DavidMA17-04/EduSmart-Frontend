@@ -95,7 +95,7 @@ export const BulkImportDictionaryModal: React.FC<BulkImportDictionaryModalProps>
                     <td>
                       <span className={styles.badgeYes}>Sí</span>
                     </td>
-                    <td>9 dígitos exactos sin guiones (ej. 504120893)</td>
+                    <td>Entre 9 y 30 dígitos; los guiones se ignoran (ej. 504120893)</td>
                   </tr>
                   <tr>
                     <td className={styles.mono}>nombres*</td>
@@ -155,7 +155,11 @@ export const BulkImportDictionaryModal: React.FC<BulkImportDictionaryModalProps>
                     <td>
                       <span className={styles.badgeNo}>No</span>
                     </td>
-                    <td>Ejemplo: 10-A, 11-B Informática</td>
+                    <td>
+                      Nombre del grupo tal como está en el curso lectivo activo (ej. 10-1). Si
+                      coincide con un único grupo, el estudiante activo queda{' '}
+                      <strong>matriculado</strong>; si no, se crea sin matrícula.
+                    </td>
                   </tr>
                   <tr>
                     <td className={styles.mono}>telefono</td>

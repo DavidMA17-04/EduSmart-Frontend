@@ -81,10 +81,10 @@ function applyListFilters(
   });
 }
 
-async function downloadAttendanceFile(
+async function fetchAttendanceBlob(
   path: string,
-  fileName: string,
-): Promise<void> {
+  fallbackMessage: string,
+): Promise<Blob> {
   const token = getAccessToken();
   const headers = new Headers();
   if (token) headers.set('Authorization', `Bearer ${token}`);
@@ -112,13 +112,17 @@ async function downloadAttendanceFile(
     } | null;
     const raw = payload?.message;
     const message = Array.isArray(raw) ? raw.filter(Boolean).join(' ') : raw;
-    throw new HttpError(
-      response.status,
-      message ?? 'No se pudo descargar el reporte.',
-    );
+    throw new HttpError(response.status, message ?? fallbackMessage);
   }
 
-  const blob = await response.blob();
+  return response.blob();
+}
+
+async function downloadAttendanceFile(
+  path: string,
+  fileName: string,
+): Promise<void> {
+  const blob = await fetchAttendanceBlob(path, 'No se pudo descargar el reporte.');
   const objectUrl = URL.createObjectURL(blob);
   try {
     const link = document.createElement('a');
@@ -408,6 +412,41 @@ export const attendanceApi = {
       `/attendance/justifications/${justificationId}/evidence`,
       { method: 'POST', body: formData },
     );
+  },
+
+  /**
+   * Abre una evidencia vía endpoint autenticado (las rutas /uploads de
+   * justificaciones no son públicas). Si el navegador bloquea la pestaña,
+   * descarga el archivo con su nombre original.
+   */
+  openJustificationEvidence: async (evidence: JustificationEvidenceItem) => {
+    if (isDemoMode) {
+      window.open(evidence.url, '_blank');
+      return;
+    }
+    let blob: Blob;
+    try {
+      blob = await fetchAttendanceBlob(evidence.url, 'No se pudo abrir la evidencia.');
+    } catch (error) {
+      if (error instanceof HttpError && (error.status === 403 || error.status === 404)) {
+        throw new HttpError(
+          error.status,
+          'No tiene acceso a esta evidencia o ya no existe.',
+        );
+      }
+      throw error;
+    }
+    const objectUrl = URL.createObjectURL(blob);
+    const opened = window.open(objectUrl, '_blank');
+    if (!opened) {
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = evidence.fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
   },
 
   reviewJustification: async (

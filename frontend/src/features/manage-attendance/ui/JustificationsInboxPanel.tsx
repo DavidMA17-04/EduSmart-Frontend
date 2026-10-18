@@ -7,6 +7,7 @@ import type {
 } from '@/entities/attendance';
 import { HttpError } from '@/shared/api';
 import { attendanceApi } from '../api/attendanceApi';
+import { EvidenceLink } from './EvidenceLink';
 import { JustificationStatusBadge } from './JustificationStatusBadge';
 import { RequestJustificationModal } from './RequestJustificationModal';
 import { ReviewJustificationModal } from './ReviewJustificationModal';
@@ -248,15 +249,11 @@ export function JustificationsInboxPanel() {
                     {row.evidences.length === 0
                       ? '—'
                       : row.evidences.map((e) => (
-                          <a
+                          <EvidenceLink
                             key={e.id}
+                            evidence={e}
                             className={styles.evidenceLink}
-                            href={e.url}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            {e.fileName}
-                          </a>
+                          />
                         ))}
                   </td>
                   <td>

@@ -27,11 +27,14 @@ import {
 import { useToast, Alert, Badge, EmptyState, SegmentedTabs, Select } from '@/shared/ui';
 import styles from '@/widgets/schedule-panel/ui/SchedulePanel.module.css';
 
-function slotHeaderLabel(slot: ScheduleTimeSlot): string {
+function slotSecondaryLabel(slot: ScheduleTimeSlot): string | null {
   if (slot.slotType === 'BREAK' || slot.slotType === 'LUNCH') {
     return nonClassSlotLabel(slot.slotType, slot.name);
   }
-  return formatSlotRange(slot.startTime, slot.endTime);
+  if (slot.name) {
+    return `${slot.name}${!slot.isActive ? ' (inactivo)' : ''}`;
+  }
+  return !slot.isActive ? '(inactivo)' : null;
 }
 
 function ReadonlyEntryCard({
@@ -253,58 +256,63 @@ export const MySchedulePanel = () => {
             <table className={styles.matrix}>
               <thead>
                 <tr>
-                  <th className={styles.dayCol}>Día</th>
-                  {model.matrixSlots.map((slot) => (
+                  <th className={styles.timeCol} scope="col">
+                    Hora
+                  </th>
+                  {SCHEDULE_WEEKDAYS.map((day) => (
                     <th
-                      className={
-                        slot.slotType === 'CLASS'
-                          ? styles.slotHead
-                          : styles.slotHeadNeutral
-                      }
-                      key={slot.id}
+                      className={styles.slotHead}
+                      key={day.dayOfWeek}
+                      scope="col"
                     >
-                      <span className={styles.slotHeadPrimary}>
-                        {slotHeaderLabel(slot)}
-                      </span>
-                      {slot.slotType === 'CLASS' && slot.name ? (
-                        <span className={styles.slotHeadSecondary}>
-                          {slot.name}
-                          {!slot.isActive ? ' (inactivo)' : ''}
-                        </span>
-                      ) : null}
+                      {day.label}
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {SCHEDULE_WEEKDAYS.map((day) => (
-                  <tr key={day.dayOfWeek}>
-                    <th className={styles.dayCol} scope="row">
-                      {day.label}
-                    </th>
-                    {model.matrixSlots.map((slot) => {
-                      if (slot.slotType !== 'CLASS') {
+                {model.matrixSlots.map((slot) => {
+                  const secondary = slotSecondaryLabel(slot);
+                  return (
+                    <tr key={slot.id}>
+                      <th className={styles.timeCol} scope="row">
+                        <span className={styles.slotHeadPrimary}>
+                          {formatSlotRange(slot.startTime, slot.endTime)}
+                        </span>
+                        {secondary ? (
+                          <span className={styles.slotHeadSecondary}>
+                            {secondary}
+                          </span>
+                        ) : null}
+                      </th>
+                      {SCHEDULE_WEEKDAYS.map((day) => {
+                        if (slot.slotType !== 'CLASS') {
+                          return (
+                            <td
+                              className={styles.neutralCell}
+                              key={day.dayOfWeek}
+                            >
+                              {nonClassSlotLabel(slot.slotType, slot.name)}
+                            </td>
+                          );
+                        }
+                        const cellEntries =
+                          model.entriesByCell.get(
+                            `${day.dayOfWeek}:${slot.id}`,
+                          ) ?? [];
                         return (
-                          <td className={styles.neutralCell} key={slot.id}>
-                            {nonClassSlotLabel(slot.slotType, slot.name)}
+                          <td className={styles.classCell} key={day.dayOfWeek}>
+                            <ReadonlyClassCell
+                              {...cellProps}
+                              entries={cellEntries}
+                              onCta={handleCta}
+                            />
                           </td>
                         );
-                      }
-                      const cellEntries =
-                        model.entriesByCell.get(`${day.dayOfWeek}:${slot.id}`) ??
-                        [];
-                      return (
-                        <td className={styles.classCell} key={slot.id}>
-                          <ReadonlyClassCell
-                            {...cellProps}
-                            entries={cellEntries}
-                            onCta={handleCta}
-                          />
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
+                      })}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

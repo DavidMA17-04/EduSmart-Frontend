@@ -973,6 +973,39 @@
   margin: 0 0 1.35rem 0;
 }
 
+.sectionHint {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.notEnrolledBox {
+  margin: 0 0 1.35rem 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.75rem;
+  background: var(--status-warning-bg);
+  color: var(--status-warning-text);
+  text-align: left;
+}
+
+.notEnrolledTitle {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin: 0 0 0.4rem 0;
+}
+
+.notEnrolledList {
+  margin: 0;
+  padding-left: 1rem;
+  max-height: 9rem;
+  overflow-y: auto;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
 @media (max-width: 1000px) {
   .container {
     height: auto;
