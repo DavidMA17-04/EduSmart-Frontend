@@ -18,7 +18,9 @@ export function useRoleAudience(): RoleAudience {
 
 export function roleAudienceLabel(audience: RoleAudience): string {
   if (audience === 'teacher') return 'Docente';
+  if (audience === 'staff') return 'Personal';
   if (audience === 'student') return 'Estudiante';
+  if (audience === 'guardian') return 'Encargado';
   return 'Administración';
 }
 

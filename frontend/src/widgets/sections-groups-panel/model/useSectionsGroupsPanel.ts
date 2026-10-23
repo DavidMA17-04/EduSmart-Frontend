@@ -539,6 +539,7 @@ export function useSectionsGroupsPanel() {
     openEditGroupDialog,
     closeGroupDialog,
     selectGroup,
+    refreshGroups,
     createTeacherMode,
     openEditTeacherDialog,
     closeTeacherDialog,

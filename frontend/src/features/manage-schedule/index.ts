@@ -61,5 +61,8 @@ export type {
   ScheduleTimeSlotsPanelModel,
   TimeSlotDialogMode,
 } from './model/useScheduleTimeSlotsPanel';
+export { useGroupSchedulePreview } from './model/useGroupSchedulePreview';
+export type { GroupSchedulePreviewModel } from './model/useGroupSchedulePreview';
 export { ScheduleEntryForm } from './ui/ScheduleEntryForm';
 export { ScheduleTimeSlotForm } from './ui/ScheduleTimeSlotForm';
+export { GroupSchedulePreview } from './ui/GroupSchedulePreview';

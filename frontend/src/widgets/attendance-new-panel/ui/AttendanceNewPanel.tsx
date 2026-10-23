@@ -1,4 +1,4 @@
-import { BookOpen, ClipboardPlus, Layers, Loader2 } from 'lucide-react';
+import { BookOpen, CalendarClock, ClipboardPlus, Layers, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { AttendanceCalendarException } from '@/entities/attendance';
@@ -7,6 +7,7 @@ import { formatCalendarExceptionBanner } from '@/features/manage-attendance/mode
 import { formatAttendanceGroupOptionLabel } from '@/features/manage-attendance/model/createAttendanceSessionFlow';
 import { useCreateAttendanceSessionFlow } from '@/features/manage-attendance/model/useCreateAttendanceSessionFlow';
 import { OfferingCard } from '@/features/manage-attendance/ui/OfferingCard';
+import { ScheduleSlotCard } from '@/features/manage-attendance/ui/ScheduleSlotCard';
 import { Alert, Button, EmptyState, Select, useToast } from '@/shared/ui';
 import styles from './AttendanceNewPanel.module.css';
 
@@ -38,7 +39,14 @@ export const AttendanceNewPanel = () => {
     const result = await flow.startClass();
     if (!result) return;
     if (result.ok) {
-      toast.push('Clase iniciada.', 'success');
+      toast.push(
+        flow.primaryLabel.includes('Ver')
+          ? 'Abriendo sesión.'
+          : flow.primaryLabel.includes('Continuar')
+            ? 'Continuando clase.'
+            : 'Clase iniciada.',
+        'success',
+      );
       navigate(result.path);
       return;
     }
@@ -87,6 +95,7 @@ export const AttendanceNewPanel = () => {
 
   const selectorsDisabled = flow.creating;
   const exceptionBanner = formatCalendarExceptionBanner(calendarException);
+  const detailsLoading = flow.scheduleLoading || flow.offeringsLoading;
 
   return (
     <div className={styles.panel}>
@@ -98,12 +107,12 @@ export const AttendanceNewPanel = () => {
             1
           </span>
           <div>
-            <h2 id="attendance-step-group">Grupo</h2>
-            <p>Selecciona el grupo con el que vas a trabajar.</p>
+            <h2 id="attendance-step-group">Sección</h2>
+            <p>Selecciona la sección con la que vas a trabajar.</p>
           </div>
         </header>
         <label className={styles.field} htmlFor="attendance-group-select">
-          <span className={styles.fieldLabel}>Seleccionar grupo</span>
+          <span className={styles.fieldLabel}>Seleccionar sección</span>
           <Select
             disabled={selectorsDisabled}
             id="attendance-group-select"
@@ -113,7 +122,7 @@ export const AttendanceNewPanel = () => {
             }}
             value={flow.selectedGroupId ?? ''}
           >
-            <option value="">Seleccionar grupo</option>
+            <option value="">Seleccionar sección</option>
             {flow.groups.map((group) => (
               <option key={group.groupId} value={group.groupId}>
                 {formatAttendanceGroupOptionLabel(group)}
@@ -124,7 +133,7 @@ export const AttendanceNewPanel = () => {
       </section>
 
       <section
-        aria-labelledby="attendance-step-offering"
+        aria-labelledby="attendance-step-schedule"
         className={styles.step}
       >
         <header className={styles.stepHeader}>
@@ -132,57 +141,112 @@ export const AttendanceNewPanel = () => {
             2
           </span>
           <div>
-            <h2 id="attendance-step-offering">¿Qué vas a impartir?</h2>
-            <p>Elige la materia, taller o especialidad de esta clase.</p>
+            <h2 id="attendance-step-schedule">Horario de hoy</h2>
+            <p>
+              {flow.scheduleDate
+                ? `Clases programadas para ${flow.scheduleDate}. Elige la clase a la que tomarás asistencia.`
+                : 'Al elegir la sección verás las clases de hoy.'}
+            </p>
           </div>
         </header>
 
         {flow.selectedGroupId == null ? (
-          <p className={styles.hint}>Primero selecciona un grupo.</p>
-        ) : flow.offeringsLoading ? (
+          <p className={styles.hint}>Primero selecciona una sección.</p>
+        ) : detailsLoading ? (
           <div aria-busy="true" className={styles.loadingRow}>
             <Loader2 aria-hidden="true" className={styles.spinner} size={18} />
-            <span>Cargando asignaciones…</span>
+            <span>Cargando horario…</span>
           </div>
-        ) : flow.offeringsError ? (
+        ) : flow.scheduleError && flow.occurrences.length === 0 ? (
           <div className={styles.errorBlock}>
-            <Alert>{flow.offeringsError}</Alert>
+            <Alert>{flow.scheduleError}</Alert>
             <Button
               disabled={selectorsDisabled}
-              onClick={() => flow.retryOfferings()}
+              onClick={() => flow.retryGroupDetails()}
               type="button"
               variant="secondary"
             >
               Reintentar
             </Button>
           </div>
-        ) : flow.offerings.length === 0 ? (
+        ) : flow.occurrences.length === 0 ? (
           <EmptyState
-            description="Actualmente no tienes materias, talleres o especialidades habilitadas para iniciar una clase en este grupo."
-            icon={BookOpen}
-            title="No hay asignaciones disponibles para este grupo."
+            description="Hoy no hay bloques CLASS en el horario de esta sección (fin de semana, feriado o sin programación)."
+            icon={CalendarClock}
+            title="Sin clases en el horario de hoy"
           />
         ) : (
           <div
-            aria-label="Asignaciones disponibles"
-            className={styles.offeringsGrid}
+            aria-label="Clases del horario de hoy"
+            className={styles.slotsList}
             role="group"
           >
-            {flow.offerings.map((offering) => (
-              <OfferingCard
+            {flow.occurrences.map((occurrence) => (
+              <ScheduleSlotCard
+                action={flow.resolveSlotAction(occurrence)}
                 disabled={selectorsDisabled}
-                key={offering.teachingAssignmentId}
-                offering={offering}
-                onSelect={flow.selectOffering}
+                key={occurrence.anchorEntryId}
+                occurrence={occurrence}
+                onSelect={flow.selectScheduleSlot}
                 selected={
-                  flow.selectedTeachingAssignmentId ===
-                  offering.teachingAssignmentId
+                  !flow.manualMode &&
+                  flow.selectedAnchorEntryId === occurrence.anchorEntryId
                 }
               />
             ))}
           </div>
         )}
       </section>
+
+      {flow.selectedGroupId != null && !detailsLoading && (
+        <section
+          aria-labelledby="attendance-step-manual"
+          className={styles.step}
+        >
+          <header className={styles.stepHeader}>
+            <span aria-hidden="true" className={styles.stepIndex}>
+              3
+            </span>
+            <div>
+              <h2 id="attendance-step-manual">Clase extraordinaria</h2>
+              <p>
+                Si no hay horario aplicable, inicia asistencia manual eligiendo
+                la materia o taller.
+              </p>
+            </div>
+          </header>
+
+          {flow.offeringsError && flow.offerings.length === 0 ? (
+            <Alert>{flow.offeringsError}</Alert>
+          ) : flow.offerings.length === 0 ? (
+            <EmptyState
+              description="No hay asignaciones impartibles para esta sección."
+              icon={BookOpen}
+              title="Sin asignaciones"
+            />
+          ) : (
+            <div
+              aria-label="Asignaciones manuales"
+              className={styles.offeringsGrid}
+              role="group"
+            >
+              {flow.offerings.map((offering) => (
+                <OfferingCard
+                  disabled={selectorsDisabled}
+                  key={offering.teachingAssignmentId}
+                  offering={offering}
+                  onSelect={flow.selectOffering}
+                  selected={
+                    flow.manualMode &&
+                    flow.selectedTeachingAssignmentId ===
+                      offering.teachingAssignmentId
+                  }
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       {flow.createError ? <Alert>{flow.createError}</Alert> : null}
 
@@ -195,12 +259,12 @@ export const AttendanceNewPanel = () => {
           {flow.creating ? (
             <>
               <Loader2 aria-hidden="true" className={styles.spinner} size={16} />
-              Iniciando clase…
+              {flow.primaryLabel}
             </>
           ) : (
             <>
               <ClipboardPlus aria-hidden="true" size={16} />
-              Iniciar clase
+              {flow.primaryLabel}
             </>
           )}
         </Button>

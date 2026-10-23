@@ -197,6 +197,18 @@ describe('attendanceApi', () => {
     );
   });
 
+  it('F. getScheduleContext groupId query', async () => {
+    mockedHttp.mockResolvedValueOnce({
+      success: true,
+      data: { date: '2026-09-22', dayOfWeek: 1, occurrences: [] },
+    });
+    await attendanceApi.getScheduleContext({ groupId: 3 });
+    expect(mockedHttp).toHaveBeenCalledWith(
+      '/attendance/schedule-context?groupId=3',
+      undefined,
+    );
+  });
+
   it('F. from-schedule POST solo scheduleEntryId', async () => {
     const created = {
       id: 12,

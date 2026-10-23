@@ -199,14 +199,14 @@ export const SchedulePanel = () => {
             ))}
           </Select>
           <Select
-            aria-label="Filtrar por grupo"
+            aria-label="Filtrar por sección"
             onChange={(e) => model.setFilterGroupId(e.target.value)}
             value={model.filterGroupId}
           >
-            <option value="">Grupo: Todos</option>
+            <option value="">Sección: Todas</option>
             {model.groups.map((g) => (
               <option key={g.id} value={g.id}>
-                Grupo: {g.name}
+                Sección: {g.name}
               </option>
             ))}
           </Select>

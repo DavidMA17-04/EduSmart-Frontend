@@ -1,0 +1,99 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border: 1px solid #e7ebf0;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.92rem;
+}
+
+.muted {
+  margin: 0;
+  color: #667085;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.65rem;
+}
+
+.table th,
+.table td {
+  padding: 0.85rem 0.9rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.table th {
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #667085;
+}
+
+.table tbody td {
+  background: #fff;
+  border-top: 1px solid #e7ebf0;
+  border-bottom: 1px solid #e7ebf0;
+  box-shadow: 0 8px 20px rgb(2 26 83 / 4%);
+}
+
+.table tbody td:first-child {
+  border-left: 4px solid #002e7a;
+  border-radius: 14px 0 0 14px;
+}
+
+.table tbody td:last-child {
+  border-right: 1px solid #e7ebf0;
+  border-radius: 0 14px 14px 0;
+}
+
+.table tbody tr:hover td {
+  background: #f8fafc;
+}
+
+.table td {
+  display: table-cell;
+}
+
+.table td strong,
+.table td span {
+  display: block;
+}
+
+.table td span {
+  color: #667085;
+  font-size: 0.85rem;
+}
+
+.pager {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+@media (max-width: 800px) {
+  .filters {
+    grid-template-columns: 1fr;
+  }
+}

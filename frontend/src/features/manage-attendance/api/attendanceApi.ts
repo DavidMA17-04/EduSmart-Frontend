@@ -193,10 +193,15 @@ export const attendanceApi = {
       `/attendance/groups/${groupId}/available-offerings`,
     ),
 
-  getScheduleContext: (filters: { periodId?: number } = {}) => {
+  getScheduleContext: (
+    filters: { periodId?: number; groupId?: number } = {},
+  ) => {
     const params = new URLSearchParams();
     if (filters.periodId != null) {
       params.set('periodId', String(filters.periodId));
+    }
+    if (filters.groupId != null) {
+      params.set('groupId', String(filters.groupId));
     }
     const qs = params.toString();
     return request<AttendanceScheduleContext>(

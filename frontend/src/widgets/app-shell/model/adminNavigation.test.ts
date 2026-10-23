@@ -62,6 +62,12 @@ describe('resolveRoleAudience', () => {
     expect(resolveRoleAudience(['Docente'])).toBe('teacher');
     expect(resolveRoleAudience(['Estudiante'])).toBe('student');
     expect(resolveRoleAudience(['Estudiante', 'Docente'])).toBe('teacher');
+    expect(resolveRoleAudience(['Encargado'])).toBe('guardian');
+    expect(resolveRoleAudience(['Padre de familia'])).toBe('guardian');
+    expect(resolveRoleAudience(['Orientador'])).toBe('staff');
+    expect(resolveRoleAudience(['Director'])).toBe('staff');
+    expect(resolveRoleAudience(['Director', 'Docente'])).toBe('staff');
+    expect(resolveRoleAudience(['Encargado', 'Docente'])).toBe('teacher');
   });
 });
 
@@ -357,6 +363,31 @@ describe('adminNavigation — Horario / Mi horario (D2)', () => {
     expect(visible).toContain('/admin/settings');
   });
 
+  it('guía QA: Estudiante sin attendance.view conserva historial, justificaciones y canje', () => {
+    setSessionTokens(
+      encodeJwt({
+        sub: 521,
+        email: 'smoke_pbi24.alumno@edusmart.test',
+        roles: ['Estudiante'],
+        permissions: [
+          'schedules.view_own',
+          'attendance.view_own',
+          'attendance.justify',
+        ],
+      }),
+    );
+    const visible = filterAdminNavigation(
+      adminNavigationItems,
+      sessionHasPermission,
+    ).map((item) => item.to);
+    expect(visible).toContain('/admin/attendance/redeem');
+    expect(visible).toContain('/admin/attendance/history');
+    expect(visible).toContain('/admin/attendance/justifications');
+    expect(visible).not.toContain('/admin/attendance');
+    expect(visible).not.toContain('/admin/attendance/alerts');
+    expect(visible).not.toContain('/admin/attendance/reports');
+  });
+
   it('Docente NO ve Ingresar código en el menú', () => {
     setSessionTokens(
       encodeJwt({
@@ -433,5 +464,163 @@ describe('adminNavigation — Horario / Mi horario (D2)', () => {
     );
     const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
     expect(visible.some((nav) => nav.to === '/admin/schedule')).toBe(true);
+  });
+});
+
+describe('adminNavigation — Disciplina', () => {
+  afterEach(() => {
+    clearAccessToken();
+  });
+
+  it('Catálogo de faltas requiere disciplinary.view y es solo para personal', () => {
+    const item = adminNavigationItems.find((nav) => nav.to === '/admin/discipline/catalog');
+    expect(item).toMatchObject({
+      label: 'Catálogo de faltas',
+      permission: 'disciplinary.view',
+      audience: 'staff',
+    });
+  });
+
+  it('oculta el catálogo sin disciplinary.view', () => {
+    setSessionTokens(
+      encodeJwt({
+        sub: 4,
+        email: 'docente@ctphojancha.ed.cr',
+        roles: ['Docente'],
+        permissions: ['attendance.view'],
+      }),
+    );
+    const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/catalog')).toBe(false);
+  });
+
+  it('muestra el registro a un docente con disciplinary.create y oculta el catálogo', () => {
+    setSessionTokens(
+      encodeJwt({
+        sub: 4,
+        email: 'docente@ctphojancha.ed.cr',
+        roles: ['Docente'],
+        permissions: ['disciplinary.create'],
+      }),
+    );
+    const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/register')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/cases')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/catalog')).toBe(false);
+  });
+
+  it('muestra la bandeja a un docente con disciplinary.view_own y oculta el catálogo', () => {
+    setSessionTokens(
+      encodeJwt({
+        sub: 4,
+        email: 'docente@ctphojancha.ed.cr',
+        roles: ['Docente'],
+        permissions: ['disciplinary.view_own'],
+      }),
+    );
+    const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/cases')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/catalog')).toBe(false);
+  });
+
+  it('muestra el calendario a quien configura y lo oculta al docente', () => {
+    setSessionTokens(
+      encodeJwt({
+        sub: 1,
+        email: 'admin@ctphojancha.ed.cr',
+        roles: ['Administrador'],
+        permissions: ['disciplinary.configure'],
+      }),
+    );
+    const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/calendar')).toBe(true);
+
+    setSessionTokens(
+      encodeJwt({
+        sub: 4,
+        email: 'docente@ctphojancha.ed.cr',
+        roles: ['Docente'],
+        permissions: ['disciplinary.view_own', 'disciplinary.create'],
+      }),
+    );
+    const teacher = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
+    expect(teacher.some((nav) => nav.to === '/admin/discipline/calendar')).toBe(false);
+  });
+
+  it('muestra el catálogo a un docente con disciplinary.view', () => {
+    setSessionTokens(
+      encodeJwt({
+        sub: 4,
+        email: 'docente@ctphojancha.ed.cr',
+        roles: ['Docente'],
+        permissions: ['disciplinary.view'],
+      }),
+    );
+    const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/catalog')).toBe(true);
+  });
+
+  it('muestra las notificaciones al encargado y oculta el catálogo y la bandeja de personal', () => {
+    setSessionTokens(
+      encodeJwt({
+        sub: 9,
+        email: 'encargado@ctphojancha.ed.cr',
+        roles: ['Encargado'],
+        permissions: ['disciplinary.view_own', 'disciplinary.respond'],
+      }),
+    );
+    const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/notifications')).toBe(true);
+    expect(visible.some((nav) => nav.label === 'Historial' && nav.to === '/admin/discipline/history')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/dashboard')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/cases')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/catalog')).toBe(false);
+
+    setSessionTokens(
+      encodeJwt({
+        sub: 4,
+        email: 'docente@ctphojancha.ed.cr',
+        roles: ['Docente'],
+        permissions: ['disciplinary.view_own', 'disciplinary.respond'],
+      }),
+    );
+    const teacher = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
+    expect(teacher.some((nav) => nav.to === '/admin/discipline/notifications')).toBe(false);
+    expect(teacher.some((nav) => nav.label === 'Historial de conducta')).toBe(true);
+    expect(teacher.some((nav) => nav.to === '/admin/discipline/dashboard')).toBe(true);
+    expect(teacher.some((nav) => nav.label === 'Historial')).toBe(false);
+  });
+
+  it('el estudiante ve su conducta y no la bandeja de personal', () => {
+    setSessionTokens(
+      encodeJwt({
+        sub: 21,
+        email: 'estudiante@ctphojancha.ed.cr',
+        roles: ['Estudiante'],
+        permissions: ['disciplinary.view_own'],
+      }),
+    );
+    const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
+    expect(visible.some((nav) => nav.label === 'Mi conducta')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/cases')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/notifications')).toBe(false);
+  });
+
+  it('Orientador y Director ven la bandeja de personal y no el registro', () => {
+    for (const role of ['Orientador', 'Director']) {
+      setSessionTokens(
+        encodeJwt({
+          sub: 8,
+          email: 'personal@ctphojancha.ed.cr',
+          roles: [role],
+          permissions: ['disciplinary.view', 'disciplinary.export'],
+        }),
+      );
+      const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
+      expect(visible.some((nav) => nav.to === '/admin/discipline/cases')).toBe(true);
+      expect(visible.some((nav) => nav.to === '/admin/discipline/dashboard')).toBe(true);
+      expect(visible.some((nav) => nav.to === '/admin/discipline/register')).toBe(false);
+      expect(visible.some((nav) => nav.to === '/admin/discipline/notifications')).toBe(false);
+    }
   });
 });

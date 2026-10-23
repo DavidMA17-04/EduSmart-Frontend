@@ -1,0 +1,76 @@
+.card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--brand-border, #c1c5c8) 70%, transparent);
+  background: var(--admin-surface, #fff);
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.card:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--brand-primary, #002e7a) 45%, transparent);
+}
+
+.selected {
+  border-color: var(--brand-primary, #002e7a);
+  background: color-mix(in srgb, var(--brand-primary, #002e7a) 6%, #fff);
+}
+
+.blocked {
+  opacity: 0.62;
+  cursor: not-allowed;
+}
+
+.time {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--brand-primary, #002e7a);
+  white-space: nowrap;
+  min-width: 6.5rem;
+}
+
+.main {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.name {
+  font-size: 0.95rem;
+  color: var(--brand-navy, var(--admin-text));
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.hint {
+  font-size: 0.78rem;
+  color: var(--admin-muted);
+}
+
+.check {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--brand-primary, #002e7a);
+}
+
+.checkPlaceholder {
+  width: 28px;
+  height: 28px;
+}

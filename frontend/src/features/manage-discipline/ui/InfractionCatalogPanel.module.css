@@ -1,0 +1,277 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.scale {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid #e7ebf0;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgb(2 26 83 / 5%);
+}
+
+.scaleHeader h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.scaleHeader p {
+  margin: 0.2rem 0 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted, #5b6472);
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.9rem;
+  border-radius: 16px;
+  border-top: 4px solid currentColor;
+  background: #fff;
+  box-shadow: 0 8px 18px rgb(2 26 83 / 6%);
+}
+
+.tileVeryMinor {
+  color: #2f855a;
+}
+
+.tileMinor {
+  color: #2b6cb0;
+}
+
+.tileSerious {
+  color: #b7791f;
+}
+
+.tileVerySerious {
+  color: #c05621;
+}
+
+.tileExtremelySerious {
+  color: #c53030;
+}
+
+.tileLabel {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.tileDeduction {
+  font-size: 1.9rem;
+  line-height: 1.1;
+}
+
+.tileUnit,
+.tileTrack,
+.tileCount {
+  font-size: 0.78rem;
+  color: var(--color-text-muted, #5b6472);
+}
+
+.tileTrack {
+  margin-top: 0.35rem;
+  font-weight: 600;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1rem;
+  justify-content: space-between;
+}
+
+.toolbarActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: min(100%, 12rem);
+}
+
+.fieldLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted, #5b6472);
+}
+
+.loadingRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text-muted, #5b6472);
+}
+
+.spinner {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-border, #d8dee8);
+  border-radius: 0.5rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.table th,
+.table td {
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border, #e6ebf2);
+  vertical-align: top;
+}
+
+.table th {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted, #5b6472);
+  background: var(--color-surface-muted, #f5f7fb);
+}
+
+.inactiveRow td {
+  opacity: 0.6;
+}
+
+.titleCell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.muted {
+  color: var(--color-text-muted, #5b6472);
+  font-size: 0.85rem;
+}
+
+.deduction {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  gap: 0.35rem;
+  justify-content: flex-end;
+  white-space: nowrap;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.scaleHeader h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.simHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.simBody {
+  display: grid;
+  grid-template-columns: 1fr 12rem;
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.simInputs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.simInputs .field {
+  min-width: 0;
+}
+
+.simResult {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  padding: 0.75rem;
+  border-radius: 0.6rem;
+  background: #dcfce7;
+  color: #166534;
+  text-align: center;
+}
+
+.simResultAlert {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.simGrade {
+  font-size: 2.4rem;
+  line-height: 1;
+}
+
+.simAlert {
+  margin-top: 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+@media (max-width: 960px) {
+  .tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .simBody {
+    grid-template-columns: 1fr;
+  }
+
+  .simInputs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

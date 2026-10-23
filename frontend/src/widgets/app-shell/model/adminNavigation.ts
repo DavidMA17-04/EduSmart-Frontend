@@ -1,17 +1,23 @@
 import {
   AlertTriangle,
+  Bell,
   BookMarked,
   BookOpen,
   ClipboardList,
+  ClipboardPen,
+  Inbox,
   CalendarClock,
+  CalendarOff,
   CalendarRange,
   FileBarChart,
+  Gavel,
   GraduationCap,
   History,
   KeyRound,
   Layers,
   LayoutDashboard,
   Settings,
+  ShieldAlert,
   ShieldCheck,
   UserCheck,
   Users,
@@ -20,7 +26,7 @@ import {
 import { STUDENT_ROLE_NAME } from '@/entities/role';
 import { getSessionUser } from '@/shared/auth';
 
-export type AdminNavGroupId = 'users' | 'academic' | 'attendance';
+export type AdminNavGroupId = 'users' | 'academic' | 'attendance' | 'discipline';
 
 export type AdminNavItem = {
   label: string;
@@ -33,8 +39,8 @@ export type AdminNavItem = {
   hideWhenPermission?: string;
   /** Show only when the session has an Estudiante / STUDENT role. */
   requireStudentRole?: boolean;
-  /** staff = administrador y docente. student = solo el alumno, sin vista de personal. */
-  audience?: 'staff' | 'student' | 'all';
+  /** staff = administrador, docente, orientador y director. student = solo el alumno. guardian = encargado. */
+  audience?: 'staff' | 'student' | 'guardian' | 'all';
   /** Collapsible sidebar section. Shown as a group only when the lead and at least one child are visible. */
   group?: AdminNavGroupId;
   /** Main link of a group; children appear when it is expanded. */
@@ -75,7 +81,7 @@ export function studentHomePath(
   return '/admin/attendance/redeem';
 }
 
-export type RoleAudience = 'admin' | 'teacher' | 'student';
+export type RoleAudience = 'admin' | 'teacher' | 'staff' | 'student' | 'guardian';
 
 export function resolveRoleAudience(
   roles?: readonly string[],
@@ -84,8 +90,14 @@ export function resolveRoleAudience(
   if (effective.some((role) => roleMatches(role, 'Administrador', 'ADMIN'))) {
     return 'admin';
   }
+  if (effective.some((role) => roleMatches(role, 'Director', 'Orientador'))) {
+    return 'staff';
+  }
   if (effective.some((role) => roleMatches(role, 'Docente', 'TEACHER'))) {
     return 'teacher';
+  }
+  if (effective.some((role) => roleMatches(role, 'Encargado', 'Padre de familia', 'GUARDIAN'))) {
+    return 'guardian';
   }
   if (sessionRolesIncludeStudent(effective)) return 'student';
   return 'admin';
@@ -233,6 +245,86 @@ export const adminNavigationItems: AdminNavItem[] = [
     group: 'attendance',
   },
   {
+    label: 'Tablero',
+    icon: LayoutDashboard,
+    to: '/admin/discipline/dashboard',
+    anyOfPermissions: ['disciplinary.view', 'disciplinary.view_own'],
+    group: 'discipline',
+    audience: 'staff',
+  },
+  {
+    label: 'Mi conducta',
+    icon: GraduationCap,
+    to: '/admin/discipline/history',
+    permission: 'disciplinary.view_own',
+    audience: 'student',
+    group: 'discipline',
+  },
+  {
+    label: 'Historial',
+    icon: GraduationCap,
+    to: '/admin/discipline/history',
+    permission: 'disciplinary.view_own',
+    audience: 'guardian',
+    group: 'discipline',
+  },
+  {
+    label: 'Historial de conducta',
+    icon: GraduationCap,
+    to: '/admin/discipline/history',
+    anyOfPermissions: ['disciplinary.view', 'disciplinary.view_own'],
+    group: 'discipline',
+    audience: 'staff',
+  },
+  {
+    label: 'Expedientes',
+    icon: Inbox,
+    to: '/admin/discipline/cases',
+    anyOfPermissions: ['disciplinary.view', 'disciplinary.view_own'],
+    group: 'discipline',
+    audience: 'staff',
+  },
+  {
+    label: 'Notificaciones',
+    icon: Bell,
+    to: '/admin/discipline/notifications',
+    permission: 'disciplinary.respond',
+    audience: 'guardian',
+  },
+  {
+    label: 'Registrar amonestación',
+    icon: ClipboardPen,
+    to: '/admin/discipline/register',
+    permission: 'disciplinary.create',
+    group: 'discipline',
+    audience: 'staff',
+  },
+  {
+    label: 'Catálogo de faltas',
+    icon: ShieldAlert,
+    to: '/admin/discipline/catalog',
+    permission: 'disciplinary.view',
+    group: 'discipline',
+    groupLead: true,
+    audience: 'staff',
+  },
+  {
+    label: 'Calendario y umbrales',
+    icon: CalendarOff,
+    to: '/admin/discipline/calendar',
+    permission: 'disciplinary.configure',
+    group: 'discipline',
+    audience: 'staff',
+  },
+  {
+    label: 'Flujo del debido proceso',
+    icon: Gavel,
+    to: '/admin/discipline/process',
+    permission: 'disciplinary.view',
+    group: 'discipline',
+    audience: 'staff',
+  },
+  {
     label: 'Reportes',
     icon: FileBarChart,
     to: '/admin/reports',
@@ -251,6 +343,7 @@ export function filterAdminNavigation(
   const effectiveRoles = roles ?? getSessionUser()?.roles ?? [];
   const resolvedAudience = audience ?? resolveRoleAudience(effectiveRoles);
   const studentOnly = resolvedAudience === 'student';
+  const guardianOnly = resolvedAudience === 'guardian';
   return items.filter((item) => {
     if (item.anyOfPermissions?.length) {
       if (!item.anyOfPermissions.some((code) => hasPermission(code))) {
@@ -265,8 +358,9 @@ export function filterAdminNavigation(
     if (item.requireStudentRole && !sessionRolesIncludeStudent(effectiveRoles)) {
       return false;
     }
-    if (item.audience === 'staff' && studentOnly) return false;
+    if (item.audience === 'staff' && (studentOnly || guardianOnly)) return false;
     if (item.audience === 'student' && !studentOnly) return false;
+    if (item.audience === 'guardian' && !guardianOnly) return false;
     return true;
   });
 }

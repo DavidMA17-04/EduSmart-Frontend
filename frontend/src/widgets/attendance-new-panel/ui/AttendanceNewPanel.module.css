@@ -73,6 +73,11 @@
   gap: 12px;
 }
 
+.slotsList {
+  display: grid;
+  gap: 10px;
+}
+
 .loadingRow {
   display: inline-flex;
   align-items: center;

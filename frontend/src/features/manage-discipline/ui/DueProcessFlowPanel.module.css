@@ -1,0 +1,270 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1.05rem 1.1rem;
+  border: 1px solid #e7ebf0;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgb(2 26 83 / 5%);
+}
+
+.cardTitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 1rem;
+}
+
+.total {
+  margin-left: auto;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-muted, #5b6472);
+}
+
+.tracks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.track {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.85rem;
+  border-radius: 0.6rem;
+  border-left: 4px solid currentColor;
+  background: var(--color-surface-muted, #f5f7fb);
+  font-size: 0.88rem;
+}
+
+.track span {
+  color: var(--color-text, #1f2937);
+}
+
+.trackDirect {
+  color: #2b6cb0;
+}
+
+.trackDue {
+  color: #c53030;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.25rem 1fr auto;
+  align-items: start;
+  gap: 0.75rem;
+  padding: 0.65rem 0;
+}
+
+.step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: calc(1.125rem - 1px);
+  top: 2.6rem;
+  bottom: -0.4rem;
+  width: 2px;
+  background: var(--color-border, #d8dee8);
+}
+
+.stepNumber {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: linear-gradient(160deg, #021a53, #002e7a);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 6px 14px rgb(2 26 83 / 18%);
+}
+
+.stepBody,
+.remedy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.owner {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #2b6cb0;
+}
+
+.detail {
+  font-size: 0.85rem;
+  color: var(--color-text-muted, #5b6472);
+}
+
+.deadline {
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.remedies,
+.guarantees {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guarantees {
+  gap: 0.5rem;
+  padding-left: 1.1rem;
+  list-style: disc;
+  font-size: 0.88rem;
+}
+
+.remedyHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.warning {
+  margin: 0;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.5rem;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.calculatorHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1.25rem;
+}
+
+.calculatorHead .detail {
+  flex: 1 1 18rem;
+  margin: 0;
+}
+
+.calculatorField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted, #5b6472);
+}
+
+.timeline {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timelineItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.75rem;
+  border-radius: 0.6rem;
+  border-top: 4px solid #1e3a5f;
+  background: var(--color-surface-muted, #f5f7fb);
+}
+
+.timelineStep {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #2b6cb0;
+}
+
+.timelineDate {
+  font-size: 1rem;
+}
+
+.firmBy {
+  margin: 0;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.5rem;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 0.88rem;
+}
+
+.letterLayout {
+  display: grid;
+  grid-template-columns: 18rem 1fr;
+  gap: 1.25rem;
+}
+
+.letterFields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.letterActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.letterFrame {
+  width: 100%;
+  min-height: 62rem;
+  border: 1px solid var(--color-border, #d8dee8);
+  border-radius: 0.5rem;
+  background: #fff;
+  box-shadow: 0 4px 18px rgb(15 23 42 / 8%);
+}
+
+@media (max-width: 900px) {
+  .letterLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .tracks,
+  .columns {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

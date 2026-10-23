@@ -1,0 +1,88 @@
+.journey {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1rem 1.1rem 1.15rem;
+  border: 1px solid #e7ebf0;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgb(2 26 83 / 6%);
+}
+
+.steps {
+  display: flex;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+}
+
+.steps li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: max-content;
+  padding: 0.35rem 0.55rem 0.35rem 0.35rem;
+  border-radius: 999px;
+  color: #667085;
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.marker {
+  display: grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: #eef2f6;
+  color: #667085;
+  font-size: 0.72rem;
+}
+
+.done {
+  color: #067647;
+}
+
+.done .marker {
+  background: #e7f6ee;
+  color: #067647;
+}
+
+.current {
+  color: #fff;
+  background: #002e7a;
+}
+
+.current .marker {
+  background: #cfac65;
+  color: #1f1a0d;
+}
+
+.now h3,
+.now p,
+.kicker {
+  margin: 0;
+}
+
+.kicker {
+  color: var(--admin-primary, #002e7a);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.now h3 {
+  margin-top: 0.2rem;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+}
+
+.now p {
+  margin-top: 0.35rem;
+  max-width: 68ch;
+  color: #344054;
+  line-height: 1.45;
+}

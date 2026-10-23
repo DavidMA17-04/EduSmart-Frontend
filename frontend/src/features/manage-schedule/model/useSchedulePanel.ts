@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import type { AcademicPeriod } from '@/entities/academic-period';
 import type { AcademicGroup, GuideTeacher } from '@/entities/group';
 import type {
@@ -53,8 +54,16 @@ function pickDefaultPeriodId(periods: AcademicPeriod[]): string {
   return periods[0] ? String(periods[0].id) : '';
 }
 
+function initialGroupIdFromSearch(searchParams: URLSearchParams): string {
+  const raw = searchParams.get('groupId');
+  if (!raw) return '';
+  const id = Number(raw);
+  return Number.isInteger(id) && id > 0 ? String(id) : '';
+}
+
 export function useSchedulePanel() {
   const toast = useToast();
+  const [searchParams] = useSearchParams();
   const canEdit = canEditSchedule(sessionHasPermission);
   const canViewTeachingAssignments = sessionHasPermission(
     'academic_structure.view',
@@ -82,7 +91,9 @@ export function useSchedulePanel() {
 
   const [filterPeriodId, setFilterPeriodId] = useState('');
   const [filterTeacherId, setFilterTeacherId] = useState('');
-  const [filterGroupId, setFilterGroupId] = useState('');
+  const [filterGroupId, setFilterGroupId] = useState(() =>
+    initialGroupIdFromSearch(searchParams),
+  );
   const [mobileDay, setMobileDay] = useState(1);
 
   const [dialogOpen, setDialogOpen] = useState(false);

@@ -26,6 +26,18 @@ import {
   ATTENDANCE_PERMISSIONS,
   STUDENT_ATTENDANCE_PATH,
 } from '@/features/manage-attendance';
+import {
+  DisciplineCalendarPage,
+  DisciplineCasePage,
+  DisciplineCasesPage,
+  DisciplineCatalogPage,
+  DisciplineDashboardPage,
+  DisciplineHistoryPage,
+  DisciplineNotificationsPage,
+  DisciplineProcessPage,
+  DisciplineRegisterPage,
+} from '@/pages/discipline';
+import { DISCIPLINE_PERMISSIONS } from '@/features/manage-discipline';
 import { SectionsGroupsPage } from '@/pages/sections-groups';
 import { SubjectsPage } from '@/pages/subjects';
 import { TeachingAssignmentsPage } from '@/pages/teaching-assignments';
@@ -194,6 +206,54 @@ export const AppRouter = () => (
             }
           >
             <Route element={<AttendanceNewPage />} path="attendance/new" />
+          </Route>
+        </Route>
+
+        <Route
+          element={
+            <RequirePermission
+              anyOf={[DISCIPLINE_PERMISSIONS.view, DISCIPLINE_PERMISSIONS.viewOwn]}
+            />
+          }
+        >
+          <Route element={<DisciplineHistoryPage />} path="discipline/history" />
+          <Route element={<DisciplineHistoryPage />} path="discipline/history/:studentId" />
+        </Route>
+
+        <Route element={<StaffOnly />}>
+          <Route
+            element={<RequirePermission permission={DISCIPLINE_PERMISSIONS.view} />}
+          >
+            <Route element={<DisciplineCatalogPage />} path="discipline/catalog" />
+            <Route element={<DisciplineProcessPage />} path="discipline/process" />
+          </Route>
+          <Route element={<RequirePermission permission={DISCIPLINE_PERMISSIONS.configure} />}>
+            <Route element={<DisciplineCalendarPage />} path="discipline/calendar" />
+          </Route>
+          <Route element={<RequirePermission permission={DISCIPLINE_PERMISSIONS.create} />}>
+            <Route element={<DisciplineRegisterPage />} path="discipline/register" />
+          </Route>
+          <Route
+            element={
+              <RequirePermission
+                anyOf={[DISCIPLINE_PERMISSIONS.view, DISCIPLINE_PERMISSIONS.viewOwn]}
+              />
+            }
+          >
+            <Route element={<DisciplineDashboardPage />} path="discipline/dashboard" />
+          </Route>
+          <Route
+            element={
+              <RequirePermission
+                anyOf={[DISCIPLINE_PERMISSIONS.view, DISCIPLINE_PERMISSIONS.viewOwn]}
+              />
+            }
+          >
+            <Route element={<DisciplineCasesPage />} path="discipline/cases" />
+            <Route element={<DisciplineCasePage />} path="discipline/cases/:caseId" />
+          </Route>
+          <Route element={<RequirePermission permission={DISCIPLINE_PERMISSIONS.respond} />}>
+            <Route element={<DisciplineNotificationsPage />} path="discipline/notifications" />
           </Route>
         </Route>
 

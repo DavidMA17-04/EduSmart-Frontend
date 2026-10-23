@@ -121,6 +121,11 @@ export interface AttendanceScheduleOccurrence {
   anchorEntryId: number;
   entryIds: number[];
   teachingAssignmentId: number;
+  /** Present when API enriches context (group-filtered / newer BE). */
+  groupId?: number;
+  groupName?: string;
+  offeringName?: string;
+  labelKind?: string;
   startTime: string;
   endTime: string;
   withinStartWindow: boolean;

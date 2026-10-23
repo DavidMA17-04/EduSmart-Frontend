@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Bell, ChevronDown, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { authApi, useAuthStore } from '@/features/auth';
+import { useGuardianUnreadCount } from '@/features/manage-discipline/model/useGuardianUnreadCount';
 import { sessionHasPermission } from '@/shared/auth';
 import { runAppEnterTransition } from '@/shared/motion/runAppEnterTransition';
 import { Button, Modal } from '@/shared/ui';
@@ -46,6 +47,7 @@ function SidebarLink({
   onNavigate?: () => void;
 }) {
   const Icon = item.icon;
+  const unread = useGuardianUnreadCount(item.to === '/admin/discipline/notifications');
   return (
     <NavLink
       className={({ isActive }) => navClass(isActive, nested)}
@@ -56,6 +58,7 @@ function SidebarLink({
     >
       <Icon aria-hidden="true" size={nested ? 16 : 18} />
       <span className={styles.navLabel}>{item.label}</span>
+      {unread > 0 ? <span className={styles.navBadge}>{unread}</span> : null}
     </NavLink>
   );
 }
