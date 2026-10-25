@@ -27,6 +27,12 @@ import {
   STUDENT_ATTENDANCE_PATH,
 } from '@/features/manage-attendance';
 import {
+  DisciplineAppealNewPage,
+  DisciplineAppealReviewPage,
+  DisciplineAppealTrackingPage,
+  DisciplineAppealsPage,
+  DisciplineAppealsReportsPage,
+  DisciplineAppealsReviewPage,
   DisciplineCalendarPage,
   DisciplineCasePage,
   DisciplineCasesPage,
@@ -218,6 +224,11 @@ export const AppRouter = () => (
         >
           <Route element={<DisciplineHistoryPage />} path="discipline/history" />
           <Route element={<DisciplineHistoryPage />} path="discipline/history/:studentId" />
+          <Route element={<DisciplineAppealsPage />} path="discipline/appeals" />
+          <Route element={<DisciplineAppealNewPage />} path="discipline/appeals/new" />
+          <Route element={<DisciplineAppealTrackingPage />} path="discipline/appeals/:appealId" />
+          <Route element={<DisciplineCasesPage />} path="discipline/cases" />
+          <Route element={<DisciplineCasePage />} path="discipline/cases/:caseId" />
         </Route>
 
         <Route element={<StaffOnly />}>
@@ -226,9 +237,20 @@ export const AppRouter = () => (
           >
             <Route element={<DisciplineCatalogPage />} path="discipline/catalog" />
             <Route element={<DisciplineProcessPage />} path="discipline/process" />
+            <Route element={<DisciplineAppealsReportsPage />} path="discipline/appeals/reports" />
           </Route>
           <Route element={<RequirePermission permission={DISCIPLINE_PERMISSIONS.configure} />}>
             <Route element={<DisciplineCalendarPage />} path="discipline/calendar" />
+          </Route>
+          <Route
+            element={
+              <RequirePermission
+                anyOf={[DISCIPLINE_PERMISSIONS.resolve, DISCIPLINE_PERMISSIONS.appeal]}
+              />
+            }
+          >
+            <Route element={<DisciplineAppealsReviewPage />} path="discipline/appeals/review" />
+            <Route element={<DisciplineAppealReviewPage />} path="discipline/appeals/review/:appealId" />
           </Route>
           <Route element={<RequirePermission permission={DISCIPLINE_PERMISSIONS.create} />}>
             <Route element={<DisciplineRegisterPage />} path="discipline/register" />
@@ -241,16 +263,6 @@ export const AppRouter = () => (
             }
           >
             <Route element={<DisciplineDashboardPage />} path="discipline/dashboard" />
-          </Route>
-          <Route
-            element={
-              <RequirePermission
-                anyOf={[DISCIPLINE_PERMISSIONS.view, DISCIPLINE_PERMISSIONS.viewOwn]}
-              />
-            }
-          >
-            <Route element={<DisciplineCasesPage />} path="discipline/cases" />
-            <Route element={<DisciplineCasePage />} path="discipline/cases/:caseId" />
           </Route>
           <Route element={<RequirePermission permission={DISCIPLINE_PERMISSIONS.respond} />}>
             <Route element={<DisciplineNotificationsPage />} path="discipline/notifications" />

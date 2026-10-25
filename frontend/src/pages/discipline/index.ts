@@ -1,3 +1,9 @@
+export { DisciplineAppealNewPage } from './ui/DisciplineAppealNewPage';
+export { DisciplineAppealReviewPage } from './ui/DisciplineAppealReviewPage';
+export { DisciplineAppealTrackingPage } from './ui/DisciplineAppealTrackingPage';
+export { DisciplineAppealsReportsPage } from './ui/DisciplineAppealsReportsPage';
+export { DisciplineAppealsPage } from './ui/DisciplineAppealsPage';
+export { DisciplineAppealsReviewPage } from './ui/DisciplineAppealsReviewPage';
 export { DisciplineCalendarPage } from './ui/DisciplineCalendarPage';
 export { DisciplineCasePage } from './ui/DisciplineCasePage';
 export { DisciplineCasesPage } from './ui/DisciplineCasesPage';

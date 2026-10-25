@@ -298,3 +298,123 @@ export type ReadConfirmation = {
   readUserAgent: string | null;
   label: string;
 };
+
+export type AppealKind = 'REVOCATION' | 'APPEAL';
+
+export type AppealOutcome = 'UPHOLD' | 'REVOKE' | 'MODIFY';
+
+export type AppealOutcomeFilter = AppealOutcome | 'PENDING';
+
+export type DisciplinaryAppealFilters = {
+  kind?: AppealKind;
+  outcome?: AppealOutcomeFilter;
+  caseId?: number;
+  studentUserId?: number;
+  deadline?: DeadlineIndicator;
+  page?: number;
+  pageSize?: number;
+};
+
+export interface DisciplinaryAppealListItem {
+  id: number;
+  caseId: number;
+  caseNumber: string;
+  kind: AppealKind;
+  isSubsidiary: boolean;
+  outcome: AppealOutcome | null;
+  filedAt: string | null;
+  filedByUserId: number;
+  resolvedAt: string | null;
+  resolverUserId: number | null;
+  caseStatus: DisciplinaryCaseStatus;
+  track: DisciplinaryTrack;
+  studentUserId: number;
+  studentFullName: string;
+  sectionLabel: string | null;
+  groupId: number;
+  responsibleUserId: number | null;
+  dueOn: string | null;
+  deadline: DeadlineIndicator;
+  stepBusinessDays: number;
+  caseSeverity?: InfractionSeverity | string;
+  deduction?: number;
+  deductionState?: DeductionState;
+  deductionLabel?: string;
+}
+
+export type AppealTimelineKind =
+  | 'REVOCATION_FILED'
+  | 'REVOCATION_RESOLVED'
+  | 'SUBSIDIARY_ELEVATED'
+  | 'APPEAL_FILED'
+  | 'APPEAL_RESOLVED'
+  | 'NOTIFIED'
+  | 'READ';
+
+export interface AppealTimelineEntry {
+  kind: AppealTimelineKind;
+  title: string;
+  occurredAt: string;
+  statusLabel: string;
+  note: string | null;
+}
+
+export interface AppealResolutionNotice {
+  communicationId: number;
+  issuedAt: string;
+  notificationId: number | null;
+  readAt: string | null;
+  canConfirm: boolean;
+}
+
+export interface DisciplinaryAppealTracking extends DisciplinaryAppealListItem {
+  body: string;
+  reasoning: string | null;
+  witnesses: string | null;
+  timeline: AppealTimelineEntry[];
+  resolutionNotice: AppealResolutionNotice | null;
+}
+
+export interface DisciplinaryAppealPage {
+  data: DisciplinaryAppealListItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface DisciplinaryAppealReviewItem extends DisciplinaryAppealListItem {
+  body: string;
+  caseSeverity: InfractionSeverity | string;
+}
+
+export interface DisciplinaryAppealReviewPage {
+  data: DisciplinaryAppealReviewItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface DisciplinaryAppealDashboard {
+  total: number;
+  pending: number;
+  resolved: number;
+  onTime: number;
+  dueSoon: number;
+  overdue: number;
+  byKind: { REVOCATION: number; APPEAL: number };
+  byOutcome: { PENDING: number; UPHOLD: number; REVOKE: number; MODIFY: number };
+  byCaseStatus: Partial<Record<DisciplinaryCaseStatus, number>>;
+}
+
+export interface EligibleDisciplinaryCase {
+  caseId: number;
+  caseNumber: string;
+  studentUserId: number;
+  studentFullName: string;
+  caseStatus: DisciplinaryCaseStatus;
+  track: DisciplinaryTrack;
+  kind: AppealKind;
+  dueOn: string | null;
+  deadline: DeadlineIndicator;
+  stepBusinessDays: number;
+}

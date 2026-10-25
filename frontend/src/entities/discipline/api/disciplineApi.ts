@@ -11,11 +11,18 @@ import {
 } from '../model/queries';
 import type {
   CreatedDisciplinaryCase,
+  DisciplinaryAppealFilters,
+  DisciplinaryAppealPage,
   DisciplinaryCaseDetail,
   DisciplinaryCaseFilters,
   DisciplinaryCasePage,
   DisciplinarySettings,
   DisciplinaryStudentHit,
+  DisciplinaryAppealReviewItem,
+  DisciplinaryAppealReviewPage,
+  DisciplinaryAppealTracking,
+  DisciplinaryAppealDashboard,
+  EligibleDisciplinaryCase,
   StudentConductHistory,
   NonWorkingDay,
   ReadConfirmation,
@@ -82,6 +89,19 @@ function infractionTypesQuery(filters: InfractionTypeFilters): string {
   const params = new URLSearchParams();
   if (filters.severity) params.set('severity', filters.severity);
   if (filters.active !== undefined) params.set('active', String(filters.active));
+  const qs = params.toString();
+  return qs ? `?${qs}` : '';
+}
+
+function appealListQuery(filters: DisciplinaryAppealFilters): string {
+  const params = new URLSearchParams();
+  if (filters.kind) params.set('kind', filters.kind);
+  if (filters.outcome) params.set('outcome', filters.outcome);
+  if (filters.caseId) params.set('caseId', String(filters.caseId));
+  if (filters.studentUserId) params.set('studentUserId', String(filters.studentUserId));
+  if (filters.deadline) params.set('deadline', filters.deadline);
+  if (filters.page && filters.page > 1) params.set('page', String(filters.page));
+  if (filters.pageSize) params.set('pageSize', String(filters.pageSize));
   const qs = params.toString();
   return qs ? `?${qs}` : '';
 }
@@ -182,6 +202,29 @@ export const disciplineApi = {
 
   listCases: (filters: DisciplinaryCaseFilters = {}) =>
     request<DisciplinaryCasePage>(`/disciplinary/cases${caseListQuery(filters)}`),
+
+  listAppeals: (filters: DisciplinaryAppealFilters = {}) =>
+    request<DisciplinaryAppealPage>(`/disciplinary/appeals${appealListQuery(filters)}`),
+
+  listEligibleAppeals: () =>
+    request<{ data: EligibleDisciplinaryCase[]; total: number }>('/disciplinary/appeals/eligible'),
+
+  listReviewableAppeals: (filters: DisciplinaryAppealFilters = {}) =>
+    request<DisciplinaryAppealReviewPage>(`/disciplinary/appeals/review${appealListQuery(filters)}`),
+
+  getReviewableAppeal: (id: number) =>
+    request<DisciplinaryAppealReviewItem>(`/disciplinary/appeals/review/${id}`),
+
+  getAppeal: (id: number) => request<DisciplinaryAppealTracking>(`/disciplinary/appeals/${id}`),
+
+  getAppealDashboard: (filters: DisciplinaryAppealFilters = {}) =>
+    request<DisciplinaryAppealDashboard>(`/disciplinary/appeals/dashboard${appealListQuery(filters)}`),
+
+  exportAppeals: (format: 'excel' | 'pdf', filters: DisciplinaryAppealFilters = {}) =>
+    downloadDisciplineFile(
+      `/disciplinary/appeals/export/${format}${appealListQuery(filters)}`,
+      format === 'pdf' ? 'recursos.pdf' : 'recursos.xlsx',
+    ),
 
   getCase: (id: number) => request<DisciplinaryCaseDetail>(`/disciplinary/cases/${id}`),
 

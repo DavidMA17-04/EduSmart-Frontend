@@ -520,6 +520,7 @@ describe('adminNavigation — Disciplina', () => {
     );
     const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
     expect(visible.some((nav) => nav.to === '/admin/discipline/cases')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/appeals')).toBe(true);
     expect(visible.some((nav) => nav.to === '/admin/discipline/catalog')).toBe(false);
   });
 
@@ -572,6 +573,14 @@ describe('adminNavigation — Disciplina', () => {
     const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
     expect(visible.some((nav) => nav.to === '/admin/discipline/notifications')).toBe(true);
     expect(visible.some((nav) => nav.label === 'Historial' && nav.to === '/admin/discipline/history')).toBe(true);
+    expect(visible.some((nav) => nav.label === 'Centro de apelaciones' && nav.to === '/admin/discipline/appeals')).toBe(
+      true,
+    );
+    expect(visible.every((nav) => nav.group !== 'attendance' || nav.to !== '/admin/discipline/appeals')).toBe(true);
+    expect(
+      visible.filter((nav) => nav.label === 'Centro de apelaciones').every((nav) => nav.group === 'discipline'),
+    ).toBe(true);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/calendar')).toBe(false);
     expect(visible.some((nav) => nav.to === '/admin/discipline/dashboard')).toBe(false);
     expect(visible.some((nav) => nav.to === '/admin/discipline/cases')).toBe(false);
     expect(visible.some((nav) => nav.to === '/admin/discipline/catalog')).toBe(false);
@@ -602,6 +611,7 @@ describe('adminNavigation — Disciplina', () => {
     );
     const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
     expect(visible.some((nav) => nav.label === 'Mi conducta')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/appeals')).toBe(true);
     expect(visible.some((nav) => nav.to === '/admin/discipline/cases')).toBe(false);
     expect(visible.some((nav) => nav.to === '/admin/discipline/notifications')).toBe(false);
   });
@@ -622,5 +632,68 @@ describe('adminNavigation — Disciplina', () => {
       expect(visible.some((nav) => nav.to === '/admin/discipline/register')).toBe(false);
       expect(visible.some((nav) => nav.to === '/admin/discipline/notifications')).toBe(false);
     }
+  });
+
+  it('Dirección ve la revisión de recursos y no el registro de amonestación', () => {
+    setSessionTokens(
+      encodeJwt({
+        sub: 8,
+        email: 'director@ctphojancha.ed.cr',
+        roles: ['Director'],
+        permissions: ['disciplinary.view', 'disciplinary.appeal', 'disciplinary.export'],
+      }),
+    );
+    const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/appeals/review')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/appeals/reports')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/register')).toBe(false);
+    expect(visible.filter((nav) => nav.to === '/admin/discipline/appeals/review').every((nav) => nav.group === 'discipline')).toBe(true);
+  });
+
+  it('Administrador con view y export ve el Centro, reportes y no un grupo Apelaciones', () => {
+    setSessionTokens(
+      encodeJwt({
+        sub: 1,
+        email: 'admin@ctphojancha.ed.cr',
+        roles: ['Administrador'],
+        permissions: ['disciplinary.view', 'disciplinary.export', 'disciplinary.create', 'disciplinary.resolve', 'disciplinary.appeal'],
+      }),
+    );
+    const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/appeals')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/appeals/reports')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/appeals/review')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/register')).toBe(true);
+    expect(visible.filter((nav) => nav.to.startsWith('/admin/discipline/appeals')).every((nav) => nav.group === 'discipline')).toBe(true);
+  });
+
+  it('el guía con resolve ve la revisión y no el dashboard institucional de recursos', () => {
+    setSessionTokens(
+      encodeJwt({
+        sub: 4,
+        email: 'docente@ctphojancha.ed.cr',
+        roles: ['Docente'],
+        permissions: ['disciplinary.view_own', 'disciplinary.create', 'disciplinary.resolve'],
+      }),
+    );
+    const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/appeals')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/appeals/review')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/appeals/reports')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/register')).toBe(true);
+  });
+
+  it('el encargado no ve la bandeja de revisión', () => {
+    setSessionTokens(
+      encodeJwt({
+        sub: 9,
+        email: 'encargado@ctphojancha.ed.cr',
+        roles: ['Encargado'],
+        permissions: ['disciplinary.view_own', 'disciplinary.respond'],
+      }),
+    );
+    const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/appeals/review')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/admin/discipline/appeals/reports')).toBe(false);
   });
 });
