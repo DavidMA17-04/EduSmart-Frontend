@@ -9,6 +9,7 @@ import {
   filterAdminNavigation,
   groupAdminNavigation,
   resolveRoleAudience,
+  studentHomePath,
 } from './adminNavigation';
 
 if (typeof globalThis.atob !== 'function') {
@@ -597,13 +598,15 @@ describe('adminNavigation — Disciplina', () => {
         sub: 21,
         email: 'estudiante@ctphojancha.ed.cr',
         roles: ['Estudiante'],
-        permissions: ['disciplinary.view_own'],
+        permissions: ['disciplinary.view_own', 'schedules.view_own'],
       }),
     );
     const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
     expect(visible.some((nav) => nav.label === 'Mi conducta')).toBe(true);
     expect(visible.some((nav) => nav.to === '/admin/discipline/cases')).toBe(false);
     expect(visible.some((nav) => nav.to === '/admin/discipline/notifications')).toBe(false);
+    expect(studentHomePath(sessionHasPermission)).toBe('/admin/my-schedule');
+    expect(studentHomePath(sessionHasPermission)).not.toBe('/admin/discipline/cases');
   });
 
   it('Orientador y Director ven la bandeja de personal y no el registro', () => {

@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Bell, ChevronDown, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { ChevronDown, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { authApi, useAuthStore } from '@/features/auth';
+import { NotificationBell } from '@/features/in-app-inbox';
 import { useGuardianUnreadCount } from '@/features/manage-discipline/model/useGuardianUnreadCount';
 import { sessionHasPermission } from '@/shared/auth';
 import { runAppEnterTransition } from '@/shared/motion/runAppEnterTransition';
@@ -213,9 +214,7 @@ export const AdminShell = () => {
       </aside>
       <section className={styles.main}>
         <header className={styles.header}>
-          <button aria-label="Notificaciones" className={styles.iconButton} type="button">
-            <Bell size={20} />
-          </button>
+          <NotificationBell />
           <button className={styles.profile} onClick={() => navigate('/admin/settings')} type="button">
             <span className={styles.headerAvatar}>{avatarLetter}</span>
             <span>
