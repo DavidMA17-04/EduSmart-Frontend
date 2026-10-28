@@ -144,6 +144,39 @@ Estos resultados son correctos y no se fuerzan el mismo día:
 
 En la base local, la firmeza ya quedó demostrada con AM-2026-0001 y AM-2026-0002. No hace falta mover fechas de un caso nuevo para dar por probado el módulo.
 
+## 7. Suites automáticas (PBI-37)
+
+Además del recorrido manual, el cierre de Sprint 4 exige estas suites. **No pegues contraseñas ni cédulas aquí.**
+
+### Jest disciplinario
+
+En `EduSmart-Backend`:
+
+```bash
+npx jest src/modules/disciplinary
+```
+
+Debe quedar verde. Las unitarias de descargo y recursos inyectan un día hábil (`today`); no dependen del calendario del sistema.
+
+### HTTP / e2e (`npm run test:s4-e2e`)
+
+Requiere API Nest local (`npm run start:dev`) y MySQL con el seed DiscQA. Desde `EduSmart-Backend`:
+
+```bash
+npm run test:s4-e2e
+```
+
+Variables de entorno (valores fuera del repo, por ejemplo en `.env` local):
+
+| Variable | Uso |
+|---|---|
+| `DISCQA_TEACHER_ID` / `DISCQA_TEACHER_PASSWORD` | Docente guía DiscQA |
+| `DISCQA_GUARDIAN_ID` / `DISCQA_GUARDIAN_PASSWORD` | Encargado vinculado |
+| `DISCQA_STUDENT_ID` / `DISCQA_STUDENT_PASSWORD` | Estudiante DiscQA (opcional; se resuelve por cédula o búsqueda) |
+| `DISCQA_FOREIGN_TEACHER_ID` / `DISCQA_FOREIGN_TEACHER_PASSWORD` | Docente DiscQA sin guía en esa sección (403 al conducir) |
+
+Si falta un par de credenciales, ese caso sale **SKIP**, no **FAIL**. La suite crea expedientes nuevos; no reabre `AM-2026-0001` ni `AM-2026-0002`.
+
 ## Cierre
 
 El módulo está probado por completo cuando se cumplen estos puntos:
@@ -156,3 +189,5 @@ El módulo está probado por completo cuando se cumplen estos puntos:
 - Desestimada, anulada, archivo por falta de mérito y revocatoria acogida no aplican rebajo.
 - La nota suma cada rebajo firme una sola vez.
 - Quien no tiene el permiso recibe rechazo.
+- `npx jest src/modules/disciplinary` queda verde.
+- `npm run test:s4-e2e` contra API + MySQL locales no tiene FAIL (SKIP solo si faltan `DISCQA_*`).

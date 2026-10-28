@@ -1,0 +1,82 @@
+/*
+ * Base acotada al módulo de comunicaciones.
+ *
+ * El proyecto carga Tailwind sin `@tailwind base` (preflight) para no alterar
+ * el resto de pantallas. Sin esa capa:
+ *  - las utilidades `border-*` no tienen estilo de borde;
+ *  - degradados (`from-*`), transformaciones (`translate-*`, `rotate-*`) y
+ *    anillos (`ring-*`) dependen de variables `--tw-*` que nadie inicializa.
+ * Aquí se replica solo lo necesario, dentro de `.edu-comms`.
+ * `:where()` deja la especificidad en 0 para que las utilidades siempre ganen.
+ */
+:where(.edu-comms),
+:where(.edu-comms) *,
+:where(.edu-comms) *::before,
+:where(.edu-comms) *::after {
+  box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: #e2e8f0;
+
+  --tw-translate-x: 0;
+  --tw-translate-y: 0;
+  --tw-rotate: 0;
+  --tw-skew-x: 0;
+  --tw-skew-y: 0;
+  --tw-scale-x: 1;
+  --tw-scale-y: 1;
+  --tw-gradient-from-position: ;
+  --tw-gradient-via-position: ;
+  --tw-gradient-to-position: ;
+  --tw-ring-inset: ;
+  --tw-ring-offset-width: 0px;
+  --tw-ring-offset-color: #fff;
+  --tw-ring-color: rgb(13 35 70 / 0.2);
+  --tw-ring-offset-shadow: 0 0 #0000;
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-shadow: 0 0 #0000;
+  --tw-shadow-colored: 0 0 #0000;
+  --tw-blur: ;
+  --tw-backdrop-blur: ;
+  --tw-backdrop-brightness: ;
+  --tw-backdrop-contrast: ;
+  --tw-backdrop-grayscale: ;
+  --tw-backdrop-hue-rotate: ;
+  --tw-backdrop-invert: ;
+  --tw-backdrop-opacity: ;
+  --tw-backdrop-saturate: ;
+  --tw-backdrop-sepia: ;
+}
+
+/*
+ * El CSS global define `button { border: none; background: none }` (0,0,1) y
+ * puede cargarse después de este archivo. `button:is(button)` sube a (0,0,2):
+ * gana al reset global pero sigue por debajo de cualquier utilidad (0,1,0).
+ */
+:where(.edu-comms) button:is(button),
+:where(.edu-comms) input:is(input),
+:where(.edu-comms) textarea:is(textarea),
+:where(.edu-comms) select:is(select) {
+  border-width: 0;
+  border-style: solid;
+  border-color: #e2e8f0;
+  font-family: inherit;
+}
+
+:where(.edu-comms) h1,
+:where(.edu-comms) h2,
+:where(.edu-comms) h3,
+:where(.edu-comms) h4,
+:where(.edu-comms) p,
+:where(.edu-comms) ul {
+  margin: 0;
+}
+
+:where(.edu-comms) ul {
+  padding: 0;
+  list-style: none;
+}
+
+.edu-comms-hero {
+  background-image: linear-gradient(135deg, #0d2346 0%, #112b57 55%, #164687 100%);
+}
