@@ -52,6 +52,8 @@ import { ResetPasswordPage } from '@/pages/reset-password';
 import { ImportResultPage } from '@/pages/import-result';
 import { RoleShell, StaffOnly } from '@/widgets/app-shell';
 import { SCHEDULE_PERMISSIONS } from '@/features/manage-schedule';
+import { CommunicationsFeedPage } from '@/pages/communications/CommunicationsFeedPage';
+import { CommunicationsAdminPage } from '@/pages/communications/CommunicationsAdminPage';
 import { RequireAuth } from './RequireAuth';
 import { RequirePermission } from './RequirePermission';
 import { RoleHome } from './RoleHome';
@@ -254,6 +256,22 @@ export const AppRouter = () => (
           </Route>
           <Route element={<RequirePermission permission={DISCIPLINE_PERMISSIONS.respond} />}>
             <Route element={<DisciplineNotificationsPage />} path="discipline/notifications" />
+          </Route>
+        </Route>
+
+        {/* Módulo oficial de Comunicados Institucionales (WF-65 al WF-76) */}
+        <Route element={<RequirePermission permission="communications.view" />}>
+          <Route element={<CommunicationsFeedPage />} path="communications" />
+        </Route>
+        <Route element={<StaffOnly />}>
+          <Route
+            element={
+              <RequirePermission
+                anyOf={['communications.create', 'communications.manage', 'communications.stats']}
+              />
+            }
+          >
+            <Route element={<CommunicationsAdminPage />} path="communications/manage" />
           </Route>
         </Route>
 
