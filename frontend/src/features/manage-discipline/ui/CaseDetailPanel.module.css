@@ -78,7 +78,39 @@
 .actions {
   position: sticky;
   top: 1rem;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
   background: linear-gradient(180deg, #f8f1e3 0%, #fff 7.5rem);
+}
+
+.composerHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.composerTitle {
+  margin: 0;
+  font-weight: 700;
+  color: #021a53;
+}
+
+.composerCancel {
+  border: 0;
+  background: transparent;
+  color: #667085;
+  cursor: pointer;
+  font-size: 0.85rem;
+  text-decoration: underline;
+}
+
+.form {
+  padding: 0.85rem;
+  border: 1px solid #cfac65;
+  border-radius: 14px;
+  background: #fffdf8;
+  box-shadow: 0 8px 20px rgb(2 26 83 / 8%);
 }
 
 .actionChoice {
