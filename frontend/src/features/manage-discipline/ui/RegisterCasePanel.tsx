@@ -1,3 +1,4 @@
+import { portalPathForSession } from '@/shared/auth/portalPaths';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Alert, Button, Input, Select, Textarea } from '@/shared/ui';
@@ -121,7 +122,7 @@ export const RegisterCasePanel = () => {
         {created.isLateReport ? <Alert>El reporte quedó marcado como extemporáneo.</Alert> : null}
         {fileWarning ? <Alert>{`El expediente se guardó, pero alguna evidencia no se adjuntó. ${fileWarning}`}</Alert> : null}
         <div className={styles.actions}>
-          <Link className={styles.openCase} to={disciplineCasePath(created.id)}>
+          <Link className={styles.openCase} to={portalPathForSession(disciplineCasePath(created.id))}>
             Abrir el expediente
           </Link>
           <Button type="button" variant="secondary" onClick={() => window.location.reload()}>

@@ -1,4 +1,4 @@
-import type { AdministrativeUser, UserAccountStatus } from '@/entities/user';
+import type { AdministrativeUser, OwnEnrollment, UserAccountStatus } from '@/entities/user';
 import type { UserFormValues } from './useUserForm';
 
 type RawUser = Partial<AdministrativeUser> & {
@@ -8,6 +8,20 @@ type RawUser = Partial<AdministrativeUser> & {
   firstName?: string | null;
   lastName?: string | null;
 };
+
+function normalizeEnrollment(raw: OwnEnrollment | null | undefined): OwnEnrollment | null {
+  if (!raw) return null;
+  return {
+    groupId: raw.groupId,
+    groupName: raw.groupName ?? null,
+    sectionLabel: raw.sectionLabel ?? raw.groupName ?? null,
+    specialtyName: raw.specialtyName ?? null,
+    academicPeriodId: raw.academicPeriodId,
+    academicPeriodName: raw.academicPeriodName ?? null,
+    startsOn: raw.startsOn,
+    status: raw.status,
+  };
+}
 
 export function normalizeUser(raw: RawUser): AdministrativeUser {
   const firstName =
@@ -34,6 +48,7 @@ export function normalizeUser(raw: RawUser): AdministrativeUser {
     roles: raw.roles ?? [],
     departmentId: raw.departmentId ?? raw.department?.id ?? null,
     department: raw.department ?? null,
+    enrollment: normalizeEnrollment(raw.enrollment),
     createdAt: raw.createdAt ?? new Date().toISOString(),
     updatedAt: raw.updatedAt ?? new Date().toISOString(),
   };
@@ -52,5 +67,6 @@ export function userToFormValues(user: AdministrativeUser): UserFormValues {
     status: user.status,
     roleIds: user.roles.map((role) => role.id),
     departmentId: typeof departmentId === 'number' ? departmentId : '',
+    groupId: '',
   };
 }

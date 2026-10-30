@@ -1,8 +1,17 @@
 import { useState, type FormEventHandler } from 'react';
 import type { Department } from '@/entities/department';
+import type { AcademicGroup } from '@/entities/group';
 import type { Role } from '@/entities/role';
-import type { UserAccountStatus } from '@/entities/user';
+import type { OwnEnrollment, UserAccountStatus } from '@/entities/user';
 import { Alert, Button, Checkbox, FormActions, Input, Select } from '@/shared/ui';
+import { enrollmentSummary } from '../model/ownGeneralInfo';
+import {
+  filterGroupsForManualEnrollment,
+  formatGroupOptionLabel,
+  isGroupAtCapacity,
+  roleIsStudent,
+  shouldShowManualSectionSelect,
+} from '../model/sectionEnrollmentForm';
 import type { UserFormValues } from '../model/useUserForm';
 import { UserDeactivationModal } from './UserDeactivationModal';
 import styles from './UserForm.module.css';
@@ -12,6 +21,9 @@ interface UserFormProps {
   errors: Partial<Record<keyof UserFormValues, string>>;
   roles: Role[];
   departments?: Department[];
+  groups?: AcademicGroup[];
+  /** Matrícula vigente: en edit se muestra de solo lectura y no hay traslado. */
+  currentEnrollment?: OwnEnrollment | null;
   isSubmitting?: boolean;
   submitLabel: string;
   formError?: string | null;
@@ -37,6 +49,8 @@ export const UserForm = ({
   errors,
   roles,
   departments = [],
+  groups = [],
+  currentEnrollment = null,
   isSubmitting = false,
   submitLabel,
   formError,
@@ -55,12 +69,29 @@ export const UserForm = ({
       values.roleIds.includes(role.id) &&
       (role.name === 'Docente' || role.name === 'TEACHER'),
   );
+  const studentRoleSelected = roles.some(
+    (role) => values.roleIds.includes(role.id) && roleIsStudent(role.name),
+  );
+  const hasCurrentEnrollment = Boolean(currentEnrollment);
+  const showSectionSelect = shouldShowManualSectionSelect(
+    mode,
+    studentRoleSelected,
+    hasCurrentEnrollment,
+  );
+  const showSectionReadOnly = mode === 'edit' && studentRoleSelected && hasCurrentEnrollment;
+  const sectionGroups = filterGroupsForManualEnrollment(groups);
 
   const toggleRole = (roleId: number) => {
     const selected = values.roleIds.includes(roleId)
       ? values.roleIds.filter((id) => id !== roleId)
       : [...values.roleIds, roleId];
     onChange('roleIds', selected);
+    const stillStudent = roles.some(
+      (role) => selected.includes(role.id) && roleIsStudent(role.name),
+    );
+    if (!stillStudent && values.groupId !== '') {
+      onChange('groupId', '');
+    }
   };
 
   const handleStatusChange = (next: UserAccountStatus) => {
@@ -209,6 +240,41 @@ export const UserForm = ({
               {errors.departmentId && (
                 <span className={styles.error}>{errors.departmentId}</span>
               )}
+            </label>
+          ) : null}
+          {showSectionReadOnly && currentEnrollment ? (
+            <p className={styles.hint} role="status">
+              Sección actual: {enrollmentSummary(currentEnrollment)}. El traslado se gestiona en
+              Estructura académica.
+            </p>
+          ) : null}
+          {showSectionSelect ? (
+            <label>
+              Sección {values.status === 'ACTIVE' ? '*' : ''}
+              <Select
+                required={values.status === 'ACTIVE'}
+                value={values.groupId === '' ? '' : String(values.groupId)}
+                onChange={(event) =>
+                  onChange('groupId', event.target.value ? Number(event.target.value) : '')
+                }
+              >
+                <option value="">Seleccione una sección</option>
+                {sectionGroups.map((group) => {
+                  const full = isGroupAtCapacity(group);
+                  return (
+                    <option disabled={full} key={group.id} value={group.id}>
+                      {formatGroupOptionLabel(group)}
+                      {full ? ' — cupo completo' : ''}
+                    </option>
+                  );
+                })}
+              </Select>
+              <span className={styles.hint}>
+                {values.status === 'ACTIVE'
+                  ? 'Obligatorio para estudiantes activos. El alumno queda matriculado en esa sección.'
+                  : 'La matrícula solo se aplica a cuentas Activas. Con estado Pendiente no se envía sección.'}
+              </span>
+              {errors.groupId && <span className={styles.error}>{errors.groupId}</span>}
             </label>
           ) : null}
         </section>

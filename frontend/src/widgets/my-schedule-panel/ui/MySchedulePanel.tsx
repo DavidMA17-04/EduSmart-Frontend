@@ -13,16 +13,19 @@ import {
   nonClassSlotLabel,
   SCHEDULE_WEEKDAYS,
 } from '@/features/manage-schedule';
+import { staffPathForSession } from '@/widgets/app-shell/model/adminNavigation';
 import {
   buildFromSchedulePayload,
   humanizeFromScheduleError,
   MY_SCHEDULE_ATTENDANCE_COPY,
   MY_SCHEDULE_COPY,
   resolveMyScheduleAttendanceCta,
+  resolveMyScheduleEmptyCopy,
   resolveMyScheduleEntrySecondaryLabel,
   useMySchedulePanel,
   type MyScheduleAttendanceCta,
   type MyScheduleCardVariant,
+  type MyScheduleEmptyKind,
 } from '@/features/view-my-schedule';
 import { useToast, Alert, Badge, EmptyState, SegmentedTabs, Select } from '@/shared/ui';
 import styles from '@/widgets/schedule-panel/ui/SchedulePanel.module.css';
@@ -129,18 +132,29 @@ function ReadonlyClassCell({
   );
 }
 
-export const MySchedulePanel = () => {
+export const MySchedulePanel = ({
+  emptyKind,
+  sectionLabel,
+}: {
+  emptyKind?: MyScheduleEmptyKind;
+  sectionLabel?: string | null;
+} = {}) => {
   const model = useMySchedulePanel();
   const navigate = useNavigate();
   const toast = useToast();
   const [startingEntryId, setStartingEntryId] = useState<number | null>(null);
+  const emptyCopy = resolveMyScheduleEmptyCopy(
+    model.cardVariant,
+    emptyKind ?? 'no-schedule',
+    sectionLabel,
+  );
 
   const dayTabs = SCHEDULE_WEEKDAYS.map((d) => ({
     id: String(d.dayOfWeek),
     label: d.label,
   }));
 
-  const blockingError = model.catalogError || model.scheduleError;
+  const blockingError = model.scheduleError;
 
   const cellProps = useMemo(
     () => ({
@@ -162,7 +176,7 @@ export const MySchedulePanel = () => {
   const handleCta = async (cta: MyScheduleAttendanceCta) => {
     if (cta.kind === 'continue' || cta.kind === 'view') {
       if (cta.sessionId != null) {
-        navigate(ATTENDANCE_SESSION_PATH(cta.sessionId));
+        navigate(staffPathForSession(ATTENDANCE_SESSION_PATH(cta.sessionId)));
       }
       return;
     }
@@ -174,7 +188,7 @@ export const MySchedulePanel = () => {
       const result = await attendanceApi.createAttendanceSessionFromSchedule(
         buildFromSchedulePayload(entryId),
       );
-      navigate(resolveSessionPathAfterCreate(result));
+      navigate(staffPathForSession(resolveSessionPathAfterCreate(result)));
       void model.reloadAttendanceContext();
     } catch (error) {
       toast.push(humanizeFromScheduleError(error), 'error');
@@ -185,23 +199,35 @@ export const MySchedulePanel = () => {
 
   return (
     <section className={styles.layout} data-testid="my-schedule-panel">
-      <div className={styles.toolbar}>
-        <div className={styles.filters}>
-          <Select
-            aria-label="Curso lectivo"
-            onChange={(e) => model.setPeriodId(e.target.value)}
-            value={model.periodId}
-          >
-            <option value="">Curso lectivo: seleccionar…</option>
-            {model.periods.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-                {p.status === 'ACTIVE' ? ' (activo)' : ''}
-              </option>
-            ))}
-          </Select>
+      {model.canChoosePeriod ? (
+        <div className={styles.toolbar}>
+          <div className={styles.filters}>
+            <Select
+              aria-label="Curso lectivo"
+              onChange={(e) => model.setPeriodId(e.target.value)}
+              value={model.periodId}
+            >
+              <option value="">Curso lectivo: seleccionar…</option>
+              {model.periods.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                  {p.status === 'ACTIVE' ? ' (activo)' : ''}
+                </option>
+              ))}
+            </Select>
+          </div>
         </div>
-      </div>
+      ) : model.cycleLabel ? (
+        <p className={styles.cycleLabel} data-testid="my-schedule-cycle-label">
+          {model.cycleLabel}
+        </p>
+      ) : null}
+
+      {model.catalogError ? (
+        <Alert>
+          <span>{model.catalogError}</span>
+        </Alert>
+      ) : null}
 
       {blockingError ? (
         <Alert>
@@ -231,16 +257,17 @@ export const MySchedulePanel = () => {
       {!model.catalogLoading &&
       !model.scheduleLoading &&
       !blockingError &&
-      model.matrixSlots.length === 0 ? (
+      model.isEmptySuccess ? (
         <EmptyState
-          description="Aún no hay bloques horarios para mostrar."
+          description={emptyCopy.description}
           icon={CalendarClock}
-          title="No hay bloques horarios"
+          title={emptyCopy.title}
         />
       ) : null}
 
       {!model.scheduleLoading &&
       !blockingError &&
+      !model.isEmptySuccess &&
       model.matrixSlots.length > 0 ? (
         <>
           <div className={styles.mobileDayBar}>
@@ -357,10 +384,6 @@ export const MySchedulePanel = () => {
               })}
             </ul>
           </div>
-
-          {model.isEmptySuccess ? (
-            <p className={styles.emptyHint}>{MY_SCHEDULE_COPY.emptyDescription}</p>
-          ) : null}
         </>
       ) : null}
     </section>

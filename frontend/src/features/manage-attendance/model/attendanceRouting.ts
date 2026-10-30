@@ -7,8 +7,8 @@ export const ATTENDANCE_ALERTS_PATH = '/admin/attendance/alerts';
 export const ATTENDANCE_REPORTS_PATH = '/admin/attendance/reports';
 export const ATTENDANCE_JUSTIFICATIONS_PATH = '/admin/attendance/justifications';
 export const ATTENDANCE_EXCEPTIONS_PATH = '/admin/attendance/exceptions';
-export const ATTENDANCE_REDEEM_PATH = '/admin/attendance/redeem';
-/** Alias amigable para estudiantes (redirige al canje en AdminShell). */
+export const ATTENDANCE_REDEEM_PATH = '/student/attendance/redeem';
+/** Historial de asistencia del alumno (ya no aliasa rectoría). */
 export const STUDENT_ATTENDANCE_PATH = '/student/attendance';
 export const ATTENDANCE_SESSION_PATH = (sessionId: number | string) =>
   `/admin/attendance/sessions/${sessionId}`;

@@ -1,11 +1,15 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { getSessionUser, sessionHasPermission } from '@/shared/auth';
+import { getSessionUser } from '@/shared/auth';
 import {
   resolveRoleAudience,
-  studentHomePath,
   type RoleAudience,
 } from '../model/adminNavigation';
+import {
+  houseHomeOrLogin,
+  isStaffHouse,
+  resolveHouse,
+} from '../model/territory';
 
 export const RoleAudienceContext = createContext<RoleAudience | null>(null);
 
@@ -16,37 +20,45 @@ export function useRoleAudience(): RoleAudience {
   );
 }
 
-export function roleAudienceLabel(audience: RoleAudience): string {
+export function roleAudienceLabel(
+  audience: RoleAudience,
+  roles?: readonly string[],
+): string {
   if (audience === 'teacher') return 'Docente';
-  if (audience === 'staff') return 'Personal';
+  if (audience === 'staff') {
+    const effective = roles ?? getSessionUser()?.roles ?? [];
+    const names = effective.map((role) => role.toLowerCase());
+    if (names.includes('director')) return 'Dirección';
+    if (names.includes('orientador')) return 'Orientación';
+    return 'Personal';
+  }
   if (audience === 'student') return 'Estudiante';
   if (audience === 'guardian') return 'Encargado';
   return 'Administración';
 }
 
-/** Envuelve pantallas según el rol resuelto por RoleShell. */
+/** Envuelve pantallas según la casa. El encargado no es personal. */
 export function RoleGate({
   allow,
   children,
 }: {
-  allow: 'staff' | 'student';
+  allow: 'staff' | 'student' | 'guardian';
   children: ReactNode;
 }) {
-  const audience = useRoleAudience();
-  const isStudent = audience === 'student';
-  const allowed = allow === 'student' ? isStudent : !isStudent;
+  const house = resolveHouse(getSessionUser()?.roles);
+  const allowed =
+    allow === 'staff'
+      ? isStaffHouse(house)
+      : allow === 'student'
+        ? house === 'student'
+        : house === 'guardian';
   if (!allowed) {
-    return (
-      <Navigate
-        replace
-        to={isStudent ? studentHomePath(sessionHasPermission) : '/admin'}
-      />
-    );
+    return <Navigate replace to={houseHomeOrLogin(getSessionUser()?.roles)} />;
   }
   return children;
 }
 
-/** Ruta de personal: el alumno no entra aunque tenga el permiso. */
+/** Ruta de personal: alumno y encargado no entran. */
 export function StaffOnly() {
   return (
     <RoleGate allow="staff">

@@ -1,3 +1,4 @@
+import { portalPathForSession } from '@/shared/auth/portalPaths';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Inbox } from 'lucide-react';
@@ -148,7 +149,7 @@ function Reading({
       {item.readAt ? <p>{`Leída el ${formatShortDate(item.readAt.slice(0, 10))}`}</p> : (
         <Button type="button" disabled={pending} onClick={onConfirm}>Confirmo lectura</Button>
       )}
-      <p><Link to={disciplineCasePath(item.caseId)}>Abrir el expediente</Link></p>
+      <p><Link to={portalPathForSession(disciplineCasePath(item.caseId))}>Abrir el expediente</Link></p>
       {recommended ? (
         <div className={styles.next}>
           <strong>{recommended.title}</strong>

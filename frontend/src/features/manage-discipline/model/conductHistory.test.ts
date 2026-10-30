@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { historyQuery, mergeHistoryStudents, resolveHistoryStudent } from './conductHistory';
+import { historyQuery, mergeHistoryStudents, resolveHistoryStudent, titleCasePersonName } from './conductHistory';
 
 describe('historial de conducta', () => {
   it('arma la consulta de período, estado y gravedad', () => {
@@ -60,5 +60,9 @@ describe('historial de conducta', () => {
         ],
       ).map((student) => student.id),
     ).toEqual([10, 11]);
+  });
+
+  it('presenta el nombre del historial con mayúscula inicial', () => {
+    expect(titleCasePersonName('Estudiante discqa')).toBe('Estudiante Discqa');
   });
 });

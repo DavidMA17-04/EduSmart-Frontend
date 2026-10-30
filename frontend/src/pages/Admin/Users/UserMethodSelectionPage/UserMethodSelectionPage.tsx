@@ -15,47 +15,13 @@ import {
 } from 'lucide-react';
 import { downloadOfficialTemplateCsv } from '@/features/manage-user-import';
 import { PageHeader } from '@/shared/ui';
+import { CEDULA_IMPORT_HINT, readRecentImports } from './recentImports';
 import styles from './UserMethodSelection.module.css';
-
-interface RecentImportItem {
-  id: string;
-  name: string;
-  date: string;
-  status: string;
-}
-
-const DEFAULT_RECENT_IMPORTS: RecentImportItem[] = [
-  {
-    id: 'default-1',
-    name: 'Estudiantes_Seccion_10-B.xlsx',
-    date: 'Hace 2 días • 32 registros',
-    status: 'Completado',
-  },
-  {
-    id: 'default-2',
-    name: 'Docentes_Especialidades_2026.csv',
-    date: '15 de Feb, 2026 • 45 registros',
-    status: 'Completado',
-  },
-];
 
 export const UserMethodSelectionPage: React.FC = () => {
   const navigate = useNavigate();
 
-  const [recentImports] = React.useState<RecentImportItem[]>(() => {
-    try {
-      const stored = localStorage.getItem('edusmart_recent_imports');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
-        }
-      }
-    } catch {
-      // Fallback
-    }
-    return DEFAULT_RECENT_IMPORTS;
-  });
+  const [recentImports] = React.useState(() => readRecentImports(window.localStorage));
 
   const handleDownloadTemplate = () => {
     downloadOfficialTemplateCsv();
@@ -223,7 +189,7 @@ export const UserMethodSelectionPage: React.FC = () => {
             </li>
             <li className={styles.infoItem}>
               <FileCheck size={16} color="var(--color-primary-green)" />
-              Las cédulas deben contener 9 dígitos sin guiones ni espacios.
+              {CEDULA_IMPORT_HINT}
             </li>
           </ul>
         </div>
@@ -234,15 +200,19 @@ export const UserMethodSelectionPage: React.FC = () => {
             <History size={20} color="var(--color-primary-blue)" />
             Importaciones recientes
           </h3>
-          {recentImports.map((item) => (
-            <div key={item.id} className={styles.recentImportItem}>
-              <div className={styles.recentImportInfo}>
-                <span className={styles.recentImportName}>{item.name}</span>
-                <span className={styles.recentImportDate}>{item.date}</span>
+          {recentImports.length === 0 ? (
+            <p className={styles.emptyRecent}>Aún no hay importaciones recientes registradas en este equipo.</p>
+          ) : (
+            recentImports.map((item) => (
+              <div key={item.id} className={styles.recentImportItem}>
+                <div className={styles.recentImportInfo}>
+                  <span className={styles.recentImportName}>{item.name}</span>
+                  <span className={styles.recentImportDate}>{item.date}</span>
+                </div>
+                <span className={styles.statusSuccessBadge}>{item.status}</span>
               </div>
-              <span className={styles.statusSuccessBadge}>{item.status}</span>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </section>
     </div>

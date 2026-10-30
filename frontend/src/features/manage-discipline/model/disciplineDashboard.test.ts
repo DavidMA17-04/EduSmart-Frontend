@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { casesExportPath, dashboardQuery, formatDashboardMonth } from './disciplineDashboard';
+import {
+  casesExportPath,
+  dashboardQuery,
+  dedupeSectionLabel,
+  formatDashboardMonth,
+  formatSectionLabel,
+} from './disciplineDashboard';
 
 describe('tablero disciplinario', () => {
   it('arma la consulta de período, nivel y sección', () => {
@@ -19,5 +25,15 @@ describe('tablero disciplinario', () => {
   it('nombra el mes del gráfico', () => {
     expect(formatDashboardMonth('2026-03')).toBe('mar 2026');
     expect(formatDashboardMonth('2026-13')).toBe('2026-13');
+  });
+});
+
+describe('etiquetas de sección', () => {
+  it('no duplica el nivel como prefijo del código de grupo', () => {
+    expect(formatSectionLabel(10, '10-1')).toBe('10-1');
+    expect(formatSectionLabel(10, 'A')).toBe('10-A');
+    expect(formatSectionLabel(10, 'D4-10-A')).toBe('D4-10-A');
+    expect(dedupeSectionLabel('10-10-1')).toBe('10-1');
+    expect(dedupeSectionLabel('D4-10-A')).toBe('D4-10-A');
   });
 });

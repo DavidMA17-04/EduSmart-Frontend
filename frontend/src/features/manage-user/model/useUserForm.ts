@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { CreateUserPayload, UserAccountStatus } from '@/entities/user';
+import { resolveCreateGroupId } from './sectionEnrollmentForm';
 import {
   digitsOnly,
   isValidEmail,
@@ -22,6 +23,8 @@ export interface UserFormValues {
   roleIds: number[];
   /** Obligatorio si el rol Docente está seleccionado. */
   departmentId: number | '';
+  /** Obligatorio si el rol Estudiante está seleccionado y el estado es Activa. */
+  groupId: number | '';
 }
 
 export const emptyUserForm: UserFormValues = {
@@ -35,12 +38,13 @@ export const emptyUserForm: UserFormValues = {
   status: 'ACTIVE',
   roleIds: [],
   departmentId: '',
+  groupId: '',
 };
 
 export function validateUserForm(
   values: UserFormValues,
   mode: UserFormMode = 'create',
-  options?: { requiresDepartment?: boolean },
+  options?: { requiresDepartment?: boolean; requiresGroup?: boolean },
 ): Partial<Record<keyof UserFormValues, string>> {
   const errors: Partial<Record<keyof UserFormValues, string>> = {};
 
@@ -83,6 +87,10 @@ export function validateUserForm(
     errors.departmentId = 'El departamento es obligatorio para docentes.';
   }
 
+  if (options?.requiresGroup && !values.groupId) {
+    errors.groupId = 'La sección es obligatoria para un estudiante activo.';
+  }
+
   return errors;
 }
 
@@ -96,9 +104,13 @@ export function splitLastNames(lastName: string): { first_lastname: string; seco
   };
 }
 
-export function toCreatePayload(values: UserFormValues): CreateUserPayload {
+export function toCreatePayload(
+  values: UserFormValues,
+  options?: { studentRoleSelected?: boolean },
+): CreateUserPayload {
   const password = values.password.trim();
   const { first_lastname, second_lastname } = splitLastNames(values.lastName);
+  const studentRoleSelected = options?.studentRoleSelected ?? false;
   return {
     nationalId: digitsOnly(values.nationalId),
     name: values.firstName.trim(),
@@ -111,6 +123,11 @@ export function toCreatePayload(values: UserFormValues): CreateUserPayload {
     roleIds: values.roleIds,
     departmentId:
       typeof values.departmentId === 'number' ? values.departmentId : undefined,
+    groupId: resolveCreateGroupId({
+      studentRoleSelected,
+      status: values.status,
+      groupId: values.groupId,
+    }),
   };
 }
 
@@ -124,7 +141,7 @@ export function useUserForm(initial: UserFormValues = emptyUserForm) {
 
   const validate = (
     mode: UserFormMode = 'create',
-    options?: { requiresDepartment?: boolean },
+    options?: { requiresDepartment?: boolean; requiresGroup?: boolean },
   ) => {
     const nextErrors = validateUserForm(values, mode, options);
     setErrors(nextErrors);

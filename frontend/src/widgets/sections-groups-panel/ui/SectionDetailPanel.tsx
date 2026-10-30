@@ -1,6 +1,7 @@
 import { Edit3, Plus, Trash2 } from 'lucide-react';
 import { Alert, Button, RowActionButton, RowActions, Table } from '@/shared/ui';
 import { GroupTableRow } from '@/entities/group';
+import { sessionHasPermission } from '@/shared/auth';
 import type { SectionsGroupsPanelModel } from '../model/useSectionsGroupsPanel';
 import styles from './SectionDetailPanel.module.css';
 
@@ -10,6 +11,8 @@ interface SectionDetailPanelProps {
 }
 
 export const SectionDetailPanel = ({ model, onGoToTeachersTab }: SectionDetailPanelProps) => {
+  const canCreate = sessionHasPermission('sections.create');
+  const canEdit = sessionHasPermission('sections.edit');
   if (!model.selectedSection) {
     return (
       <div className={styles.placeholder}>
@@ -26,12 +29,14 @@ export const SectionDetailPanel = ({ model, onGoToTeachersTab }: SectionDetailPa
             <h3>Secciones de {model.selectedSection.name}</h3>
             <p>Administre las secciones asociadas al nivel seleccionado.</p>
           </div>
-          <Button
-            onClick={() => model.createGroupMode(model.selectedSectionId ?? undefined)}
-            type="button"
-          >
-            <Plus size={14} /> Agregar sección
-          </Button>
+          {canCreate ? (
+            <Button
+              onClick={() => model.createGroupMode(model.selectedSectionId ?? undefined)}
+              type="button"
+            >
+              <Plus size={14} /> Agregar sección
+            </Button>
+          ) : null}
         </div>
 
         <Table>
@@ -48,6 +53,7 @@ export const SectionDetailPanel = ({ model, onGoToTeachersTab }: SectionDetailPa
             {model.groupsForSelectedSection.map((group) => (
               <GroupTableRow
                 actions={
+                  canEdit ? (
                   <RowActions>
                     <RowActionButton
                       aria-label={`Editar ${group.name}`}
@@ -66,6 +72,7 @@ export const SectionDetailPanel = ({ model, onGoToTeachersTab }: SectionDetailPa
                       <Trash2 size={16} />
                     </RowActionButton>
                   </RowActions>
+                  ) : undefined
                 }
                 group={group}
                 isSelected={group.id === model.selectedGroupId}

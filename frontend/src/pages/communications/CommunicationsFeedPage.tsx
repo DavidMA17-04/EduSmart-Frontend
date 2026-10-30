@@ -1,3 +1,4 @@
+import { portalPathForSession } from '@/shared/auth/portalPaths';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -40,7 +41,7 @@ export const CommunicationsFeedPage: React.FC = () => {
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   const debouncedSearch = useDebouncedValue(searchTerm.trim(), 350);
-  const canManage = sessionHasPermission('communications.create') || sessionHasPermission('communications.manage');
+  const canManage = sessionHasPermission('communications.create');
 
   const filter = useMemo<CommunicationFilter>(
     () => ({
@@ -173,7 +174,7 @@ export const CommunicationsFeedPage: React.FC = () => {
                   type="button"
                   whileHover={{ y: -1 }}
                   whileTap={{ scale: 0.97 }}
-                  onClick={() => navigate('/admin/communications/manage')}
+                  onClick={() => navigate(portalPathForSession('/admin/communications/manage'))}
                   className="bg-[#cfac65] hover:bg-[#d9bb7d] text-[#0d2346] font-semibold text-sm px-4 py-2.5 rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2"
                 >
                   <PenSquare className="w-4 h-4" />

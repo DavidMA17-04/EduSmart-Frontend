@@ -1,4 +1,6 @@
 .admin-shell {
+  --bp-narrow: 640px;
+  --bp-medium: 1024px;
   --admin-primary: var(--brand-primary);
   --admin-primary-hover: var(--brand-primary-hover);
   --admin-sidebar: var(--brand-navy);
@@ -29,4 +31,18 @@
 :is(h1, h2, h3, h4):not([data-preserve-case])::first-letter,
 .admin-shell th::first-letter {
   text-transform: uppercase !important;
+}
+
+.table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+@media (max-width: 1024px) {
+  .admin-shell .form-stack,
+  .stack-medium {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
 }

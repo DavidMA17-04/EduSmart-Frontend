@@ -7,6 +7,7 @@ export type {
   AttendanceHistoryFilters,
   AttendanceHistoryItem,
   AttendanceHistoryPage,
+  AttendanceRepresentedStudent,
   AttendanceHistorySummary,
   AbsenteeismDashboard,
   AbsenteeismAlertRule,

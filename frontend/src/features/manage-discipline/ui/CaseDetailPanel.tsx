@@ -1,3 +1,4 @@
+import { portalPathForSession } from '@/shared/auth/portalPaths';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FileText } from 'lucide-react';
@@ -238,13 +239,15 @@ export const CaseDetailPanel = ({ caseId }: { caseId: number }) => {
       <div className={styles.main}>
         {error ? <Alert>{error}</Alert> : null}
         <p className={styles.back}>
-          <Link to={DISCIPLINE_CASES_PATH}>Volver a la bandeja</Link>
+          <Link to={portalPathForSession(DISCIPLINE_CASES_PATH)}>Volver a la bandeja</Link>
         </p>
         <header className={`${styles.heading} ${styles.hero}`}>
           <div>
             <p className={styles.kicker}>{detail.caseNumber}</p>
             <h2>
-              <Link to={disciplineHistoryPath(detail.student.id)}>{detail.student.fullName}</Link>
+              <Link to={portalPathForSession(disciplineHistoryPath(detail.student.id))}>
+                {detail.student.fullName}
+              </Link>
             </h2>
             <p>
               {detail.sectionLabel ?? 'Sin sección'} · {detail.infractionName}

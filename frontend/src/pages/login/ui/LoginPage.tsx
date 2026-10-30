@@ -3,6 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { CircleHelp } from 'lucide-react';
 import { useAuthStore } from '@/features/auth';
 import { getSessionUser } from '@/shared/auth';
+import { coerceReturnPath } from '@/widgets/app-shell/model/territory';
 import { InstitutionStatsCard } from './InstitutionStatsCard';
 import { LoginFlow } from './LoginFlow';
 import styles from './LoginPage.module.css';
@@ -15,7 +16,13 @@ export const LoginPage = () => {
 
   if (isAuthenticated && wasAuthenticatedOnMount.current) {
     const session = getSessionUser();
-    return <Navigate replace to={session?.mustChangePassword ? '/admin/settings' : '/admin'} />;
+    const fromPath =
+      (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ??
+      new URLSearchParams(location.search).get('from');
+    const dest = coerceReturnPath(session, fromPath);
+    if (dest !== '/login' && dest !== location.pathname) {
+      return <Navigate replace to={dest} />;
+    }
   }
 
   return (

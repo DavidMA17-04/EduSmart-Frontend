@@ -426,14 +426,11 @@ export const SchedulePanel = () => {
         }
       >
         <ScheduleEntryForm
-          assignableSlots={model.assignableSlots}
           canLinkTeachingAssignments={model.canViewTeachingAssignments}
           contextDayLabel={model.contextDayLabel}
           contextSlotLabel={model.contextSlotLabel}
-          dayOptions={SCHEDULE_WEEKDAYS}
           dialogMode={model.dialogMode}
           form={model.form}
-          formatSlotRange={formatSlotRange}
           isSaving={model.isSaving}
           mutationError={model.mutationError}
           onCancel={model.closeDialog}

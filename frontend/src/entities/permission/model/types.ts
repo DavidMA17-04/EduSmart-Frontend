@@ -6,6 +6,15 @@
   'EXPORT',
   'CONFIGURE',
   'VIEW_OWN',
+  'JUSTIFY',
+  'REVIEW',
+  'RESOLVE',
+  'APPEAL',
+  'PRECAUTIONARY',
+  'RESPOND',
+  'PUBLISH',
+  'MANAGE',
+  'STATS',
 ] as const;
 export type PermissionAction = (typeof PERMISSION_ACTIONS)[number];
 
@@ -33,6 +42,15 @@ export const PERMISSION_ACTION_LABELS: Record<PermissionAction, string> = {
   EXPORT: 'Exportar',
   CONFIGURE: 'Configurar',
   VIEW_OWN: 'Ver propio',
+  JUSTIFY: 'Justificar',
+  REVIEW: 'Revisar',
+  RESOLVE: 'Resolver',
+  APPEAL: 'Resolver apelación',
+  PRECAUTIONARY: 'Medidas cautelares',
+  RESPOND: 'Responder',
+  PUBLISH: 'Publicar',
+  MANAGE: 'Gestionar',
+  STATS: 'Métricas',
 };
 
 export const PERMISSION_MODULE_LABELS: Record<PermissionModule, string> = {

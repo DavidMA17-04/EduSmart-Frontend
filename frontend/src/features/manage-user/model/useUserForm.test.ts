@@ -17,6 +17,7 @@ const base: UserFormValues = {
   status: 'ACTIVE',
   roleIds: [1],
   departmentId: '',
+  groupId: '',
 };
 
 describe('splitLastNames', () => {
@@ -52,6 +53,23 @@ describe('toCreatePayload', () => {
     expect(payload.password).toBeUndefined();
     expect(payload.phone).toBeUndefined();
     expect(payload).not.toHaveProperty('confirmPassword');
+  });
+
+  it('envía groupId solo si hay Estudiante ACTIVE', () => {
+    const withSection = toCreatePayload(
+      { ...base, groupId: 12 },
+      { studentRoleSelected: true },
+    );
+    expect(withSection.groupId).toBe(12);
+
+    const pending = toCreatePayload(
+      { ...base, status: 'PENDING', groupId: 12 },
+      { studentRoleSelected: true },
+    );
+    expect(pending.groupId).toBeUndefined();
+
+    const notStudent = toCreatePayload({ ...base, groupId: 12 });
+    expect(notStudent.groupId).toBeUndefined();
   });
 });
 
@@ -98,6 +116,15 @@ describe('validateUserForm', () => {
       'create',
     );
     expect(mismatch.confirmPassword).toMatch(/coinciden/i);
+  });
+
+  it('exige sección cuando requiresGroup está activo', () => {
+    const errors = validateUserForm(base, 'create', { requiresGroup: true });
+    expect(errors.groupId).toMatch(/sección/i);
+    expect(
+      validateUserForm({ ...base, groupId: 12 }, 'create', { requiresGroup: true }),
+    ).not.toHaveProperty('groupId');
+    expect(validateUserForm(base, 'edit', { requiresGroup: true }).groupId).toMatch(/sección/i);
   });
 
   it('allows empty password on edit and validates length only when provided', () => {

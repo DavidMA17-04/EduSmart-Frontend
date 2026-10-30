@@ -183,7 +183,8 @@ describe('my-schedule matrix behavior (D2)', () => {
       'utf8',
     );
     expect(hookSrc).not.toContain('2026');
-    expect(hookSrc).toContain("status === 'ACTIVE'");
+    expect(hookSrc).toContain('periodIdFromMyScheduleEntries');
+    expect(hookSrc).toContain('preferredPeriodId');
     expect(hookSrc).toContain('getMySchedule');
   });
 

@@ -75,7 +75,12 @@
 }
 
 .kpiAlerts {
-  background: linear-gradient(145deg, #0f3d2e, #168750);
+  background: linear-gradient(145deg, #9b5a12, #e0a14a);
+  color: #1f1a0d;
+}
+
+.kpiNeutral {
+  background: linear-gradient(145deg, #3d4a63, #5b6b86);
 }
 
 .kpiIcon {

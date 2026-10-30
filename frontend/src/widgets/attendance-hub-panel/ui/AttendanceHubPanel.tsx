@@ -2,7 +2,6 @@ import {
   AlertTriangle,
   FileBarChart,
   History,
-  KeyRound,
   ListOrdered,
   Plus,
   UserCheck,
@@ -12,12 +11,12 @@ import {
   ATTENDANCE_ALERTS_PATH,
   ATTENDANCE_HISTORY_PATH,
   ATTENDANCE_NEW_PATH,
-  ATTENDANCE_REDEEM_PATH,
   ATTENDANCE_REPORTS_PATH,
   canCreateAttendanceClass,
   canViewAttendanceHistory,
 } from '@/features/manage-attendance';
 import { sessionHasPermission } from '@/shared/auth';
+import { staffPathForSession } from '@/widgets/app-shell/model/adminNavigation';
 import { Button } from '@/shared/ui';
 import styles from './AttendanceHubPanel.module.css';
 
@@ -50,7 +49,7 @@ export const AttendanceHubPanel = () => {
           <div className={styles.introActions}>
             {canCreate ? (
               <Button
-                onClick={() => navigate(ATTENDANCE_NEW_PATH)}
+                onClick={() => navigate(staffPathForSession(ATTENDANCE_NEW_PATH))}
                 type="button"
               >
                 <Plus aria-hidden="true" size={16} />
@@ -62,17 +61,9 @@ export const AttendanceHubPanel = () => {
                 acceso.
               </p>
             )}
-            <Button
-              onClick={() => navigate(ATTENDANCE_REDEEM_PATH)}
-              type="button"
-              variant="secondary"
-            >
-              <KeyRound aria-hidden="true" size={16} />
-              Ingresar código
-            </Button>
             {canHistory ? (
               <Button
-                onClick={() => navigate(ATTENDANCE_HISTORY_PATH)}
+                onClick={() => navigate(staffPathForSession(ATTENDANCE_HISTORY_PATH))}
                 type="button"
                 variant="secondary"
               >
@@ -82,7 +73,7 @@ export const AttendanceHubPanel = () => {
             ) : null}
             {canAlerts ? (
               <Button
-                onClick={() => navigate(ATTENDANCE_ALERTS_PATH)}
+                onClick={() => navigate(staffPathForSession(ATTENDANCE_ALERTS_PATH))}
                 type="button"
                 variant="secondary"
               >
@@ -92,7 +83,7 @@ export const AttendanceHubPanel = () => {
             ) : null}
             {canReports ? (
               <Button
-                onClick={() => navigate(ATTENDANCE_REPORTS_PATH)}
+                onClick={() => navigate(staffPathForSession(ATTENDANCE_REPORTS_PATH))}
                 type="button"
                 variant="secondary"
               >

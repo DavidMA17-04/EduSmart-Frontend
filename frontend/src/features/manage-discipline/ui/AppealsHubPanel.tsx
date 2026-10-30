@@ -1,3 +1,4 @@
+import { portalPathForSession } from '@/shared/auth/portalPaths';
 import { useNavigate } from 'react-router-dom';
 import { sessionHasPermission } from '@/shared/auth';
 import { Button } from '@/shared/ui';
@@ -20,16 +21,16 @@ export const AppealsHubPanel = () => {
         <p>{APPEAL_CENTER_COPY.process}</p>
       </div>
       <div className={styles.actions}>
-        <Button type="button" onClick={() => navigate(DISCIPLINE_APPEALS_NEW_PATH)}>
+        <Button type="button" onClick={() => navigate(portalPathForSession(DISCIPLINE_APPEALS_NEW_PATH))}>
           {APPEAL_CENTER_COPY.newAppeal}
         </Button>
         {canReview ? (
-          <Button type="button" onClick={() => navigate(DISCIPLINE_APPEALS_REVIEW_PATH)}>
+          <Button type="button" onClick={() => navigate(portalPathForSession(DISCIPLINE_APPEALS_REVIEW_PATH))}>
             {APPEAL_REVIEW_COPY.title}
           </Button>
         ) : null}
         {canReport ? (
-          <Button type="button" variant="secondary" onClick={() => navigate(DISCIPLINE_APPEALS_REPORTS_PATH)}>
+          <Button type="button" variant="secondary" onClick={() => navigate(portalPathForSession(DISCIPLINE_APPEALS_REPORTS_PATH))}>
             {APPEAL_REPORTS_COPY.title}
           </Button>
         ) : null}

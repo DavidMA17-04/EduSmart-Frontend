@@ -19,10 +19,21 @@ import {
 } from './myScheduleAttendance';
 import { resolveMyScheduleCardVariant } from './mySchedulePresentation';
 
-function pickDefaultPeriodId(periods: AcademicPeriod[]): string {
-  const active = periods.find((p) => p.status === 'ACTIVE');
-  if (active) return String(active.id);
-  return periods[0] ? String(periods[0].id) : '';
+/** Prefer the period of the actor's own entries over the first ACTIVE catalog row. */
+export function periodIdFromMyScheduleEntries(
+  entries: readonly ScheduleEntry[],
+): string {
+  const id = entries[0]?.teachingAssignment?.academicPeriod?.id;
+  return id != null ? String(id) : '';
+}
+
+/** Fallback when the teacher has no own entries yet. */
+export function preferredPeriodId(
+  periods: readonly AcademicPeriod[],
+): string {
+  const active = periods.find((period) => period.status === 'ACTIVE');
+  const chosen = active ?? periods[0];
+  return chosen != null ? String(chosen.id) : '';
 }
 
 export const MY_SCHEDULE_COPY = {
@@ -59,6 +70,7 @@ export function useMySchedulePanel() {
     () => resolveMyScheduleCardVariant(getSessionUser()?.roles ?? []),
     [],
   );
+  const canChoosePeriod = cardVariant !== 'student';
   const canViewAttendance = sessionHasPermission(ATTENDANCE_PERMISSIONS.view);
   const canCreateAttendance = sessionHasPermission(
     ATTENDANCE_PERMISSIONS.create,
@@ -74,7 +86,6 @@ export function useMySchedulePanel() {
     try {
       const list = filterPeriodsForSessionRole(await academicPeriodApi.list());
       setPeriods(list);
-      setPeriodId((prev) => prev || pickDefaultPeriodId(list));
     } catch {
       setCatalogError('No se pudieron cargar los cursos lectivos.');
       setPeriods([]);
@@ -84,18 +95,22 @@ export function useMySchedulePanel() {
   }, []);
 
   const loadSchedule = useCallback(async (nextPeriodId: string) => {
-    if (!nextPeriodId) {
-      setTimeSlots([]);
-      setEntries([]);
-      setScheduleError(null);
-      return;
-    }
     setScheduleLoading(true);
     setScheduleError(null);
     try {
-      const data = await getMySchedule({ periodId: Number(nextPeriodId) });
+      const data = await getMySchedule(
+        canChoosePeriod && nextPeriodId
+          ? { periodId: Number(nextPeriodId) }
+          : {},
+      );
       setTimeSlots(data.timeSlots ?? []);
       setEntries(data.entries ?? []);
+      if (canChoosePeriod && !nextPeriodId) {
+        const inferred = periodIdFromMyScheduleEntries(data.entries ?? []);
+        if (inferred) {
+          setPeriodId(inferred);
+        }
+      }
     } catch {
       setScheduleError(MY_SCHEDULE_COPY.errorMessage);
       setTimeSlots([]);
@@ -103,7 +118,7 @@ export function useMySchedulePanel() {
     } finally {
       setScheduleLoading(false);
     }
-  }, []);
+  }, [canChoosePeriod]);
 
   const loadAttendanceContext = useCallback(
     async (nextPeriodId: string) => {
@@ -134,18 +149,35 @@ export function useMySchedulePanel() {
   );
 
   useEffect(() => {
+    if (!canChoosePeriod) {
+      setCatalogLoading(false);
+      return;
+    }
     void loadPeriods();
-  }, [loadPeriods]);
+  }, [canChoosePeriod, loadPeriods]);
 
   useEffect(() => {
-    if (!periodId) return;
-    void loadSchedule(periodId);
-  }, [periodId, loadSchedule]);
+    if (!canChoosePeriod || periodId || catalogLoading || scheduleLoading) return;
+    if (entries.length > 0) return;
+    const next = preferredPeriodId(periods);
+    if (next) setPeriodId(next);
+  }, [
+    canChoosePeriod,
+    periodId,
+    catalogLoading,
+    scheduleLoading,
+    entries.length,
+    periods,
+  ]);
 
   useEffect(() => {
-    if (!periodId) return;
+    void loadSchedule(canChoosePeriod ? periodId : '');
+  }, [canChoosePeriod, periodId, loadSchedule]);
+
+  useEffect(() => {
+    if (!canChoosePeriod || !periodId) return;
     void loadAttendanceContext(periodId);
-  }, [periodId, loadAttendanceContext]);
+  }, [canChoosePeriod, periodId, loadAttendanceContext]);
 
   const matrixSlots = useMemo(
     () => visibleSlotsForMatrix(timeSlots, entries),
@@ -160,12 +192,13 @@ export function useMySchedulePanel() {
   );
 
   const retry = useCallback(() => {
-    if (catalogError) void loadPeriods();
-    if (scheduleError && periodId) void loadSchedule(periodId);
-    if (attendanceContextError && periodId) {
+    if (canChoosePeriod && catalogError) void loadPeriods();
+    if (scheduleError) void loadSchedule(canChoosePeriod ? periodId : '');
+    if (canChoosePeriod && attendanceContextError && periodId) {
       void loadAttendanceContext(periodId);
     }
   }, [
+    canChoosePeriod,
     catalogError,
     scheduleError,
     attendanceContextError,
@@ -175,10 +208,15 @@ export function useMySchedulePanel() {
     loadAttendanceContext,
   ]);
 
+  const cycleLabel =
+    entries[0]?.teachingAssignment?.academicPeriod?.name ?? null;
+
   return {
     periods,
     periodId,
     setPeriodId,
+    canChoosePeriod,
+    cycleLabel,
     timeSlots,
     entries,
     matrixSlots,
@@ -190,9 +228,9 @@ export function useMySchedulePanel() {
     catalogError,
     scheduleError,
     retry,
-    reloadSchedule: () => loadSchedule(periodId),
+    reloadSchedule: () => loadSchedule(canChoosePeriod ? periodId : ''),
     isEmptySuccess:
-      !scheduleLoading && !scheduleError && !catalogError && entries.length === 0,
+      !scheduleLoading && !scheduleError && entries.length === 0,
     cardVariant,
     canViewAttendance,
     canCreateAttendance,

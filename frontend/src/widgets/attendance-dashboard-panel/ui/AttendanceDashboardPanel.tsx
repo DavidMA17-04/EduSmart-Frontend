@@ -188,6 +188,7 @@ export const AttendanceDashboardPanel = ({
                 No hay estudiantes con inasistencia crítica en el período.
               </p>
             ) : (
+              <div className="table-scroll">
               <table className={styles.alerts}>
                 <thead>
                   <tr>
@@ -215,6 +216,7 @@ export const AttendanceDashboardPanel = ({
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </article>
         </>

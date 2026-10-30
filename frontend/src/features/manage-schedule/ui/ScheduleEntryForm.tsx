@@ -4,23 +4,13 @@ import { Alert, Button, Select } from '@/shared/ui';
 import type { ScheduleDialogMode, ScheduleEntryFormValues } from '../model/useSchedulePanel';
 import styles from './ScheduleEntryForm.module.css';
 
-type ScheduleTimeSlotOption = {
-  id: number;
-  startTime: string;
-  endTime: string;
-  name: string;
-};
-
 type ScheduleEntryFormProps = {
   dialogMode: ScheduleDialogMode;
   form: ScheduleEntryFormValues;
   contextDayLabel: string;
   contextSlotLabel: string;
   teachingAssignments: TeachingAssignment[];
-  assignableSlots: ScheduleTimeSlotOption[];
   optionLabel: (ta: TeachingAssignment) => string;
-  formatSlotRange: (start: string, end: string) => string;
-  dayOptions: ReadonlyArray<{ dayOfWeek: number; label: string }>;
   isSaving: boolean;
   mutationError: string | null;
   tasLoading: boolean;
@@ -37,10 +27,7 @@ export function ScheduleEntryForm({
   contextDayLabel,
   contextSlotLabel,
   teachingAssignments,
-  assignableSlots,
   optionLabel,
-  formatSlotRange,
-  dayOptions,
   isSaving,
   mutationError,
   tasLoading,
@@ -107,43 +94,6 @@ export function ScheduleEntryForm({
           ) : null}
         </p>
       ) : null}
-
-      <label className={styles.field}>
-        <span>Día</span>
-        <Select
-          aria-label="Día"
-          disabled={isSaving}
-          onChange={(e) => onChange({ dayOfWeek: e.target.value })}
-          required
-          value={form.dayOfWeek}
-        >
-          <option value="">Seleccione un día…</option>
-          {dayOptions.map((d) => (
-            <option key={d.dayOfWeek} value={d.dayOfWeek}>
-              {d.label}
-            </option>
-          ))}
-        </Select>
-      </label>
-
-      <label className={styles.field}>
-        <span>Bloque horario</span>
-        <Select
-          aria-label="Bloque horario"
-          disabled={isSaving || dialogMode === 'create'}
-          onChange={(e) => onChange({ timeSlotId: e.target.value })}
-          required
-          value={form.timeSlotId}
-        >
-          <option value="">Seleccione un bloque…</option>
-          {assignableSlots.map((slot) => (
-            <option key={slot.id} value={slot.id}>
-              {formatSlotRange(slot.startTime, slot.endTime)}
-              {slot.name ? ` · ${slot.name}` : ''}
-            </option>
-          ))}
-        </Select>
-      </label>
 
       <div className={styles.actions}>
         <Button disabled={isSaving} type="submit" variant="primary">

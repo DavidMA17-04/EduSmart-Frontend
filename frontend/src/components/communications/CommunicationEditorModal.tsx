@@ -1,3 +1,4 @@
+import { sessionHasPermission } from '@/shared/auth';
 import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -210,7 +211,7 @@ export const CommunicationEditorModal: React.FC<Props> = ({
                   type="button"
                   whileTap={{ scale: 0.96 }}
                   onClick={() => submit('PUBLISHED')}
-                  disabled={isSaving}
+                  disabled={isSaving || !sessionHasPermission('communications.publish')}
                   className="bg-[#0d2346] hover:bg-[#133261] text-white font-medium text-sm px-4 py-2 rounded-lg shadow-sm transition-colors flex items-center gap-2 disabled:opacity-60"
                 >
                   {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}

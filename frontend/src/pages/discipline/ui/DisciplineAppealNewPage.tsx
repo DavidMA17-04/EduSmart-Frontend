@@ -1,3 +1,4 @@
+import { portalPathForSession } from '@/shared/auth/portalPaths';
 import { Scale } from 'lucide-react';
 import { APPEAL_CENTER_COPY, AppealWizardPanel, DISCIPLINE_APPEALS_PATH } from '@/features/manage-discipline';
 import { PageHeader } from '@/shared/ui';
@@ -8,7 +9,7 @@ export const DisciplineAppealNewPage = () => (
     <PageHeader
       breadcrumbs={[
         { label: 'Disciplina' },
-        { label: APPEAL_CENTER_COPY.title, to: DISCIPLINE_APPEALS_PATH },
+        { label: APPEAL_CENTER_COPY.title, to: portalPathForSession(DISCIPLINE_APPEALS_PATH) },
         { label: APPEAL_CENTER_COPY.newAppeal },
       ]}
       icon={Scale}

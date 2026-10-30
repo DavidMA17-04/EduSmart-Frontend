@@ -491,7 +491,7 @@ export const attendanceApi = {
 
   redeemAttendanceToken: (input: RedeemAttendanceTokenInput) => {
     const code = (input.code ?? input.token ?? '').trim();
-    return request<RedeemAttendanceTokenResult>('/attendance/redeem-token', {
+    return request<RedeemAttendanceTokenResult>('/attendance/redeem', {
       method: 'POST',
       body: JSON.stringify({ code }),
     });

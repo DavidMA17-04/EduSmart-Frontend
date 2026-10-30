@@ -1,69 +1,32 @@
+import { roleModuleRoutes } from './RoleModuleRoutes';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { UserMethodSelectionPage } from '@/pages/Admin/Users/UserMethodSelectionPage/UserMethodSelectionPage';
-import { UserBulkImportPage } from '@/pages/Admin/Users/UserBulkImportPage/UserBulkImportPage';
-import { UserImportPreviewPage } from '@/pages/Admin/Users/UserImportPreviewPage/UserImportPreviewPage';
 import { ForgotPasswordPage } from '@/pages/forgot-password';
 import { LoginPage } from '@/pages/login';
 import { VerifyAccountPage } from '@/pages/verify-account';
-import { RolesPermissionsPage } from '@/pages/roles-permissions';
-import { SpecialtiesPage } from '@/pages/specialties';
-import { SpecialtyKindPage } from '@/pages/specialty-kind';
-import { AcademicPeriodsPage } from '@/pages/academic-periods';
-import { AcademicStructureWizardPage } from '@/pages/academic-structure-wizard';
 import {
-  AbsenteeismAlertsPage,
   AttendanceHistoryPage,
-  AttendanceHomePage,
-  AttendanceExceptionsPage,
   AttendanceJustificationsPage,
-  AttendanceNewPage,
   AttendanceRedeemPage,
-  AttendanceReportsPage,
-  AttendanceSessionPage,
 } from '@/pages/attendance';
+import { ATTENDANCE_PERMISSIONS } from '@/features/manage-attendance';
 import {
-  ATTENDANCE_HISTORY_PATH,
-  ATTENDANCE_PERMISSIONS,
-  STUDENT_ATTENDANCE_PATH,
-} from '@/features/manage-attendance';
-import {
-  DisciplineAppealNewPage,
-  DisciplineAppealReviewPage,
-  DisciplineAppealTrackingPage,
-  DisciplineAppealsPage,
-  DisciplineAppealsReportsPage,
-  DisciplineAppealsReviewPage,
-  DisciplineCalendarPage,
-  DisciplineCasePage,
-  DisciplineCasesPage,
-  DisciplineCatalogPage,
-  DisciplineDashboardPage,
   DisciplineHistoryPage,
   DisciplineNotificationsPage,
-  DisciplineProcessPage,
-  DisciplineRegisterPage,
 } from '@/pages/discipline';
 import { DISCIPLINE_PERMISSIONS } from '@/features/manage-discipline';
-import { SectionsGroupsPage } from '@/pages/sections-groups';
-import { SubjectsPage } from '@/pages/subjects';
-import { TeachingAssignmentsPage } from '@/pages/teaching-assignments';
-import { SchedulePage } from '@/pages/schedule';
+import { SCHEDULE_PERMISSIONS } from '@/features/manage-schedule';
 import { MySchedulePage } from '@/pages/my-schedule';
-import { UserCreatePage } from '@/pages/user-create';
-import { UserDetailPage } from '@/pages/user-detail';
-import { UsersDirectoryPage } from '@/pages/users-directory';
-import { AdministrativeReportsPage } from '@/pages/administrative-reports';
 import { ProfileSettingsPage } from '@/pages/profile-settings';
 import { ResetPasswordPage } from '@/pages/reset-password';
-import { ImportResultPage } from '@/pages/import-result';
-import { RoleShell, StaffOnly } from '@/widgets/app-shell';
-import { SCHEDULE_PERMISSIONS } from '@/features/manage-schedule';
-import { CommunicationsFeedPage } from '@/pages/communications/CommunicationsFeedPage';
-import { CommunicationsAdminPage } from '@/pages/communications/CommunicationsAdminPage';
+import { GuardianHomePage } from '@/pages/guardian-home';
+import { StudentHomePage } from '@/pages/student-home';
+import { RoleShell } from '@/widgets/app-shell';
+import { HouseHomeRedirect } from './HouseHomeRedirect';
 import { RequireAuth } from './RequireAuth';
 import { RequirePermission } from './RequirePermission';
-import { RoleHome } from './RoleHome';
 import { RootRedirect } from './RootRedirect';
+import { staffHouseRoutes } from './StaffHouseRoutes';
+import { TerritoryGuard } from './TerritoryGuard';
 
 export const AppRouter = () => (
   <Routes>
@@ -73,190 +36,60 @@ export const AppRouter = () => (
     <Route element={<ResetPasswordPage />} path="/reset-password" />
 
     <Route element={<RequireAuth />}>
-      <Route element={<RoleShell />} path="/admin">
-        <Route element={<RoleHome />} index />
-        <Route element={<RoleHome />} path="dashboard" />
-
-        <Route element={<RequirePermission permission="administrator.view" />}>
-          <Route element={<UserMethodSelectionPage />} path="users" />
-          <Route element={<UserBulkImportPage />} path="users/import/bulk" />
-          <Route element={<UserImportPreviewPage />} path="users/import/preview" />
-          <Route element={<UsersDirectoryPage />} path="users/directory" />
-          <Route element={<UserCreatePage />} path="users/new" />
-          <Route element={<ImportResultPage />} path="users/import-result/:jobId" />
-          <Route element={<UserDetailPage />} path="users/:userId" />
-          <Route element={<AdministrativeReportsPage />} path="reports" />
+      <Route element={<TerritoryGuard />}>
+        <Route element={<RoleShell />} path="/admin">
+          {staffHouseRoutes}
+        </Route>
+        <Route element={<RoleShell />} path="/teacher">
+          {staffHouseRoutes}
+        </Route>
+        <Route element={<RoleShell />} path="/counselor">
+          {staffHouseRoutes}
+        </Route>
+        <Route element={<RoleShell />} path="/director">
+          {staffHouseRoutes}
         </Route>
 
-        <Route element={<RequirePermission permission="roles_permissions.view" />}>
-          <Route element={<RolesPermissionsPage />} path="roles-permissions" />
-        </Route>
-
-        <Route element={<RequirePermission permission="specialties.view" />}>
-          <Route element={<SpecialtiesPage />} path="specialties" />
-          <Route
-            element={<SpecialtyKindPage kind="EXPLORATORY_WORKSHOP" />}
-            path="specialties/workshops"
-          />
-          <Route
-            element={<SpecialtyKindPage kind="TECHNICAL_SPECIALTY" />}
-            path="specialties/technical"
-          />
-        </Route>
-
-        <Route element={<RequirePermission permission="academic_structure.view" />}>
-          <Route element={<SubjectsPage />} path="subjects" />
-          <Route element={<TeachingAssignmentsPage />} path="teaching-assignments" />
-        </Route>
-
-        <Route element={<RequirePermission permission="periods.view" />}>
-          <Route element={<AcademicPeriodsPage />} path="academic-periods" />
-          <Route
-            element={<AcademicStructureWizardPage />}
-            path="academic-structure-wizard"
-          />
-        </Route>
-
-        <Route element={<RequirePermission permission="sections.view" />}>
-          <Route element={<SectionsGroupsPage />} path="sections-groups" />
-        </Route>
-
-        <Route
-          element={
-            <RequirePermission permission={SCHEDULE_PERMISSIONS.view} />
-          }
-        >
-          <Route element={<SchedulePage />} path="schedule" />
-        </Route>
-
-        <Route
-          element={
-            <RequirePermission
-              permission={SCHEDULE_PERMISSIONS.viewOwn}
-              withoutPermission={SCHEDULE_PERMISSIONS.view}
-            />
-          }
-        >
-          <Route element={<MySchedulePage />} path="my-schedule" />
-        </Route>
-
-        {/* Canje de código: menú solo para Estudiante; API también exige ese rol. */}
-        <Route element={<AttendanceRedeemPage />} path="attendance/redeem" />
-
-        <Route
-          element={
-            <RequirePermission
-              anyOf={[
-                ATTENDANCE_PERMISSIONS.view,
-                ATTENDANCE_PERMISSIONS.viewOwn,
-              ]}
-            />
-          }
-        >
-          <Route
-            element={<AttendanceHistoryPage />}
-            path="attendance/history"
-          />
-        </Route>
-
-        <Route
-          element={
-            <RequirePermission
-              anyOf={[
-                ATTENDANCE_PERMISSIONS.view,
-                ATTENDANCE_PERMISSIONS.viewOwn,
-                ATTENDANCE_PERMISSIONS.justify,
-              ]}
-            />
-          }
-        >
-          <Route
-            element={<AttendanceJustificationsPage />}
-            path="attendance/justifications"
-          />
-        </Route>
-
-        <Route element={<StaffOnly />}>
+        <Route element={<RoleShell />} path="/student">
+          <Route element={<StudentHomePage />} index />
           <Route
             element={
-              <RequirePermission permission={ATTENDANCE_PERMISSIONS.view} />
+              <RequirePermission
+                anyOf={[SCHEDULE_PERMISSIONS.view, SCHEDULE_PERMISSIONS.viewOwn]}
+              />
             }
           >
-            <Route element={<AttendanceHomePage />} path="attendance" />
-            <Route
-              element={<AbsenteeismAlertsPage />}
-              path="attendance/alerts"
-            />
-            <Route
-              element={<AttendanceReportsPage />}
-              path="attendance/reports"
-            />
-            <Route
-              element={<AttendanceSessionPage />}
-              path="attendance/sessions/:sessionId"
-            />
-          </Route>
-
-          <Route
-            element={
-              <RequirePermission permission={ATTENDANCE_PERMISSIONS.edit} />
-            }
-          >
-            <Route
-              element={<AttendanceExceptionsPage />}
-              path="attendance/exceptions"
-            />
-          </Route>
-
-          <Route
-            element={
-              <RequirePermission permission={ATTENDANCE_PERMISSIONS.create} />
-            }
-          >
-            <Route element={<AttendanceNewPage />} path="attendance/new" />
-          </Route>
-        </Route>
-
-        <Route
-          element={
-            <RequirePermission
-              anyOf={[DISCIPLINE_PERMISSIONS.view, DISCIPLINE_PERMISSIONS.viewOwn]}
-            />
-          }
-        >
-          <Route element={<DisciplineHistoryPage />} path="discipline/history" />
-          <Route element={<DisciplineHistoryPage />} path="discipline/history/:studentId" />
-          <Route element={<DisciplineAppealsPage />} path="discipline/appeals" />
-          <Route element={<DisciplineAppealNewPage />} path="discipline/appeals/new" />
-          <Route element={<DisciplineAppealTrackingPage />} path="discipline/appeals/:appealId" />
-          <Route element={<DisciplineCasesPage />} path="discipline/cases" />
-          <Route element={<DisciplineCasePage />} path="discipline/cases/:caseId" />
-        </Route>
-
-        <Route element={<StaffOnly />}>
-          <Route
-            element={<RequirePermission permission={DISCIPLINE_PERMISSIONS.view} />}
-          >
-            <Route element={<DisciplineCatalogPage />} path="discipline/catalog" />
-            <Route element={<DisciplineProcessPage />} path="discipline/process" />
-            <Route element={<DisciplineAppealsReportsPage />} path="discipline/appeals/reports" />
-          </Route>
-          <Route element={<RequirePermission permission={DISCIPLINE_PERMISSIONS.configure} />}>
-            <Route element={<DisciplineCalendarPage />} path="discipline/calendar" />
+            <Route element={<MySchedulePage />} path="schedule" />
           </Route>
           <Route
             element={
               <RequirePermission
-                anyOf={[DISCIPLINE_PERMISSIONS.resolve, DISCIPLINE_PERMISSIONS.appeal]}
+                anyOf={[
+                  ATTENDANCE_PERMISSIONS.view,
+                  ATTENDANCE_PERMISSIONS.viewOwn,
+                ]}
               />
             }
           >
-            <Route element={<DisciplineAppealsReviewPage />} path="discipline/appeals/review" />
-            <Route element={<DisciplineAppealReviewPage />} path="discipline/appeals/review/:appealId" />
+            <Route element={<AttendanceHistoryPage />} path="attendance" />
           </Route>
-          <Route element={<RequirePermission permission={DISCIPLINE_PERMISSIONS.create} />}>
-            <Route element={<DisciplineRegisterPage />} path="discipline/register" />
+          <Route
+            element={
+              <RequirePermission
+                anyOf={[
+                  ATTENDANCE_PERMISSIONS.view,
+                  ATTENDANCE_PERMISSIONS.viewOwn,
+                  ATTENDANCE_PERMISSIONS.justify,
+                ]}
+              />
+            }
+          >
+            <Route
+              element={<AttendanceJustificationsPage />}
+              path="attendance/justifications"
+            />
           </Route>
+          <Route element={<AttendanceRedeemPage />} path="attendance/redeem" />
           <Route
             element={
               <RequirePermission
@@ -264,32 +97,41 @@ export const AppRouter = () => (
               />
             }
           >
-            <Route element={<DisciplineDashboardPage />} path="discipline/dashboard" />
+            <Route element={<DisciplineHistoryPage />} path="discipline" />
           </Route>
-          <Route element={<RequirePermission permission={DISCIPLINE_PERMISSIONS.respond} />}>
-            <Route element={<DisciplineNotificationsPage />} path="discipline/notifications" />
-          </Route>
+          <Route element={<ProfileSettingsPage />} path="settings" />
+          <Route element={<ProfileSettingsPage />} path="profile" />
+          {roleModuleRoutes()}
+          <Route element={<HouseHomeRedirect />} path="*" />
         </Route>
 
-        {/* Módulo oficial de Comunicados Institucionales (WF-65 al WF-76) */}
-        <Route element={<RequirePermission permission="communications.view" />}>
-          <Route element={<CommunicationsFeedPage />} path="communications" />
-        </Route>
-        <Route element={<StaffOnly />}>
+        <Route element={<RoleShell />} path="/guardian">
+          <Route element={<GuardianHomePage />} index />
+          <Route
+            element={<DisciplineNotificationsPage />}
+            path="discipline/notifications"
+          />
           <Route
             element={
               <RequirePermission
-                anyOf={['communications.create', 'communications.manage', 'communications.stats']}
+                anyOf={[DISCIPLINE_PERMISSIONS.view, DISCIPLINE_PERMISSIONS.viewOwn]}
               />
             }
           >
-            <Route element={<CommunicationsAdminPage />} path="communications/manage" />
+            <Route element={<DisciplineHistoryPage />} path="discipline" />
           </Route>
+          <Route
+            element={
+              <RequirePermission permission={ATTENDANCE_PERMISSIONS.viewOwn} />
+            }
+          >
+            <Route element={<AttendanceHistoryPage />} path="attendance" />
+          </Route>
+          <Route element={<ProfileSettingsPage />} path="settings" />
+          <Route element={<ProfileSettingsPage />} path="profile" />
+          {roleModuleRoutes()}
+          <Route element={<HouseHomeRedirect />} path="*" />
         </Route>
-
-        <Route element={<ProfileSettingsPage />} path="settings" />
-        <Route element={<ProfileSettingsPage />} path="profile" />
-        <Route element={<RoleHome />} path="*" />
       </Route>
     </Route>
 
@@ -305,10 +147,6 @@ export const AppRouter = () => (
     <Route element={<Navigate replace to="/admin" />} path="/administrative/*" />
 
     <Route element={<Navigate replace to="/admin/users" />} path="/onboarding" />
-    <Route
-      element={<Navigate replace to={ATTENDANCE_HISTORY_PATH} />}
-      path={STUDENT_ATTENDANCE_PATH}
-    />
     <Route element={<RootRedirect />} path="/" />
     <Route element={<RootRedirect />} path="*" />
   </Routes>

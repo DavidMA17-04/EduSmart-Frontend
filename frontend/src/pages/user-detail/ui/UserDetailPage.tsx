@@ -2,11 +2,14 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useParams } from 'react-router-dom';
 import { UserRound } from 'lucide-react';
 import type { Department } from '@/entities/department';
+import type { AcademicGroup } from '@/entities/group';
 import type { Role } from '@/entities/role';
-import type { UserAuditLog } from '@/entities/user';
+import type { OwnEnrollment, UserAuditLog } from '@/entities/user';
 import { departmentApi } from '@/features/manage-department/api/departmentApi';
+import { groupApi } from '@/features/manage-group';
 import { roleApi } from '@/features/manage-role';
 import {
+  GuardianLinksPanel,
   UserAuditPanel,
   UserForm,
   toCreatePayload,
@@ -14,6 +17,11 @@ import {
   userApi,
   userToFormValues,
 } from '@/features/manage-user';
+import { enrollmentSummary } from '@/features/manage-user/model/ownGeneralInfo';
+import {
+  filterGroupsForManualEnrollment,
+  roleIsStudent,
+} from '@/features/manage-user/model/sectionEnrollmentForm';
 import { Alert, Button, Card, PageHeader, StatusBadge, type StatusTone } from '@/shared/ui';
 import { HttpError } from '@/shared/api';
 import styles from '../../user-create/ui/UserPages.module.css';
@@ -34,6 +42,8 @@ export const UserDetailPage = () => {
   const { values, errors, setValues, onChange, validate } = useUserForm();
   const [roles, setRoles] = useState<Role[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [groups, setGroups] = useState<AcademicGroup[]>([]);
+  const [currentEnrollment, setCurrentEnrollment] = useState<OwnEnrollment | null>(null);
   const [auditLogs, setAuditLogs] = useState<UserAuditLog[]>([]);
   const [mode, setMode] = useState<'view' | 'edit'>('view');
   const [isLoading, setIsLoading] = useState(true);
@@ -72,11 +82,14 @@ export const UserDetailPage = () => {
       userApi.getById(id),
       roleApi.list().catch(() => [] as Role[]),
       departmentApi.listActive().catch(() => [] as Department[]),
+      groupApi.list().catch(() => [] as AcademicGroup[]),
     ])
-      .then(([user, roleItems, departmentItems]) => {
+      .then(([user, roleItems, departmentItems, groupItems]) => {
         if (!active) return;
         setRoles(roleItems);
         setDepartments(departmentItems);
+        setGroups(filterGroupsForManualEnrollment(groupItems));
+        setCurrentEnrollment(user.enrollment ?? null);
         setDisplayName(user.name ?? user.email ?? String(user.id));
         setCreatedAt(user.createdAt);
         setUpdatedAt(user.updatedAt);
@@ -105,7 +118,12 @@ export const UserDetailPage = () => {
         values.roleIds.includes(role.id) &&
         (role.name === 'Docente' || role.name === 'TEACHER'),
     );
-    if (!validate('edit', { requiresDepartment })) return;
+    const studentRoleSelected = roles.some(
+      (role) => values.roleIds.includes(role.id) && roleIsStudent(role.name),
+    );
+    const requiresGroup =
+      studentRoleSelected && values.status === 'ACTIVE' && !currentEnrollment;
+    if (!validate('edit', { requiresDepartment, requiresGroup })) return;
     if (values.status === 'INACTIVE' && initialStatus !== 'INACTIVE' && !deactivationReason.trim()) {
       setFormError('Indique el motivo de baja antes de guardar la inactivación.');
       return;
@@ -113,7 +131,7 @@ export const UserDetailPage = () => {
     setIsSubmitting(true);
     try {
       const payload = {
-        ...toCreatePayload(values),
+        ...toCreatePayload(values, { studentRoleSelected }),
         ...(values.status === 'INACTIVE' && initialStatus !== 'INACTIVE'
           ? { reason: deactivationReason.trim() }
           : {}),
@@ -124,6 +142,7 @@ export const UserDetailPage = () => {
       setUpdatedAt(updated.updatedAt);
       setValues(userToFormValues(updated));
       setInitialStatus(updated.status);
+      setCurrentEnrollment(updated.enrollment ?? null);
       setDeactivationReason('');
       setMode('view');
       setSaveMessage('Los cambios se guardaron correctamente y quedaron registrados en auditoría.');
@@ -168,31 +187,39 @@ export const UserDetailPage = () => {
 
       {!isLoading && !loadError && mode === 'view' && (
         <div className={styles.layout}>
-          <Card className={styles.formCard} padded={false}>
-            <div className={styles.formTitle}>
-              <h2>Ficha del usuario</h2>
-            </div>
-            <div className={styles.formBody}>
-              <dl className={styles.details}>
-                <div><dt>Cédula</dt><dd>{values.nationalId || '—'}</dd></div>
-                <div><dt>Nombre</dt><dd>{values.firstName || '—'}</dd></div>
-                <div><dt>Apellidos</dt><dd>{values.lastName || '—'}</dd></div>
-                <div><dt>Correo</dt><dd>{values.email || '—'}</dd></div>
-                <div><dt>Teléfono</dt><dd>{values.phone || '—'}</dd></div>
-                <div>
-                  <dt>Estado</dt>
-                  <dd>
-                    <StatusBadge tone={userStatusTone(values.status)} withDot={values.status === 'ACTIVE'}>
-                      {values.status}
-                    </StatusBadge>
-                  </dd>
-                </div>
-                <div><dt>Roles</dt><dd>{values.roleIds.length ? roles.filter((role) => values.roleIds.includes(role.id)).map((role) => role.name).join(', ') || `${values.roleIds.length} asignado(s)` : 'Sin roles'}</dd></div>
-                <div><dt>Creado</dt><dd>{createdAt ? formatDateTime(createdAt) : '—'}</dd></div>
-                <div><dt>Última actualización</dt><dd>{updatedAt ? formatDateTime(updatedAt) : '—'}</dd></div>
-              </dl>
-            </div>
-          </Card>
+          <div className={styles.mainColumn}>
+            <Card className={styles.formCard} padded={false}>
+              <div className={styles.formTitle}>
+                <h2>Ficha del usuario</h2>
+              </div>
+              <div className={styles.formBody}>
+                <dl className={styles.details}>
+                  <div><dt>Cédula</dt><dd>{values.nationalId || '—'}</dd></div>
+                  <div><dt>Nombre</dt><dd>{values.firstName || '—'}</dd></div>
+                  <div><dt>Apellidos</dt><dd>{values.lastName || '—'}</dd></div>
+                  <div><dt>Correo</dt><dd>{values.email || '—'}</dd></div>
+                  <div><dt>Teléfono</dt><dd>{values.phone || '—'}</dd></div>
+                  <div>
+                    <dt>Estado</dt>
+                    <dd>
+                      <StatusBadge tone={userStatusTone(values.status)} withDot={values.status === 'ACTIVE'}>
+                        {values.status}
+                      </StatusBadge>
+                    </dd>
+                  </div>
+                  <div><dt>Roles</dt><dd>{values.roleIds.length ? roles.filter((role) => values.roleIds.includes(role.id)).map((role) => role.name).join(', ') || `${values.roleIds.length} asignado(s)` : 'Sin roles'}</dd></div>
+                  <div><dt>Sección</dt><dd>{enrollmentSummary(currentEnrollment)}</dd></div>
+                  <div><dt>Creado</dt><dd>{createdAt ? formatDateTime(createdAt) : '—'}</dd></div>
+                  <div><dt>Última actualización</dt><dd>{updatedAt ? formatDateTime(updatedAt) : '—'}</dd></div>
+                </dl>
+              </div>
+            </Card>
+            <GuardianLinksPanel
+              roleNames={roles.filter((role) => values.roleIds.includes(role.id)).map((role) => role.name)}
+              roles={roles}
+              userId={Number(userId)}
+            />
+          </div>
           <aside className={styles.sidebar}>
             <UserAuditPanel error={auditError} isLoading={isAuditLoading} logs={auditLogs} />
             <Card className={styles.infoCard}>
@@ -200,6 +227,7 @@ export const UserDetailPage = () => {
               <p>Consulta de datos institucionales del usuario.</p>
               <ul>
                 <li>Use Editar para modificar la ficha.</li>
+                <li>Si el estudiante no tiene sección, puede asignarla al editar.</li>
                 <li>Los cambios quedan registrados en auditoría.</li>
               </ul>
             </Card>
@@ -219,6 +247,8 @@ export const UserDetailPage = () => {
                 errors={errors}
                 roles={roles}
                 departments={departments}
+                groups={groups}
+                currentEnrollment={currentEnrollment}
                 mode="edit"
                 isSubmitting={isSubmitting}
                 submitLabel="Guardar cambios"
@@ -242,6 +272,7 @@ export const UserDetailPage = () => {
               <ul>
                 <li>La cédula y el correo deben seguir siendo únicos.</li>
                 <li>Debe mantener al menos un rol asignado.</li>
+                <li>Si el rol es Estudiante activo y no tiene sección, debe indicar una.</li>
                 <li>Al guardar se validan los datos y se registra auditoría.</li>
               </ul>
             </Card>

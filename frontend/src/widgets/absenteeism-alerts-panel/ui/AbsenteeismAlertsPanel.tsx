@@ -174,7 +174,7 @@ export const AbsenteeismAlertsPanel = () => {
                 title="Sin alertas altas"
               />
             ) : (
-              <div className={styles.tableWrap}>
+              <div className={`${styles.tableWrap} table-scroll`}>
                 <table className={styles.table}>
                   <thead>
                     <tr>

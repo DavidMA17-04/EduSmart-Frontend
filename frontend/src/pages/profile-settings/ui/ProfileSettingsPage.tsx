@@ -2,17 +2,18 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { KeyRound, MonitorSmartphone, UserRound } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '@/features/auth';
-import { userApi } from '@/features/manage-user';
+import { OwnGeneralInfoPanel, userApi } from '@/features/manage-user';
 import { isValidInitialPassword } from '@/features/manage-user/model/userFormRules';
 import type { AdministrativeUser } from '@/entities/user';
 import type { AuthSessionView } from '@/features/auth/api/authApi';
-import { clearAccessToken } from '@/shared/auth';
+import { clearAccessToken, getSessionUser } from '@/shared/auth';
 import { runAppEnterTransition } from '@/shared/motion/runAppEnterTransition';
 import { Alert, Button, Card, Input, PageHeader, Table } from '@/shared/ui';
 import styles from './ProfileSettingsPage.module.css';
 
 export const ProfileSettingsPage = () => {
   const navigate = useNavigate();
+  const passwordPending = Boolean(getSessionUser()?.mustChangePassword);
   const [profile, setProfile] = useState<AdministrativeUser | null>(null);
   const [name, setName] = useState('');
   const [firstLastName, setFirstLastName] = useState('');
@@ -89,7 +90,10 @@ export const ProfileSettingsPage = () => {
       await authApi.changePassword(currentPassword, newPassword);
       await runAppEnterTransition(async () => {
         await authApi.logout();
-        navigate('/login', { replace: true });
+        navigate('/login', {
+          replace: true,
+          state: { notice: 'Contraseña actualizada. Inicia sesión de nuevo con tu nueva contraseña.' },
+        });
       });
     } catch (error) {
       setPasswordError(error instanceof Error ? error.message : 'No se pudo cambiar la contraseña.');
@@ -130,6 +134,16 @@ export const ProfileSettingsPage = () => {
         subtitle="Consulte y actualice su información, contraseña y sesiones activas."
         title="Mi perfil y seguridad"
       />
+
+      {passwordPending ? (
+        <Alert>
+          Debes cambiar tu contraseña para continuar. Mientras tanto solo puedes
+          usar esta pantalla; al terminar tendrás que iniciar sesión de nuevo y
+          verás el menú completo de tu rol.
+        </Alert>
+      ) : null}
+
+      <OwnGeneralInfoPanel user={profile ?? undefined} />
 
       <Card>
         <form className={`${styles.section} ${styles.form}`} onSubmit={onSaveProfile}>

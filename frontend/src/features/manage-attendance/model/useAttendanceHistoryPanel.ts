@@ -5,6 +5,7 @@ import type {
   AttendanceHistoryItem,
   AttendanceHistorySummary,
   AttendanceRegistrationMethod,
+  AttendanceRepresentedStudent,
   AttendanceStatus,
 } from '@/entities/attendance';
 import { STUDENT_ROLE_NAME } from '@/entities/role';
@@ -12,6 +13,9 @@ import { HttpError } from '@/shared/api';
 import { getSessionUser, sessionHasPermission } from '@/shared/auth';
 import { attendanceApi } from '../api/attendanceApi';
 import { ATTENDANCE_PERMISSIONS } from './attendanceRouting';
+import { resolveHistoryEmptyKind } from './historyEmptyState';
+
+export type HistoryViewerKind = 'staff' | 'student' | 'guardian';
 
 export type HistoryStatusFilter = AttendanceStatus | '';
 export type HistoryMethodFilter = AttendanceRegistrationMethod | '';
@@ -47,13 +51,35 @@ function rolesIncludeStudent(roles: readonly string[] | undefined): boolean {
   });
 }
 
+function rolesIncludeGuardian(roles: readonly string[] | undefined): boolean {
+  if (!roles?.length) return false;
+  return roles.some((role) => {
+    const value = String(role).trim().toLowerCase();
+    return value === 'encargado' || value === 'padre de familia' || value === 'guardian';
+  });
+}
+
+/** Quién mira el historial: personal, estudiante (lo propio) o encargado (representados). */
+export function resolveHistoryViewerKind(
+  roles: readonly string[] | undefined,
+  has: (code: string) => boolean,
+): HistoryViewerKind {
+  if (has(ATTENDANCE_PERMISSIONS.view)) return 'staff';
+  const ownOnly = has(ATTENDANCE_PERMISSIONS.viewOwn) || rolesIncludeStudent(roles);
+  if (!ownOnly) return 'staff';
+  if (rolesIncludeGuardian(roles) && !rolesIncludeStudent(roles)) return 'guardian';
+  return 'student';
+}
+
 export function useAttendanceHistoryPanel() {
   const user = getSessionUser();
-  const isStudentView = useMemo(() => {
-    if (sessionHasPermission(ATTENDANCE_PERMISSIONS.view)) return false;
-    if (sessionHasPermission(ATTENDANCE_PERMISSIONS.viewOwn)) return true;
-    return rolesIncludeStudent(user?.roles);
-  }, [user?.roles]);
+  const viewerKind = useMemo(
+    () => resolveHistoryViewerKind(user?.roles, sessionHasPermission),
+    [user?.roles],
+  );
+  /** Vista de "solo lo mío / lo de mis representados": sin filtros de personal. */
+  const isStudentView = viewerKind !== 'staff';
+  const isGuardianView = viewerKind === 'guardian';
 
   const [groups, setGroups] = useState<AttendanceGroup[]>([]);
   const [offerings, setOfferings] = useState<AttendanceAvailableOffering[]>([]);
@@ -70,6 +96,11 @@ export function useAttendanceHistoryPanel() {
     useState<HistoryMethodFilter>('');
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [studentId, setStudentId] = useState('');
+  const [represented, setRepresented] = useState<
+    AttendanceRepresentedStudent[] | undefined
+  >(undefined);
+  const [errorStatus, setErrorStatus] = useState<number | null>(null);
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState<HistoryPageSize>(DEFAULT_LIMIT);
@@ -156,6 +187,7 @@ export function useAttendanceHistoryPanel() {
     status,
     registrationMethod,
     debouncedSearch,
+    studentId,
     limit,
   ]);
 
@@ -167,6 +199,7 @@ export function useAttendanceHistoryPanel() {
       teachingAssignmentId: teachingAssignmentId
         ? Number(teachingAssignmentId)
         : undefined,
+      studentId: isGuardianView && studentId ? Number(studentId) : undefined,
       status: status || undefined,
       registrationMethod: registrationMethod || undefined,
       search:
@@ -179,10 +212,12 @@ export function useAttendanceHistoryPanel() {
       endDate,
       groupId,
       teachingAssignmentId,
+      studentId,
       status,
       registrationMethod,
       debouncedSearch,
       isStudentView,
+      isGuardianView,
     ],
   );
 
@@ -204,12 +239,15 @@ export function useAttendanceHistoryPanel() {
       setTotal(pageResult.total);
       setTotalPages(pageResult.totalPages);
       setSummary(summaryResult);
+      setRepresented(pageResult.represented);
+      setErrorStatus(null);
       setError(null);
     } catch (err) {
       setItems([]);
       setTotal(0);
       setTotalPages(0);
       setSummary(EMPTY_SUMMARY);
+      setErrorStatus(err instanceof HttpError ? err.status : null);
       setError(
         err instanceof HttpError
           ? err.message
@@ -233,6 +271,7 @@ export function useAttendanceHistoryPanel() {
     setRegistrationMethod('');
     setSearch('');
     setDebouncedSearch('');
+    setStudentId('');
     setPage(1);
     setLimit(DEFAULT_LIMIT);
   };
@@ -277,7 +316,17 @@ export function useAttendanceHistoryPanel() {
       }));
 
   return {
+    viewerKind,
     isStudentView,
+    isGuardianView,
+    represented: represented ?? [],
+    studentId,
+    setStudentId,
+    emptyKind: resolveHistoryEmptyKind({
+      isGuardianView,
+      represented,
+      errorStatus,
+    }),
     groups,
     offerings: offeringOptions,
     startDate,

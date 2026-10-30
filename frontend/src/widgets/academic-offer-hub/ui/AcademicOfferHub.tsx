@@ -4,7 +4,9 @@ import { BookOpen, ImagePlus, Layers, Wrench } from 'lucide-react';
 import type { SpecialtyHubCover, SpecialtyKind } from '@/entities/specialty';
 import { resolveUploadUrl, specialtyApi } from '@/features/manage-specialty/api/specialtyApi';
 import { subjectApi } from '@/features/manage-subject';
+import { sessionHasPermission } from '@/shared/auth';
 import { Alert, Button, Modal } from '@/shared/ui';
+import { staffPathForSession } from '@/widgets/app-shell/model/adminNavigation';
 import styles from './AcademicOfferHub.module.css';
 
 const SPECIALTY_CARDS: Array<{
@@ -32,6 +34,7 @@ const SPECIALTY_CARDS: Array<{
 
 export const AcademicOfferHub = () => {
   const navigate = useNavigate();
+  const canEditSpecialties = sessionHasPermission('specialties.edit');
   const [covers, setCovers] = useState<SpecialtyHubCover[]>([]);
   const [counts, setCounts] = useState<Partial<Record<SpecialtyKind, number>>>({});
   const [subjectsCount, setSubjectsCount] = useState(0);
@@ -157,7 +160,7 @@ export const AcademicOfferHub = () => {
               {subjectsCount} {subjectsCount === 1 ? 'registro' : 'registros'}
             </small>
             <div className={styles.cardActions}>
-              <Button onClick={() => navigate('/admin/subjects')} type="button">
+              <Button onClick={() => navigate(staffPathForSession('/admin/subjects'))} type="button">
                 Ver
               </Button>
             </div>
@@ -184,17 +187,19 @@ export const AcademicOfferHub = () => {
                   {count} {count === 1 ? 'registro' : 'registros'}
                 </small>
                 <div className={styles.cardActions}>
-                  <Button onClick={() => navigate(card.to)} type="button">
+                  <Button onClick={() => navigate(staffPathForSession(card.to))} type="button">
                     Ver
                   </Button>
-                  <Button
-                    onClick={() => openConfig(card.kind)}
-                    type="button"
-                    variant="secondary"
-                  >
-                    <ImagePlus size={16} />
-                    Configurar
-                  </Button>
+                  {canEditSpecialties ? (
+                    <Button
+                      onClick={() => openConfig(card.kind)}
+                      type="button"
+                      variant="secondary"
+                    >
+                      <ImagePlus size={16} />
+                      Configurar
+                    </Button>
+                  ) : null}
                 </div>
               </div>
             </article>

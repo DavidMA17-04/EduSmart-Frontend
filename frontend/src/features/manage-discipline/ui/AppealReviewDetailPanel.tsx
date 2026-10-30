@@ -1,3 +1,4 @@
+import { portalPathForSession } from '@/shared/auth/portalPaths';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Alert, Badge } from '@/shared/ui';
@@ -61,7 +62,7 @@ export const AppealReviewDetailPanel = () => {
             <div>
               <dt>Expediente</dt>
               <dd>
-                <Link className={styles.caseLink} to={appealReviewCaseHref(item.caseId)}>
+                <Link className={styles.caseLink} to={portalPathForSession(appealReviewCaseHref(item.caseId))}>
                   {item.caseNumber}
                 </Link>
               </dd>
@@ -100,8 +101,8 @@ export const AppealReviewDetailPanel = () => {
           </div>
           <p className={styles.muted}>{APPEAL_REVIEW_COPY.noCommittee}</p>
           <div className={styles.actions}>
-            <Link to={appealReviewCaseHref(item.caseId)}>{APPEAL_REVIEW_COPY.caseLink}</Link>
-            <Link to={DISCIPLINE_APPEALS_REVIEW_PATH}>Volver a la bandeja</Link>
+            <Link to={portalPathForSession(appealReviewCaseHref(item.caseId))}>{APPEAL_REVIEW_COPY.caseLink}</Link>
+            <Link to={portalPathForSession(DISCIPLINE_APPEALS_REVIEW_PATH)}>Volver a la bandeja</Link>
           </div>
           <AppealResolutionForm
             appeal={item}
@@ -115,7 +116,7 @@ export const AppealReviewDetailPanel = () => {
                 severity: input.severity,
               })
             }
-            onChanged={() => navigate(DISCIPLINE_APPEALS_REVIEW_PATH)}
+            onChanged={() => navigate(portalPathForSession(DISCIPLINE_APPEALS_REVIEW_PATH))}
             onError={(message) => setError(message)}
           />
         </>

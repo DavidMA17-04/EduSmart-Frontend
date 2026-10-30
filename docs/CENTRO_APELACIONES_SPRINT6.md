@@ -2,7 +2,7 @@
 
 Fachada de consulta y UX sobre el módulo disciplinario de Sprint 4. No es un segundo sistema de apelaciones. El identificador visible sigue siendo el expediente `AM-AAAA-NNNN`.
 
-Ramas: backend `Feature-DavidV2B`, frontend `Feature-DavidV2F`. Prefijo API: `/api/v1`.
+Origen: backend `Feature-DavidV2B`, frontend `Feature-DavidV2F`; integración vigente en `Feature-Aaron` de ambos repos. Prefijo API: `/api/v1`.
 
 ## Arquitectura
 
@@ -33,16 +33,16 @@ Filtros de listado/dashboard/export: `kind`, `outcome`, `caseId`, `studentUserId
 
 ## Rutas frontend
 
-No existe `/admin/appeals`. Todo vive bajo `/admin/discipline`:
+No existe `/admin/appeals`. Las rutas se componen dentro de la casa del autenticado: `/admin`, `/teacher`, `/counselor`, `/director`, `/student` o `/guardian`. En la tabla, `<casa>` representa ese prefijo. Revisión/reportes son de personal autorizado; alumnos y encargados solo consultan recursos y expedientes propios o vinculados. Las URLs antiguas de `/admin` redirigen al equivalente permitido conservando ids, consulta y fragmento:
 
 | Ruta | Quién entra |
 |---|---|
-| `/admin/discipline/appeals` | `view` o `view_own` |
-| `/admin/discipline/appeals/new` | igual |
-| `/admin/discipline/appeals/:appealId` | igual |
-| `/admin/discipline/appeals/review` | `resolve` o `appeal` (staff) |
-| `/admin/discipline/appeals/reports` | `disciplinary.view` (staff) |
-| `/admin/discipline/cases/:caseId` | `view` o `view_own`; el servicio limita el expediente |
+| `<casa>/discipline/appeals` | `view` o `view_own` |
+| `<casa>/discipline/appeals/new` | igual |
+| `<casa>/discipline/appeals/:appealId` | igual |
+| `<casa>/discipline/appeals/review` | `resolve` o `appeal` (staff) |
+| `<casa>/discipline/appeals/reports` | `disciplinary.view` (staff) |
+| `<casa>/discipline/cases/:caseId` | `view` o `view_own`; el servicio limita el expediente |
 
 El `AM-` del listado abre el seguimiento. “Expediente” y el número en el detalle abren el caso. En el expediente, cada recurso enlaza al seguimiento.
 

@@ -223,7 +223,7 @@ export function JustificationsInboxPanel() {
         ) : null}
         {loading ? <p className={styles.muted}>Cargando…</p> : null}
 
-        <div className={styles.tableWrap}>
+        <div className={`${styles.tableWrap} table-scroll`}>
           <table className={styles.table}>
             <thead>
               <tr>

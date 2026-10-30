@@ -1,14 +1,11 @@
 import {
-  PERMISSION_ACTIONS,
   PERMISSION_MODULES,
   type PermissionAction,
   type PermissionModule,
 } from './types';
 
-/** Classic catalog actions auto-synced by admin UI (excludes scoped VIEW_OWN). */
-export const CATALOG_SYNC_ACTIONS = PERMISSION_ACTIONS.filter(
-  (action): action is Exclude<PermissionAction, 'VIEW_OWN'> => action !== 'VIEW_OWN',
-);
+/** Only classic actions are synthesized; scoped actions are migration-managed. */
+export const CATALOG_SYNC_ACTIONS = ['VIEW', 'CREATE', 'EDIT', 'DELETE', 'EXPORT', 'CONFIGURE'] as const;
 
 /**
  * Modules auto-synced by admin UI.

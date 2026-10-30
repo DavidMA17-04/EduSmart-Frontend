@@ -84,7 +84,7 @@ export const AttendanceExceptionsPanel = () => {
           title="Sin excepciones de calendario"
         />
       ) : (
-        <div className={styles.tableWrap}>
+        <div className={`${styles.tableWrap} table-scroll`}>
           <table className={styles.table}>
             <thead>
               <tr>

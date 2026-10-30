@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { sessionHasPermission } from '@/shared/auth';
+import { getSessionUser, sessionHasPermission } from '@/shared/auth';
+import { houseHomeOrLogin } from '@/widgets/app-shell/model/territory';
 
 export const RequirePermission = ({
   permission,
@@ -12,6 +13,7 @@ export const RequirePermission = ({
   /** When set, access is denied if the session also has this permission. */
   withoutPermission?: string;
 }) => {
+  const bounce = houseHomeOrLogin(getSessionUser()?.roles);
   const allowed = anyOf?.length
     ? anyOf.some((code) => sessionHasPermission(code))
     : permission
@@ -19,10 +21,10 @@ export const RequirePermission = ({
       : false;
 
   if (!allowed) {
-    return <Navigate replace to="/admin" />;
+    return <Navigate replace to={bounce} />;
   }
   if (withoutPermission && sessionHasPermission(withoutPermission)) {
-    return <Navigate replace to="/admin" />;
+    return <Navigate replace to={bounce} />;
   }
   return <Outlet />;
 };

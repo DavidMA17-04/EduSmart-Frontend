@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { ChevronDown, LogOut, Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { authApi, useAuthStore } from '@/features/auth';
 import { NotificationBell } from '@/features/in-app-inbox';
@@ -13,6 +13,7 @@ import {
   groupAdminNavigation,
   type AdminNavItem,
 } from '../model/adminNavigation';
+import { resolveHouse, settingsPath } from '../model/territory';
 import { roleAudienceLabel, useRoleAudience } from './roleAudience';
 import styles from './AdminShell.module.css';
 
@@ -48,11 +49,21 @@ function SidebarLink({
   onNavigate?: () => void;
 }) {
   const Icon = item.icon;
-  const unread = useGuardianUnreadCount(item.to === '/admin/discipline/notifications');
+  const unread = useGuardianUnreadCount(
+    item.to.endsWith('/discipline/notifications'),
+  );
   return (
     <NavLink
       className={({ isActive }) => navClass(isActive, nested)}
-      end={item.to === '/admin' || exact}
+      end={
+        item.to === '/admin' ||
+        item.to === '/teacher' ||
+        item.to === '/counselor' ||
+        item.to === '/director' ||
+        item.to === '/student' ||
+        item.to === '/guardian' ||
+        exact
+      }
       onClick={onNavigate}
       title={item.label}
       to={item.to}
@@ -75,6 +86,7 @@ export const AdminShell = () => {
   const location = useLocation();
   const audience = useRoleAudience();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(readSidebarCollapsed);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [groupOpen, setGroupOpen] = useState<Record<string, boolean>>({});
@@ -84,8 +96,11 @@ export const AdminShell = () => {
       sessionHasPermission,
       sessionUser?.roles ?? [],
       audience,
+      Boolean(sessionUser?.mustChangePassword),
     ),
   );
+
+  const closeDrawer = () => setDrawerOpen(false);
 
   const onLogout = async () => {
     if (isLoggingOut) return;
@@ -104,7 +119,18 @@ export const AdminShell = () => {
 
   return (
     <div className={`admin-shell ${styles.shell}`}>
-      <aside className={`${styles.sidebar} ${sidebarCollapsed ? styles.sidebarCollapsed : ''}`}>
+      {drawerOpen ? (
+        <button
+          aria-label="Cerrar menú"
+          className={styles.drawerBackdrop}
+          onClick={closeDrawer}
+          type="button"
+        />
+      ) : null}
+      <aside
+        className={`${styles.sidebar} ${sidebarCollapsed ? styles.sidebarCollapsed : ''} ${drawerOpen ? styles.sidebarOpen : ''}`}
+        id="app-sidebar"
+      >
         <div className={styles.brand}>
           <img
             alt="Escudo C.T.P. de Hojancha"
@@ -112,14 +138,22 @@ export const AdminShell = () => {
             src="/brand/ctp-hojancha-logo.jpeg"
           />
           <span className={styles.brandTitle}>C.T.P. de Hojancha</span>
-          <small className={styles.roleAudience}>{roleAudienceLabel(audience)}</small>
+          <small className={styles.roleAudience}>
+            {roleAudienceLabel(audience, sessionUser?.roles)}
+          </small>
           <small>Colegio Técnico Profesional</small>
           <small className={styles.brandMotto}>Ciencia · Cultura · 1972</small>
         </div>
         <nav aria-label="Navegación principal" className={styles.navigation}>
           {navigation.map((entry) => {
             if (entry.type === 'link') {
-              return <SidebarLink item={entry.item} key={entry.item.to} />;
+              return (
+                <SidebarLink
+                  item={entry.item}
+                  key={entry.item.to}
+                  onNavigate={closeDrawer}
+                />
+              );
             }
 
             const leadHasNestedChildren = entry.children.some((child) =>
@@ -139,9 +173,10 @@ export const AdminShell = () => {
                   <SidebarLink
                     exact={leadHasNestedChildren}
                     item={entry.lead}
-                    onNavigate={() =>
-                      setGroupOpen((current) => ({ ...current, [entry.id]: true }))
-                    }
+                    onNavigate={() => {
+                      setGroupOpen((current) => ({ ...current, [entry.id]: true }));
+                      closeDrawer();
+                    }}
                   />
                   {!sidebarCollapsed ? (
                   <button
@@ -172,7 +207,12 @@ export const AdminShell = () => {
                 {expanded && !sidebarCollapsed ? (
                   <div className={styles.navChildren} id={panelId}>
                     {entry.children.map((child) => (
-                      <SidebarLink item={child} key={child.to} nested />
+                      <SidebarLink
+                        item={child}
+                        key={child.to}
+                        nested
+                        onNavigate={closeDrawer}
+                      />
                     ))}
                   </div>
                 ) : null}
@@ -214,8 +254,26 @@ export const AdminShell = () => {
       </aside>
       <section className={styles.main}>
         <header className={styles.header}>
+          <button
+            aria-controls="app-sidebar"
+            aria-expanded={drawerOpen}
+            aria-label={drawerOpen ? 'Cerrar menú' : 'Abrir menú'}
+            className={styles.menuButton}
+            onClick={() => setDrawerOpen((open) => !open)}
+            type="button"
+          >
+            {drawerOpen ? <X aria-hidden size={20} /> : <Menu aria-hidden size={20} />}
+            <span>Menú</span>
+          </button>
           <NotificationBell />
-          <button className={styles.profile} onClick={() => navigate('/admin/settings')} type="button">
+          <button
+            className={styles.profile}
+            onClick={() => {
+              const house = resolveHouse(sessionUser?.roles);
+              navigate(house ? settingsPath(house) : '/login');
+            }}
+            type="button"
+          >
             <span className={styles.headerAvatar}>{avatarLetter}</span>
             <span>
               <strong>{displayName}</strong>

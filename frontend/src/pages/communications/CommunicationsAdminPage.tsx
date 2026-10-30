@@ -1,3 +1,4 @@
+import { portalPathForSession } from '@/shared/auth/portalPaths';
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -44,7 +45,7 @@ import {
   formatRelative,
   formatShortDate,
 } from '@/components/communications/communicationFormat';
-import { getStoredSessionUser } from '@/shared/auth';
+import { getStoredSessionUser, sessionHasPermission } from '@/shared/auth';
 import { useToast } from '@/shared/ui';
 import '@/components/communications/communications.css';
 
@@ -231,7 +232,7 @@ export const CommunicationsAdminPage: React.FC = () => {
           <div>
             <button
               type="button"
-              onClick={() => navigate('/admin/communications')}
+              onClick={() => navigate(portalPathForSession('/admin/communications'))}
               className="text-xs font-semibold text-slate-500 hover:text-[#0d2346] flex items-center gap-1 mb-2 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
@@ -438,7 +439,7 @@ export const CommunicationsAdminPage: React.FC = () => {
                               <BarChart3 className="w-4 h-4" />
                             </IconAction>
                           )}
-                          {comm.status === 'DRAFT' && (
+                          {comm.status === 'DRAFT' && sessionHasPermission('communications.publish') && (
                             <IconAction label="Publicar" onClick={() => setPendingAction({ kind: 'publish', communication: comm })} className="text-emerald-600 hover:bg-emerald-50">
                               <Send className="w-4 h-4" />
                             </IconAction>
@@ -448,7 +449,7 @@ export const CommunicationsAdminPage: React.FC = () => {
                               <Archive className="w-4 h-4" />
                             </IconAction>
                           )}
-                          {comm.status === 'ARCHIVED' && (
+                          {comm.status === 'ARCHIVED' && sessionHasPermission('communications.publish') && (
                             <IconAction label="Volver a publicar" onClick={() => setPendingAction({ kind: 'restore', communication: comm })} className="text-emerald-600 hover:bg-emerald-50">
                               <ArchiveRestore className="w-4 h-4" />
                             </IconAction>

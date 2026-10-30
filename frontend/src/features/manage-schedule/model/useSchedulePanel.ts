@@ -15,6 +15,7 @@ import { filterPeriodsForSessionRole, sessionHasPermission } from '@/shared/auth
 import { HttpError } from '@/shared/api/httpClient';
 import { useToast } from '@/shared/ui';
 import { scheduleApi } from '../api/scheduleApi';
+import { resolveScheduleEntrySubmit } from './scheduleEntrySubmit';
 import { humanizeScheduleMutationError } from './scheduleErrors';
 import {
   dayOfWeekLabel,
@@ -238,11 +239,6 @@ export function useSchedulePanel() {
     void loadTeachingAssignments();
   }, [catalogLoading, loadTeachingAssignments]);
 
-  const assignableSlots = useMemo(
-    () => sortedSlots.filter((s) => s.slotType === 'CLASS' && s.isActive),
-    [sortedSlots],
-  );
-
   const taOptions = useMemo(
     () =>
       filterTeachingAssignmentsForContext(teachingAssignments, {
@@ -299,38 +295,20 @@ export function useSchedulePanel() {
 
   const submit = useCallback(async () => {
     if (isSaving) return;
-    const teachingAssignmentId = Number(form.teachingAssignmentId);
-    const dayOfWeek = Number(form.dayOfWeek);
-    const timeSlotId = Number(form.timeSlotId);
-    if (
-      !Number.isInteger(teachingAssignmentId) ||
-      teachingAssignmentId <= 0 ||
-      !Number.isInteger(dayOfWeek) ||
-      dayOfWeek < 1 ||
-      dayOfWeek > 5 ||
-      !Number.isInteger(timeSlotId) ||
-      timeSlotId <= 0
-    ) {
-      setMutationError('Complete la asignación, el día y el bloque horario.');
+    const resolved = resolveScheduleEntrySubmit(dialogMode, form, editingEntryId);
+    if (!resolved.ok) {
+      setMutationError(resolved.message);
       return;
     }
 
     setIsSaving(true);
     setMutationError(null);
     try {
-      if (dialogMode === 'create') {
-        await scheduleApi.createEntry({
-          teachingAssignmentId,
-          dayOfWeek,
-          timeSlotId,
-        });
+      if (resolved.mode === 'create') {
+        await scheduleApi.createEntry(resolved.payload);
         toast.push('Clase asignada al horario.', 'success');
-      } else if (editingEntryId != null) {
-        await scheduleApi.updateEntry(editingEntryId, {
-          teachingAssignmentId,
-          dayOfWeek,
-          timeSlotId,
-        });
+      } else {
+        await scheduleApi.updateEntry(resolved.entryId, resolved.payload);
         toast.push('Clase del horario actualizada.', 'success');
       }
       setDialogOpen(false);
@@ -394,7 +372,6 @@ export function useSchedulePanel() {
   return {
     timeSlots: sortedSlots,
     matrixSlots,
-    assignableSlots,
     entries,
     entriesByCell,
     teachers,

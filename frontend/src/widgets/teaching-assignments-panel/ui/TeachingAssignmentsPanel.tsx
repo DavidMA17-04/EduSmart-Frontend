@@ -23,6 +23,7 @@ import {
   useTeachingAssignmentsPanel,
   type OfferingKindFilter,
 } from '@/features/manage-teaching-assignment/model/useTeachingAssignmentsPanel';
+import { sessionHasPermission } from '@/shared/auth';
 import { TeachingAssignmentForm } from '@/features/manage-teaching-assignment/ui/TeachingAssignmentForm';
 import styles from './TeachingAssignmentsPanel.module.css';
 
@@ -37,6 +38,7 @@ function offeringDisplayName(row: {
 
 export const TeachingAssignmentsPanel = () => {
   const model = useTeachingAssignmentsPanel();
+  const canEdit = sessionHasPermission('academic_structure.edit');
   const dialogTitle =
     model.dialogMode === 'create'
       ? 'Nueva asignación académica'
@@ -117,9 +119,11 @@ export const TeachingAssignmentsPanel = () => {
                 </div>
               }
               primaryAction={
-                <Button onClick={model.openCreate} type="button">
-                  <Plus size={16} /> Nueva asignación
-                </Button>
+                canEdit ? (
+                  <Button onClick={model.openCreate} type="button">
+                    <Plus size={16} /> Nueva asignación
+                  </Button>
+                ) : undefined
               }
             />
           }
@@ -132,11 +136,15 @@ export const TeachingAssignmentsPanel = () => {
 
           {!model.isLoading && model.rows.length === 0 ? (
             <EmptyState
-              action={{
-                label: 'Nueva asignación',
-                onClick: model.openCreate,
-                icon: Plus,
-              }}
+              action={
+                canEdit
+                  ? {
+                      label: 'Nueva asignación',
+                      onClick: model.openCreate,
+                      icon: Plus,
+                    }
+                  : undefined
+              }
               description="Configure qué imparte cada docente en un grupo y curso lectivo. No incluye asignaciones de solo docente guía."
               icon={BookOpen}
               title="Sin asignaciones académicas"
@@ -179,6 +187,7 @@ export const TeachingAssignmentsPanel = () => {
                     </td>
                     <td>{row.isGuideTeacher ? 'Sí' : 'No'}</td>
                     <td>
+                      {canEdit ? (
                       <RowActions>
                         <RowActionButton
                           aria-label="Editar asignación"
@@ -189,6 +198,7 @@ export const TeachingAssignmentsPanel = () => {
                           <Edit3 size={16} />
                         </RowActionButton>
                       </RowActions>
+                      ) : null}
                     </td>
                   </tr>
                 ))}

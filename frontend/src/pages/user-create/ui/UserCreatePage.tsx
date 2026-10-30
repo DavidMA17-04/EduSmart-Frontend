@@ -2,11 +2,18 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, UserPlus } from 'lucide-react';
 import type { Department } from '@/entities/department';
+import type { AcademicGroup } from '@/entities/group';
 import type { Role } from '@/entities/role';
 import type { AdministrativeUser } from '@/entities/user';
 import { departmentApi } from '@/features/manage-department/api/departmentApi';
+import { groupApi } from '@/features/manage-group';
 import { roleApi } from '@/features/manage-role';
 import { UserForm, emptyUserForm, toCreatePayload, useUserForm, userApi } from '@/features/manage-user';
+import { enrollmentSummary } from '@/features/manage-user/model/ownGeneralInfo';
+import {
+  filterGroupsForManualEnrollment,
+  roleIsStudent,
+} from '@/features/manage-user/model/sectionEnrollmentForm';
 import { Card, FeedbackCard, PageHeader, useToast } from '@/shared/ui';
 import { HttpError } from '@/shared/api';
 import styles from './UserPages.module.css';
@@ -39,6 +46,7 @@ export const UserCreatePage = () => {
   const form = useUserForm();
   const [roles, setRoles] = useState<Role[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [groups, setGroups] = useState<AcademicGroup[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [createdUser, setCreatedUser] = useState<AdministrativeUser | null>(null);
@@ -48,10 +56,12 @@ export const UserCreatePage = () => {
     Promise.all([
       roleApi.list().catch(() => [] as Role[]),
       departmentApi.listActive().catch(() => [] as Department[]),
-    ]).then(([roleItems, departmentItems]) => {
+      groupApi.list().catch(() => [] as AcademicGroup[]),
+    ]).then(([roleItems, departmentItems, groupItems]) => {
       if (!active) return;
       setRoles(roleItems.filter((role) => role.status === 'ACTIVE'));
       setDepartments(departmentItems);
+      setGroups(filterGroupsForManualEnrollment(groupItems));
     });
     return () => {
       active = false;
@@ -63,16 +73,20 @@ export const UserCreatePage = () => {
       form.values.roleIds.includes(role.id) &&
       (role.name === 'Docente' || role.name === 'TEACHER'),
   );
+  const studentRoleSelected = roles.some(
+    (role) => form.values.roleIds.includes(role.id) && roleIsStudent(role.name),
+  );
+  const requiresGroup = studentRoleSelected && form.values.status === 'ACTIVE';
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setFormError(null);
-    if (!form.validate('create', { requiresDepartment })) return;
+    if (!form.validate('create', { requiresDepartment, requiresGroup })) return;
 
     const intent = submitIntent(event);
     setIsSubmitting(true);
     try {
-      const user = await userApi.create(toCreatePayload(form.values));
+      const user = await userApi.create(toCreatePayload(form.values, { studentRoleSelected }));
       if (intent === 'create-another') {
         form.setValues(emptyUserForm);
         form.setErrors({});
@@ -136,6 +150,11 @@ export const UserCreatePage = () => {
                 </span>
                 <div className={styles.summaryMeta}>
                   <span className={styles.rolePill}>{primaryRole}</span>
+                  {createdUser.enrollment ? (
+                    <span className={styles.rolePill}>
+                      {enrollmentSummary(createdUser.enrollment)}
+                    </span>
+                  ) : null}
                   <span
                     className={`${styles.accessChip} ${accessEnabled ? styles.accessOn : styles.accessOff}`}
                   >
@@ -177,6 +196,7 @@ export const UserCreatePage = () => {
               errors={form.errors}
               roles={roles}
               departments={departments}
+              groups={groups}
               isSubmitting={isSubmitting}
               mode="create"
               submitLabel="Guardar usuario"
@@ -200,6 +220,10 @@ export const UserCreatePage = () => {
                 listan roles activos).
               </li>
               <li>Debe asignar al menos un rol institucional.</li>
+              <li>
+                Si el rol es Estudiante y el estado es Activa, debe indicar la sección. El alumno
+                queda matriculado en esa sección al guardar.
+              </li>
               <li>
                 Estado <strong>Activa</strong>: la cuenta puede iniciar sesión de inmediato (sin
                 verificación por correo).

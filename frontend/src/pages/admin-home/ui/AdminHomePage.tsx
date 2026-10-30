@@ -16,39 +16,18 @@ import {
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { dashboardApi } from '@/features/dashboard';
 import type { DashboardSummary } from '@/features/dashboard';
+import { useAuthStore } from '@/features/auth';
 import { getSessionUser, sessionHasPermission } from '@/shared/auth';
+import { profileDisplayName } from '../model/profileDisplayName';
 import { brandColors } from '@/styles/brandColors';
 import { AttendanceDashboardPanel } from '@/widgets/attendance-dashboard-panel';
+import { HouseWelcome } from './HouseWelcome';
 import styles from './AdminHomePage.module.css';
-
-function getGreeting(date: Date): string {
-  const h = date.getHours();
-  if (h < 12) return 'Buenos días';
-  if (h < 18) return 'Buenas tardes';
-  return 'Buenas noches';
-}
 
 /** Etiqueta pluralizada según cantidad (0/1/n). */
 function countLabel(count: number, singular: string, plural: string): string {
   const word = count === 1 ? singular : plural;
   return word.charAt(0).toUpperCase() + word.slice(1);
-}
-
-function formatDate(date: Date): string {
-  return date.toLocaleDateString('es-CR', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-}
-
-function formatTime(date: Date): string {
-  return date.toLocaleTimeString('es-CR', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  });
 }
 
 const ROLE_COLORS: Record<string, string> = {
@@ -178,19 +157,14 @@ const quickAccess = [
 ];
 
 export const AdminHomePage = () => {
+  const storedUser = useAuthStore((state) => state.user);
   const sessionUser = getSessionUser();
-  const displayName = sessionUser?.roles[0] ?? 'Administrador';
+  const displayName = profileDisplayName(storedUser ?? (sessionUser ? { email: sessionUser.email } : null));
   const canViewAttendance = sessionHasPermission('attendance.view');
 
-  const [now, setNow] = useState(() => new Date());
   const [data, setData] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(new Date()), 1000);
-    return () => window.clearInterval(timer);
-  }, []);
 
   const loadSummary = () => {
     setLoading(true);
@@ -273,17 +247,7 @@ export const AdminHomePage = () => {
   return (
     <section className={styles.page}>
       {/* Header */}
-      <header className={styles.header}>
-        <div>
-          <h1>¡{getGreeting(now)}, <span className={styles.nameHighlight}>{displayName}</span>!</h1>
-          <p className={styles.subtitle}>Panel de control administrativo</p>
-        </div>
-        <div className={styles.dateBlock}>
-          <CalendarRange size={16} />
-          <span>{formatDate(now)}</span>
-          <span className={styles.time}>{formatTime(now)}</span>
-        </div>
-      </header>
+      <HouseWelcome name={displayName} subtitle="Panel de control administrativo" />
 
       {canViewAttendance ? (
         <AttendanceDashboardPanel variant="compact" />

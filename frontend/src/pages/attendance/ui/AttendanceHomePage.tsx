@@ -10,6 +10,7 @@ import {
 import { AttendanceHubPanel } from '@/widgets/attendance-hub-panel';
 import { AttendanceDashboardPanel } from '@/widgets/attendance-dashboard-panel';
 import { sessionHasPermission } from '@/shared/auth';
+import { staffPathForSession } from '@/widgets/app-shell/model/adminNavigation';
 import { Button, PageHeader } from '@/shared/ui';
 import styles from './AttendanceHomePage.module.css';
 
@@ -22,14 +23,14 @@ export const AttendanceHomePage = () => {
   return (
     <section className={styles.page}>
       <PageHeader
-        back={{ label: 'Volver al panel', to: '/admin' }}
+        back={{ label: 'Volver al panel', to: staffPathForSession('/admin') }}
         breadcrumbs={[{ label: 'Asistencias' }]}
         icon={UserCheck}
         primaryAction={
           <div className={styles.headerActions}>
             {canManageExceptions ? (
               <Button
-                onClick={() => navigate(ATTENDANCE_EXCEPTIONS_PATH)}
+                onClick={() => navigate(staffPathForSession(ATTENDANCE_EXCEPTIONS_PATH))}
                 type="button"
                 variant="secondary"
               >
@@ -38,7 +39,9 @@ export const AttendanceHomePage = () => {
               </Button>
             ) : null}
             <Button
-              onClick={() => navigate(ATTENDANCE_JUSTIFICATIONS_PATH)}
+              onClick={() =>
+                navigate(staffPathForSession(ATTENDANCE_JUSTIFICATIONS_PATH))
+              }
               type="button"
               variant="secondary"
             >
@@ -47,7 +50,7 @@ export const AttendanceHomePage = () => {
             </Button>
             {canCreate ? (
               <Button
-                onClick={() => navigate(ATTENDANCE_NEW_PATH)}
+                onClick={() => navigate(staffPathForSession(ATTENDANCE_NEW_PATH))}
                 type="button"
               >
                 <Plus aria-hidden="true" size={16} />

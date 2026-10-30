@@ -1,3 +1,4 @@
+import { portalPathForSession } from '@/shared/auth/portalPaths';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Scale } from 'lucide-react';
@@ -95,7 +96,7 @@ export const AppealsReviewPanel = () => {
                     <strong>
                       <Link
                         className={styles.caseLink}
-                        to={appealReviewHref(row.id)}
+                        to={portalPathForSession(appealReviewHref(row.id))}
                         onClick={(event) => event.stopPropagation()}
                       >
                         {row.caseNumber}

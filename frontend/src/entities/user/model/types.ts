@@ -12,6 +12,17 @@ export interface UserDepartmentRef {
   name: string;
 }
 
+export interface OwnEnrollment {
+  groupId: number;
+  groupName: string | null;
+  sectionLabel: string | null;
+  specialtyName: string | null;
+  academicPeriodId: number;
+  academicPeriodName: string | null;
+  startsOn: string;
+  status: string;
+}
+
 export interface AdministrativeUser {
   id: number;
   name: string | null;
@@ -27,6 +38,7 @@ export interface AdministrativeUser {
   roles: UserRoleRef[];
   departmentId?: number | null;
   department?: UserDepartmentRef | null;
+  enrollment?: OwnEnrollment | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -46,6 +58,8 @@ export interface CreateUserPayload {
   roleIds?: number[];
   /** Obligatorio si el usuario tiene rol Docente. */
   departmentId?: number;
+  /** Obligatorio si el usuario tiene rol Estudiante y estado ACTIVE. */
+  groupId?: number;
 }
 
 export type UpdateUserPayload = Partial<CreateUserPayload> & {

@@ -18,13 +18,21 @@
 
 .filters {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
   gap: 12px;
   flex: 1;
 }
 
 .filters > * {
   min-width: 0;
+}
+
+.cycleLabel {
+  margin: 0;
+  padding: 0 4px;
+  color: var(--admin-muted, #6b7280);
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 
 .status {
@@ -41,6 +49,7 @@
 
 .desktopMatrixWrap {
   display: none;
+  max-width: 100%;
   overflow-x: auto;
   border: 1px solid color-mix(in srgb, var(--brand-border, #c1c5c8) 65%, transparent);
   border-radius: 14px;

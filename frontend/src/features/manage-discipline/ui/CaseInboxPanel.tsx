@@ -1,3 +1,4 @@
+import { portalPathForSession } from '@/shared/auth/portalPaths';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Inbox } from 'lucide-react';
@@ -112,7 +113,7 @@ export const CaseInboxPanel = () => {
         <EmptyState description="Pruebe con otros filtros o registre una amonestación." icon={Inbox} title="No hay expedientes" />
       ) : null}
       {!loading && result && result.data.length > 0 ? (
-        <div className={styles.tableWrap}>
+        <div className={`${styles.tableWrap} table-scroll`}>
           <table className={styles.table}>
             <thead>
               <tr>
@@ -129,12 +130,16 @@ export const CaseInboxPanel = () => {
                 <tr key={row.id}>
                   <td>
                     <strong>
-                      <Link to={disciplineCasePath(row.id)}>{row.caseNumber}</Link>
+                      <Link to={portalPathForSession(disciplineCasePath(row.id))}>
+                        {row.caseNumber}
+                      </Link>
                     </strong>
                     <span>{row.occurredAt ? formatShortDate(row.occurredAt.slice(0, 10)) : 'Sin fecha'}</span>
                   </td>
                   <td>
-                    <Link to={disciplineHistoryPath(row.studentUserId)}>{row.studentFullName}</Link>
+                    <Link to={portalPathForSession(disciplineHistoryPath(row.studentUserId))}>
+                      {row.studentFullName}
+                    </Link>
                     <span>{row.sectionLabel ?? 'Sin sección'}</span>
                     {row.missingGuideTeacher ? <Badge tone="warning">Sin docente guía</Badge> : null}
                     {row.isLateReport ? <Badge tone="warning">Reporte extemporáneo</Badge> : null}

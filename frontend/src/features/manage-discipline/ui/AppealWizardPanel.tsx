@@ -1,3 +1,4 @@
+import { portalPathForSession } from '@/shared/auth/portalPaths';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Alert, Button, Textarea } from '@/shared/ui';
@@ -147,7 +148,7 @@ export const AppealWizardPanel = () => {
             <Button type="button" disabled={!draft} onClick={goDraft}>
               Continuar
             </Button>
-            <Link to={DISCIPLINE_APPEALS_PATH}>Volver al Centro</Link>
+            <Link to={portalPathForSession(DISCIPLINE_APPEALS_PATH)}>Volver al Centro</Link>
           </div>
         </div>
       ) : null}
@@ -240,10 +241,10 @@ export const AppealWizardPanel = () => {
               : ' El plazo sigue el reloj del expediente.'}
           </p>
           <div className={styles.actions}>
-            <Button type="button" onClick={() => navigate(disciplineCasePath(draft.caseId))}>
+            <Button type="button" onClick={() => navigate(portalPathForSession(disciplineCasePath(draft.caseId)))}>
               Abrir expediente
             </Button>
-            <Link to={DISCIPLINE_APPEALS_PATH}>Volver al Centro</Link>
+            <Link to={portalPathForSession(DISCIPLINE_APPEALS_PATH)}>Volver al Centro</Link>
           </div>
         </div>
       ) : null}

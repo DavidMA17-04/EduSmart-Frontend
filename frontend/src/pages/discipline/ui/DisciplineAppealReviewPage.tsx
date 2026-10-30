@@ -1,3 +1,4 @@
+import { portalPathForSession } from '@/shared/auth/portalPaths';
 import { ClipboardList } from 'lucide-react';
 import { APPEAL_REVIEW_COPY, AppealReviewDetailPanel, DISCIPLINE_APPEALS_REVIEW_PATH } from '@/features/manage-discipline';
 import { PageHeader } from '@/shared/ui';
@@ -8,7 +9,7 @@ export const DisciplineAppealReviewPage = () => (
     <PageHeader
       breadcrumbs={[
         { label: 'Disciplina' },
-        { label: APPEAL_REVIEW_COPY.title, to: DISCIPLINE_APPEALS_REVIEW_PATH },
+        { label: APPEAL_REVIEW_COPY.title, to: portalPathForSession(DISCIPLINE_APPEALS_REVIEW_PATH) },
         { label: APPEAL_REVIEW_COPY.detail },
       ]}
       icon={ClipboardList}

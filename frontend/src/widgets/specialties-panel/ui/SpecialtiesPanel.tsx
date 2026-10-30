@@ -14,6 +14,7 @@ import {
   RowActions,
   Table,
 } from '@/shared/ui';
+import { sessionHasPermission } from '@/shared/auth';
 import { useSpecialtiesPanel } from '../model/useSpecialtiesPanel';
 import styles from './SpecialtiesPanel.module.css';
 
@@ -23,6 +24,8 @@ interface SpecialtiesPanelProps {
 
 export const SpecialtiesPanel = ({ kind }: SpecialtiesPanelProps) => {
   const model = useSpecialtiesPanel(kind);
+  const canCreate = sessionHasPermission('specialties.create');
+  const canEdit = sessionHasPermission('specialties.edit');
   const nameColumn = kind === 'EXPLORATORY_WORKSHOP' ? 'Taller' : 'Carrera Técnica';
   const EmptyIcon = kind === 'EXPLORATORY_WORKSHOP' ? Layers : Wrench;
   const dialogTitle =
@@ -54,12 +57,14 @@ export const SpecialtiesPanel = ({ kind }: SpecialtiesPanelProps) => {
                   status={model.status}
                 />
               </div>
-              <div className={styles.toolbarActions}>
-                <Button onClick={model.openCreateModal} type="button">
-                  <Plus size={16} />
-                  {model.copy.createCta}
-                </Button>
-              </div>
+              {canCreate ? (
+                <div className={styles.toolbarActions}>
+                  <Button onClick={model.openCreateModal} type="button">
+                    <Plus size={16} />
+                    {model.copy.createCta}
+                  </Button>
+                </div>
+              ) : null}
             </div>
           }
         >
@@ -70,7 +75,7 @@ export const SpecialtiesPanel = ({ kind }: SpecialtiesPanelProps) => {
           {!model.isLoading && model.specialties.length === 0 ? (
             <EmptyState
               action={
-                hasFilters
+                hasFilters || !canCreate
                   ? undefined
                   : { label: model.copy.createCta, onClick: model.openCreateModal, icon: Plus }
               }
@@ -98,6 +103,7 @@ export const SpecialtiesPanel = ({ kind }: SpecialtiesPanelProps) => {
                 {model.specialties.map((specialty) => (
                   <SpecialtyTableRow
                     actions={
+                      canEdit ? (
                       <RowActions>
                         <RowActionButton
                           aria-label={`Editar ${specialty.name}`}
@@ -116,6 +122,7 @@ export const SpecialtiesPanel = ({ kind }: SpecialtiesPanelProps) => {
                           <Trash2 size={16} />
                         </RowActionButton>
                       </RowActions>
+                      ) : undefined
                     }
                     isSelected={specialty.id === model.selectedSpecialtyId}
                     key={specialty.id}

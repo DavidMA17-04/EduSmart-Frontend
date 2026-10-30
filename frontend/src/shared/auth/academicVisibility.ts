@@ -6,11 +6,15 @@ function roleMatches(role: string, ...candidates: string[]): boolean {
   return candidates.some((c) => c === value || c.toLowerCase() === lower);
 }
 
+function sessionRoles(roles?: readonly string[]): readonly string[] {
+  return roles ?? getSessionUser()?.roles ?? [];
+}
+
 /** True when session has Docente/TEACHER and does not have Administrador/ADMIN. */
 export function isTeacherWithoutAdminAccess(
   roles?: readonly string[],
 ): boolean {
-  const effective = roles ?? getSessionUser()?.roles ?? [];
+  const effective = sessionRoles(roles);
   if (!effective.length) return false;
   const isTeacher = effective.some((role) =>
     roleMatches(role, 'TEACHER', 'Docente'),
@@ -22,15 +26,17 @@ export function isTeacherWithoutAdminAccess(
   return !isAdmin;
 }
 
-/** Teachers only see ACTIVE cursos lectivos; admins see full history. */
+/** Only Administrador and Director may browse previous academic cycles. */
+export function canBrowseAcademicYearHistory(roles?: readonly string[]): boolean {
+  return sessionRoles(roles).some((role) =>
+    roleMatches(role, 'ADMIN', 'Administrador', 'Director'),
+  );
+}
+
+/** Non-admin/director sessions only see ACTIVE cursos lectivos. */
 export function filterPeriodsForSessionRole<
   T extends { status?: string },
 >(periods: T[], roles?: readonly string[]): T[] {
-  if (!isTeacherWithoutAdminAccess(roles)) return periods;
+  if (canBrowseAcademicYearHistory(roles)) return periods;
   return periods.filter((p) => p.status === 'ACTIVE');
-}
-
-/** Teachers should not see year-history selectors. */
-export function canBrowseAcademicYearHistory(roles?: readonly string[]): boolean {
-  return !isTeacherWithoutAdminAccess(roles);
 }

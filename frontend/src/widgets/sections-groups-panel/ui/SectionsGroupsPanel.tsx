@@ -17,6 +17,7 @@ import type { Department } from '@/entities/department';
 import { departmentApi } from '@/features/manage-department/api/departmentApi';
 import { GroupForm, GuideTeacherForm } from '@/features/manage-group';
 import { SectionForm } from '@/features/manage-section';
+import { sessionHasPermission } from '@/shared/auth';
 import { useSectionsGroupsPanel } from '../model/useSectionsGroupsPanel';
 import { GroupsTabView } from './GroupsTabView';
 import { GuideTeacherTabView } from './GuideTeacherTabView';
@@ -26,6 +27,8 @@ import styles from './SectionsGroupsPanel.module.css';
 
 export const SectionsGroupsPanel = () => {
   const model = useSectionsGroupsPanel();
+  const canCreate = sessionHasPermission('sections.create');
+  const canEdit = sessionHasPermission('sections.edit');
   const [departments, setDepartments] = useState<Department[]>([]);
   const sectionDialogTitle = model.sectionDialogMode === 'create' ? 'Nuevo nivel' : 'Editar nivel';
   const sectionSubmitLabel = model.sectionDialogMode === 'create' ? 'Crear nivel' : 'Guardar cambios';
@@ -97,9 +100,11 @@ export const SectionsGroupsPanel = () => {
               <h2>Niveles académicos</h2>
               <p>Administre los niveles académicos de la institución.</p>
             </div>
-            <Button onClick={model.openCreateSectionDialog} type="button">
-              <Plus size={16} /> Nuevo nivel
-            </Button>
+            {canCreate ? (
+              <Button onClick={model.openCreateSectionDialog} type="button">
+                <Plus size={16} /> Nuevo nivel
+              </Button>
+            ) : null}
           </Card>
 
           <Card className={styles.tableCard}>
@@ -107,11 +112,15 @@ export const SectionsGroupsPanel = () => {
               <p className={styles.muted}>Cargando niveles…</p>
             ) : model.sections.length === 0 ? (
               <EmptyState
-                action={{
-                  label: 'Nuevo nivel',
-                  onClick: model.openCreateSectionDialog,
-                  icon: Plus,
-                }}
+                action={
+                  canCreate
+                    ? {
+                        label: 'Nuevo nivel',
+                        onClick: model.openCreateSectionDialog,
+                        icon: Plus,
+                      }
+                    : undefined
+                }
                 description="Aún no hay niveles académicos registrados."
                 icon={Layers}
                 title="Sin niveles académicos"
@@ -131,6 +140,7 @@ export const SectionsGroupsPanel = () => {
                   {model.sections.map((section) => (
                     <SectionTableRow
                       actions={
+                        canEdit ? (
                         <RowActions>
                           <RowActionButton
                             aria-label={`Editar ${section.name}`}
@@ -149,6 +159,7 @@ export const SectionsGroupsPanel = () => {
                             <Trash2 size={16} />
                           </RowActionButton>
                         </RowActions>
+                        ) : undefined
                       }
                       isSelected={section.id === model.selectedSectionId}
                       key={section.id}

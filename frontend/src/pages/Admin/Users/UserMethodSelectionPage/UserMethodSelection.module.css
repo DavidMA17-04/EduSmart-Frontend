@@ -274,6 +274,13 @@
   color: var(--color-text-muted);
 }
 
+.emptyRecent {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
 .statusSuccessBadge {
   padding: 0.2rem 0.5rem;
   border-radius: 9999px;

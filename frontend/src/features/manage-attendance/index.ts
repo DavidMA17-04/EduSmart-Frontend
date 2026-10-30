@@ -33,6 +33,11 @@ export {
   useAttendanceHistoryPanel,
   type HistoryPageSize,
 } from './model/useAttendanceHistoryPanel';
+export {
+  HISTORY_EMPTY_COPY,
+  resolveHistoryEmptyKind,
+  type HistoryEmptyKind,
+} from './model/historyEmptyState';
 export { useAbsenteeismAlertsPanel } from './model/useAbsenteeismAlertsPanel';
 export {
   formatRedeemSuccessMessage,

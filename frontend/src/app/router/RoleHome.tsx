@@ -1,18 +1,16 @@
-import { Navigate } from 'react-router-dom';
 import { AdminHomePage } from '@/pages/admin-home';
-import { DISCIPLINE_NOTIFICATIONS_PATH } from '@/features/manage-discipline';
-import { RoleGate, useRoleAudience } from '@/widgets/app-shell';
+import { StaffRoleHomePage } from '@/pages/role-home';
+import { getSessionUser } from '@/shared/auth';
+import { RoleGate } from '@/widgets/app-shell';
+import { resolveHouse } from '@/widgets/app-shell/model/territory';
 
-/** El panel administrativo queda dentro del wrapper de personal. */
+/** Index dashboard of a staff house. Each role keeps its own panel. */
 export const RoleHome = () => {
-  const audience = useRoleAudience();
-  if (audience === 'guardian') {
-    return <Navigate replace to={DISCIPLINE_NOTIFICATIONS_PATH} />;
-  }
-
+  const house = resolveHouse(getSessionUser()?.roles);
+  const Page = house === 'admin' || !house ? AdminHomePage : StaffRoleHomePage;
   return (
     <RoleGate allow="staff">
-      <AdminHomePage />
+      <Page />
     </RoleGate>
   );
 };

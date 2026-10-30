@@ -6,6 +6,7 @@ import type {
 } from '@/entities/attendance';
 import { humanizeFromScheduleError } from '@/features/view-my-schedule/model/myScheduleAttendance';
 import { attendanceApi } from '../api/attendanceApi';
+import { staffPathForSession } from '@/widgets/app-shell/model/adminNavigation';
 import { ATTENDANCE_SESSION_PATH } from './attendanceRouting';
 import {
   buildCreateAttendanceSessionPayload,
@@ -210,7 +211,10 @@ export function useCreateAttendanceSessionFlow() {
       if (action === 'continue' || action === 'view') {
         const sessionId = selectedOccurrence.attendanceSession?.id;
         if (sessionId == null) return null;
-        return { ok: true, path: ATTENDANCE_SESSION_PATH(sessionId) };
+        return {
+          ok: true,
+          path: staffPathForSession(ATTENDANCE_SESSION_PATH(sessionId)),
+        };
       }
       if (action === 'take') {
         setCreating(true);
@@ -220,7 +224,10 @@ export function useCreateAttendanceSessionFlow() {
             await attendanceApi.createAttendanceSessionFromSchedule({
               scheduleEntryId: selectedOccurrence.anchorEntryId,
             });
-          return { ok: true, path: resolveSessionPathAfterCreate(result) };
+          return {
+            ok: true,
+            path: staffPathForSession(resolveSessionPathAfterCreate(result)),
+          };
         } catch (reason) {
           const error = humanizeFromScheduleError(reason);
           setCreateError(error);
@@ -249,7 +256,10 @@ export function useCreateAttendanceSessionFlow() {
     setCreateError(null);
     try {
       const result = await attendanceApi.createAttendanceSession(payload);
-      return { ok: true, path: resolveSessionPathAfterCreate(result) };
+      return {
+        ok: true,
+        path: staffPathForSession(resolveSessionPathAfterCreate(result)),
+      };
     } catch (reason) {
       const error = flowErrorMessage(reason, 'No se pudo iniciar la clase.');
       setCreateError(error);

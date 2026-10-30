@@ -1,3 +1,4 @@
+import { portalPathForSession } from '@/shared/auth/portalPaths';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Scale } from 'lucide-react';
@@ -87,7 +88,7 @@ export const AppealsListPanel = ({
                     <strong>
                       <Link
                         className={styles.caseLink}
-                        to={appealTrackingHref(row.id)}
+                        to={portalPathForSession(appealTrackingHref(row.id))}
                         onClick={(event) => event.stopPropagation()}
                       >
                         {row.caseNumber}
@@ -97,7 +98,7 @@ export const AppealsListPanel = ({
                     <span>
                       <Link
                         className={styles.caseLink}
-                        to={appealTrackingCaseHref(row.caseId)}
+                        to={portalPathForSession(appealTrackingCaseHref(row.caseId))}
                         onClick={(event) => event.stopPropagation()}
                       >
                         Expediente

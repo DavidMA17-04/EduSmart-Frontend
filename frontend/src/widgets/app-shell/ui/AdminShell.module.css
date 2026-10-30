@@ -132,6 +132,25 @@
   z-index: 10;
   flex-shrink: 0;
 }
+.menuButton {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  min-width: 44px;
+  min-height: 44px;
+  margin-right: auto;
+  padding: 0 12px;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--admin-text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.drawerBackdrop {
+  display: none;
+}
 .iconButton { color: var(--admin-muted); }
 .iconButton:hover { color: var(--brand-gold-dark); }
 .profile { display: flex; align-items: center; gap: 8px; text-align: left; color: var(--admin-text); }
@@ -146,7 +165,7 @@
 .logoutMessage { margin: 0; color: var(--admin-text); font-size: 15px; font-weight: 600; }
 .logoutSecondary { margin: 0 0 12px; color: var(--admin-muted); font-size: 13px; line-height: 1.45; }
 .logoutActions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
-@media (max-width: 840px) {
+@media (max-width: 840px) and (min-width: 641px) {
   .sidebar {
     width: 64px;
     padding-inline: 8px;
@@ -154,10 +173,51 @@
   .brandTitle, .brand small, .brandMotto, .navItem:not(.active)::after, .navItem, .collapseButton span { font-size: 0; }
   .collapseButton { justify-content: center; padding-inline: 0; }
   .brandLogo { width: 44px; height: 44px; }
-  .navItem { justify-content: center; }
+  .navItem { justify-content: center; min-height: 44px; }
   .navChildren { padding-left: 0; }
-  .navToggle { width: 18px; }
+  .navToggle { width: 18px; min-height: 44px; }
   .account { display: none; }
   .profile span:nth-child(2) { display: none; }
   .content { padding: 16px; }
+}
+
+@media (max-width: 640px) {
+  .menuButton { display: inline-flex; }
+  .drawerBackdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 25;
+    border: 0;
+    background: rgba(19, 32, 61, 0.45);
+    cursor: pointer;
+  }
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 30;
+    width: min(280px, 88vw);
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+  }
+  .sidebarOpen { transform: translateX(0); }
+  .collapseButton { display: none; }
+  .navItem,
+  .navToggle,
+  .logout,
+  .profile,
+  .menuButton {
+    min-height: 44px;
+  }
+  .header {
+    gap: 8px;
+    padding: 0 12px;
+  }
+  .profile span:nth-child(2) { display: none; }
+  .logout span,
+  .logout {
+    font-size: 12px;
+  }
+  .content { padding: 12px; }
 }

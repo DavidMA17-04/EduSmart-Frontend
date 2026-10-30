@@ -14,6 +14,8 @@ import {
 import {
   MY_SCHEDULE_COPY,
   myScheduleApi,
+  periodIdFromMyScheduleEntries,
+  preferredPeriodId,
   resolveMyScheduleCardVariant,
   resolveMyScheduleEntrySecondaryLabel,
 } from '@/features/view-my-schedule';
@@ -128,15 +130,36 @@ describe('my-schedule presentation (E2)', () => {
     expect(MY_SCHEDULE_COPY.emptyDescription).not.toMatch(/grupo/i);
   });
 
-  it('16. período: ACTIVE default + no hardcode group/year', () => {
+  it('16. período: infiere del horario propio, no hardcode group/year', () => {
     const hookSrc = readFileSync(
       resolve(__dirname, './useMySchedulePanel.ts'),
       'utf8',
     );
-    expect(hookSrc).toContain("status === 'ACTIVE'");
+    expect(hookSrc).toContain('periodIdFromMyScheduleEntries');
+    expect(hookSrc).toContain('preferredPeriodId');
+    expect(hookSrc).toContain('academicPeriod');
     expect(hookSrc).not.toContain('2026');
     expect(hookSrc).not.toContain('7-1');
     expect(hookSrc).not.toContain('groupId');
+  });
+
+  it('infiere periodId desde la primera lección propia', () => {
+    expect(
+      periodIdFromMyScheduleEntries([
+        sampleEntry({ offeringName: 'Matemáticas' }),
+      ]),
+    ).toBe('1');
+    expect(periodIdFromMyScheduleEntries([])).toBe('');
+  });
+
+  it('si no hay lecciones propias, elige el curso lectivo ACTIVE', () => {
+    expect(
+      preferredPeriodId([
+        { id: 2, name: 'Cerrado', status: 'CLOSED' } as never,
+        { id: 9, name: 'Vigente', status: 'ACTIVE' } as never,
+      ]),
+    ).toBe('9');
+    expect(preferredPeriodId([])).toBe('');
   });
 
   it('12–13. desktop + mobile both pass card variant', () => {
@@ -152,6 +175,21 @@ describe('my-schedule presentation (E2)', () => {
     expect(panelSrc).toContain('cellProps');
     expect(panelSrc).toContain('resolveMyScheduleEntrySecondaryLabel');
     expect(panelSrc).toContain('model.cardVariant');
+    expect(panelSrc).toContain('canChoosePeriod');
+    expect(panelSrc).toContain('my-schedule-cycle-label');
+    expect(panelSrc).toContain('model.isEmptySuccess');
+    expect(panelSrc).toContain('emptyCopy.title');
+    expect(panelSrc).toContain('resolveMyScheduleEmptyCopy');
+    expect(panelSrc).not.toContain('emptyHint');
+  });
+
+  it('el alumno no elige curso lectivo; el docente sí', () => {
+    const hookSrc = readFileSync(
+      resolve(__dirname, './useMySchedulePanel.ts'),
+      'utf8',
+    );
+    expect(hookSrc).toContain("cardVariant !== 'student'");
+    expect(hookSrc).toContain('canChoosePeriod && nextPeriodId');
   });
 
   it('17. BREAK/LUNCH sin teacher/group en celdas neutrales', () => {
@@ -213,5 +251,19 @@ describe('my-schedule presentation (E2)', () => {
     expect(byCell.get('1:1')?.length).toBe(1);
     expect(byCell.get('3:1')?.length).toBe(1);
     expect(SCHEDULE_WEEKDAYS).toHaveLength(5);
+  });
+
+  it('el inicio del alumno monta el horario propio', () => {
+    const homeSrc = readFileSync(
+      resolve(
+        __dirname,
+        '../../../pages/student-home/ui/StudentHomePage.tsx',
+      ),
+      'utf8',
+    );
+    expect(homeSrc).toContain('HouseWelcome');
+    expect(homeSrc).toContain('MySchedulePanel');
+    expect(homeSrc).toContain('Panel del estudiante');
+    expect(homeSrc).not.toContain('OwnGeneralInfoPanel');
   });
 });

@@ -1,3 +1,4 @@
+import { portalPathForSession } from '@/shared/auth/portalPaths';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertTriangle, Clock3, FileSpreadsheet, FileText, Inbox } from 'lucide-react';
@@ -17,7 +18,12 @@ import { brandColors } from '@/styles/brandColors';
 import { Alert, Button, EmptyState, Select } from '@/shared/ui';
 import { disciplineApi } from '../api/disciplineApi';
 import { disciplineCasePath, disciplineHistoryPath } from '../model/disciplineRouting';
-import { formatDashboardMonth, type DisciplinaryDashboard } from '../model/disciplineDashboard';
+import {
+  dedupeSectionLabel,
+  formatDashboardMonth,
+  formatSectionLabel,
+  type DisciplinaryDashboard,
+} from '../model/disciplineDashboard';
 import styles from './DisciplineDashboardPanel.module.css';
 
 export function DisciplineDashboardPanel({ canExport }: { canExport: boolean }) {
@@ -131,7 +137,7 @@ export function DisciplineDashboardPanel({ canExport }: { canExport: boolean }) 
               <option value="">Todas</option>
               {sections.map((group) => (
                 <option key={group.id} value={group.id}>
-                  {group.section?.gradeLevel ? `${group.section.gradeLevel}-${group.name}` : group.name}
+                  {formatSectionLabel(group.section?.gradeLevel, group.name)}
                 </option>
               ))}
             </Select>
@@ -170,14 +176,14 @@ export function DisciplineDashboardPanel({ canExport }: { canExport: boolean }) 
                 <span>Por vencer</span>
               </div>
             </article>
-            <article className={`${styles.kpi} ${styles.kpiLate}`}>
+            <article className={`${styles.kpi} ${board.deadlines.overdue > 0 ? styles.kpiLate : styles.kpiNeutral}`}>
               <span className={styles.kpiIcon}><AlertTriangle aria-hidden size={18} /></span>
               <div>
                 <strong>{board.deadlines.overdue}</strong>
                 <span>Vencidos</span>
               </div>
             </article>
-            <article className={`${styles.kpi} ${styles.kpiAlerts}`}>
+            <article className={`${styles.kpi} ${board.alerts.length > 0 ? styles.kpiAlerts : styles.kpiNeutral}`}>
               <span className={styles.kpiIcon}><AlertTriangle aria-hidden size={18} /></span>
               <div>
                 <strong>{board.alerts.length}</strong>
@@ -197,7 +203,7 @@ export function DisciplineDashboardPanel({ canExport }: { canExport: boolean }) 
                   title="Por mes"
                   data={board.byMonth.map((item) => ({ name: formatDashboardMonth(item.month), count: item.count }))}
                 />
-                <ChartCard title="Por sección" data={board.bySection.map((item) => ({ name: item.sectionLabel, count: item.count }))} />
+                <ChartCard title="Por sección" data={board.bySection.map((item) => ({ name: dedupeSectionLabel(item.sectionLabel), count: item.count }))} />
               </>
             )}
           </div>
@@ -214,9 +220,15 @@ export function DisciplineDashboardPanel({ canExport }: { canExport: boolean }) 
                       {alert.fullName ? <span>{alert.fullName}</span> : null}
                       {alert.caseNumber ? <span>{alert.caseNumber}</span> : null}
                     </div>
-                    {alert.caseId ? <Link to={disciplineCasePath(alert.caseId)}>Abrir</Link> : null}
+                    {alert.caseId ? (
+                      <Link to={portalPathForSession(disciplineCasePath(alert.caseId))}>
+                        Abrir
+                      </Link>
+                    ) : null}
                     {!alert.caseId && alert.studentUserId ? (
-                      <Link to={disciplineHistoryPath(alert.studentUserId)}>Historial</Link>
+                      <Link to={portalPathForSession(disciplineHistoryPath(alert.studentUserId))}>
+                        Historial
+                      </Link>
                     ) : null}
                   </li>
                 ))}
@@ -228,7 +240,9 @@ export function DisciplineDashboardPanel({ canExport }: { canExport: boolean }) 
               <ul className={styles.list}>
                 {board.topStudents.map((student) => (
                   <li key={student.studentUserId}>
-                    <Link to={disciplineHistoryPath(student.studentUserId)}>{student.fullName}</Link>
+                    <Link to={portalPathForSession(disciplineHistoryPath(student.studentUserId))}>
+                      {student.fullName}
+                    </Link>
                     <span>{student.count}</span>
                   </li>
                 ))}

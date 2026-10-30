@@ -10,6 +10,61 @@
   align-items: start;
 }
 
+.mainColumn {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.mutedNote {
+  margin: 8px 0 0;
+  color: var(--admin-muted);
+  font-size: 12px;
+}
+
+.linkList,
+.searchHits {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.linkList li,
+.searchHits li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.linkList li:last-child,
+.searchHits li:last-child {
+  border-bottom: none;
+}
+
+.linkList strong,
+.searchHits strong {
+  display: block;
+  font-size: 13px;
+}
+
+.linkList span,
+.searchHits span {
+  display: block;
+  color: var(--admin-muted);
+  font-size: 11px;
+}
+
+.linkForm {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
 .formCard {
   padding: 0;
   overflow: hidden;

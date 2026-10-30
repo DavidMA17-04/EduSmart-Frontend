@@ -1,3 +1,4 @@
+import { portalPathForSession } from '@/shared/auth/portalPaths';
 import { FileBarChart } from 'lucide-react';
 import { APPEAL_REPORTS_COPY, AppealsReportsPanel, DISCIPLINE_APPEALS_PATH } from '@/features/manage-discipline';
 import { PageHeader } from '@/shared/ui';
@@ -8,7 +9,7 @@ export const DisciplineAppealsReportsPage = () => (
     <PageHeader
       breadcrumbs={[
         { label: 'Disciplina' },
-        { label: 'Centro de apelaciones', to: DISCIPLINE_APPEALS_PATH },
+        { label: 'Centro de apelaciones', to: portalPathForSession(DISCIPLINE_APPEALS_PATH) },
         { label: APPEAL_REPORTS_COPY.title },
       ]}
       icon={FileBarChart}

@@ -1,5 +1,6 @@
 import { BookOpen, Edit3, Plus, Trash2 } from 'lucide-react';
 import { useSubjectsPanel } from '@/features/manage-subject';
+import { sessionHasPermission } from '@/shared/auth';
 import {
   Alert,
   Badge,
@@ -20,6 +21,7 @@ import styles from './SubjectsPanel.module.css';
 
 export const SubjectsPanel = () => {
   const model = useSubjectsPanel();
+  const canEdit = sessionHasPermission('academic_structure.edit');
   const dialogTitle =
     model.dialogMode === 'create' ? 'Nueva materia' : 'Editar materia';
   const submitLabel =
@@ -62,10 +64,12 @@ export const SubjectsPanel = () => {
                 <option value="INACTIVE">Inactivas</option>
               </Select>
             </div>
-            <Button onClick={model.openCreate} type="button">
-              <Plus size={16} />
-              Nueva materia
-            </Button>
+            {canEdit ? (
+              <Button onClick={model.openCreate} type="button">
+                <Plus size={16} />
+                Nueva materia
+              </Button>
+            ) : null}
           </div>
         }
       >
@@ -78,7 +82,7 @@ export const SubjectsPanel = () => {
         {!model.isLoading && model.rows.length === 0 ? (
           <EmptyState
             action={
-              hasFilters
+              hasFilters || !canEdit
                 ? undefined
                 : {
                     label: 'Nueva materia',
@@ -121,6 +125,7 @@ export const SubjectsPanel = () => {
                     </Badge>
                   </td>
                   <td>
+                    {canEdit ? (
                     <RowActions>
                       <RowActionButton
                         aria-label={`Editar ${row.name}`}
@@ -139,6 +144,7 @@ export const SubjectsPanel = () => {
                         <Trash2 size={16} />
                       </RowActionButton>
                     </RowActions>
+                    ) : null}
                   </td>
                 </tr>
               ))}

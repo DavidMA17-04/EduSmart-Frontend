@@ -1,11 +1,18 @@
+import { portalPathForSession } from '@/shared/auth/portalPaths';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { GraduationCap } from 'lucide-react';
 import { Alert, Badge, Button, EmptyState, Select } from '@/shared/ui';
+import { guardianLinkApi } from '@/features/manage-user/api/guardianLinkApi';
 import { disciplineApi } from '../api/disciplineApi';
 import { formatShortDate } from '../model/businessDays';
 import { STATUS_LABELS, STATUS_TONES } from '../model/caseInbox';
-import { mergeHistoryStudents, resolveHistoryStudent, type HistoryAudience } from '../model/conductHistory';
+import {
+  mergeHistoryStudents,
+  resolveHistoryStudent,
+  titleCasePersonName,
+  type HistoryAudience,
+} from '../model/conductHistory';
 import { disciplineCasePath } from '../model/disciplineRouting';
 import { SEVERITY_LABELS, SEVERITY_ORDER, SEVERITY_TONES } from '../model/severity';
 import type {
@@ -67,7 +74,13 @@ export function ConductHistoryPanel({
                 fullName: item.studentName,
               }))
             : [];
-        if (active) setRoster(mergeHistoryStudents(fromCases, fromNotes));
+        const fromLinks =
+          audience === 'guardian'
+            ? (await guardianLinkApi.listMine())
+                .filter((row) => row.guardianUserId === sessionUserId)
+                .map((row) => ({ id: row.studentUserId, fullName: row.student.name }))
+            : [];
+        if (active) setRoster(mergeHistoryStudents(fromCases, fromNotes, fromLinks));
       } catch (reason) {
         if (active) setError(reason instanceof Error ? reason.message : 'No se pudo cargar a los estudiantes.');
       } finally {
@@ -77,7 +90,7 @@ export function ConductHistoryPanel({
     return () => {
       active = false;
     };
-  }, [audience]);
+  }, [audience, sessionUserId]);
 
   useEffect(() => {
     if (!canSearchStudents || search.trim().length < 2) {
@@ -250,7 +263,7 @@ export function ConductHistoryPanel({
       {history && !loading ? (
         <div className={styles.stack}>
           <header className={styles.student}>
-            <h2>{history.student.fullName}</h2>
+            <h2>{titleCasePersonName(history.student.fullName)}</h2>
             <p>{history.student.nationalId}</p>
             {canExport ? (
               <div className={styles.exports}>
@@ -292,6 +305,7 @@ export function ConductHistoryPanel({
                     <strong>{period.conductGrade}</strong>
                   </p>
                 </header>
+                <div className="table-scroll">
                 <table className={styles.table}>
                   <thead>
                     <tr>
@@ -309,7 +323,9 @@ export function ConductHistoryPanel({
                           {audience === 'student' ? (
                             <strong>{item.caseNumber}</strong>
                           ) : (
-                            <Link to={disciplineCasePath(item.id)}>{item.caseNumber}</Link>
+                            <Link to={portalPathForSession(disciplineCasePath(item.id))}>
+                              {item.caseNumber}
+                            </Link>
                           )}
                           <span>
                             {item.occurredAt ? formatShortDate(item.occurredAt.slice(0, 10)) : 'Sin fecha'}
@@ -329,6 +345,7 @@ export function ConductHistoryPanel({
                     ))}
                   </tbody>
                 </table>
+                </div>
               </article>
             ))
           )}

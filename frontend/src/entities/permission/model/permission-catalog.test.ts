@@ -73,4 +73,14 @@ describe('permission catalog / matrix (D1.1 VIEW_OWN)', () => {
     expect(pairs.some((p) => p.module === 'SCHEDULES')).toBe(false);
     expect(pairs.some((p) => p.module === 'ATTENDANCE' && p.action === 'VIEW')).toBe(true);
   });
+  it('representa las acciones de comunicados sin inventarlas para otros módulos', () => {
+    const actions = ['PUBLISH','MANAGE','STATS'] as const;
+    const permissions = actions.map((action, id) => stubPermission({ id, code: 'communications.' + action.toLowerCase(), module: 'COMMUNICATIONS', action }));
+    const matrix = buildPermissionMatrix(permissions);
+    for (const action of actions) {
+      expect(matrix.COMMUNICATIONS[action]?.code).toBe('communications.' + action.toLowerCase());
+      expect(listExpectedPermissionPairs().some(p => p.action === action)).toBe(false);
+    }
+  });
+
 });

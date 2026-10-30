@@ -30,6 +30,15 @@ export function resolveHistoryStudent(input: {
   return { studentId: input.requestedStudentId, blocked: false };
 }
 
+export function titleCasePersonName(value: string | null | undefined): string {
+  return String(value ?? '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toLocaleUpperCase('es') + word.slice(1).toLocaleLowerCase('es'))
+    .join(' ');
+}
+
 export function mergeHistoryStudents(
   ...groups: Array<readonly HistoryStudentOption[]>
 ): HistoryStudentOption[] {

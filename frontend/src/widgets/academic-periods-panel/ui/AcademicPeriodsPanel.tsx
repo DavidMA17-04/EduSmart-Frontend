@@ -17,6 +17,7 @@ import {
   Select,
   Table,
 } from '@/shared/ui';
+import { sessionHasPermission } from '@/shared/auth';
 import { useAcademicPeriodsPanel, type AcademicPeriodTransitionAction } from '../model/useAcademicPeriodsPanel';
 import styles from './AcademicPeriodsPanel.module.css';
 
@@ -59,6 +60,8 @@ const TRANSITION_COPY: Record<
 
 export const AcademicPeriodsPanel = () => {
   const model = useAcademicPeriodsPanel();
+  const canCreate = sessionHasPermission('periods.create');
+  const canEdit = sessionHasPermission('periods.edit');
   const dialogTitle = model.dialogMode === 'create' ? 'Nuevo curso lectivo' : 'Editar curso lectivo';
   const submitLabel = model.dialogMode === 'create' ? 'Guardar' : 'Guardar cambios';
   const formStatus = model.dialogMode === 'edit' ? model.selectedPeriod?.status : undefined;
@@ -97,9 +100,11 @@ export const AcademicPeriodsPanel = () => {
               }
               onSearchChange={model.setSearch}
               primaryAction={
-                <Button onClick={model.openCreateDialog} type="button">
-                  <Plus size={16} /> Nuevo curso lectivo
-                </Button>
+                canCreate ? (
+                  <Button onClick={model.openCreateDialog} type="button">
+                    <Plus size={16} /> Nuevo curso lectivo
+                  </Button>
+                ) : undefined
               }
               search={model.search}
               searchPlaceholder="Buscar curso lectivo…"
@@ -115,7 +120,7 @@ export const AcademicPeriodsPanel = () => {
           {!model.isLoading && model.periods.length === 0 ? (
             <EmptyState
               action={
-                hasFilters
+                hasFilters || !canCreate
                   ? undefined
                   : { label: 'Nuevo curso lectivo', onClick: model.openCreateDialog, icon: Plus }
               }
@@ -144,6 +149,7 @@ export const AcademicPeriodsPanel = () => {
                 {model.periods.map((period) => (
                   <AcademicPeriodTableRow
                     actions={
+                      canEdit ? (
                       <RowActions>
                         {period.status !== 'CLOSED' && (
                           <RowActionButton
@@ -188,6 +194,7 @@ export const AcademicPeriodsPanel = () => {
                           </RowActionButton>
                         )}
                       </RowActions>
+                      ) : undefined
                     }
                     isSelected={period.id === model.selectedPeriodId}
                     key={period.id}

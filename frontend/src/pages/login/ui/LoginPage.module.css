@@ -280,6 +280,17 @@
   border: 1px solid color-mix(in srgb, var(--brand-danger) 22%, transparent);
 }
 
+.notice {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--brand-primary, #1f4e8c);
+  background: color-mix(in srgb, var(--brand-primary, #1f4e8c) 8%, #fff);
+  border: 1px solid color-mix(in srgb, var(--brand-primary, #1f4e8c) 22%, transparent);
+}
+
 .togglePassword {
   position: absolute;
   top: 50%;
@@ -490,7 +501,7 @@
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .layout {
     grid-template-columns: 1fr;
   }

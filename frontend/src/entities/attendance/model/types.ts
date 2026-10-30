@@ -309,12 +309,20 @@ export interface AttendanceHistoryItem {
   lateMinutes: number | null;
 }
 
+/** Estudiante vinculado a un Encargado (solo en la respuesta del Encargado). */
+export interface AttendanceRepresentedStudent {
+  id: number;
+  fullName: string;
+}
+
 export interface AttendanceHistoryPage {
   items: AttendanceHistoryItem[];
   total: number;
   page: number;
   limit: number;
   totalPages: number;
+  /** Solo Encargado: representados vinculados; vacío = sin vínculos. */
+  represented?: AttendanceRepresentedStudent[];
 }
 
 /** GET /attendance/history/summary */
@@ -406,7 +414,7 @@ export interface AttendanceSessionTokenResult {
   expiresAt: string;
 }
 
-/** POST /attendance/sessions/redeem-token */
+/** POST /attendance/redeem */
 export interface RedeemAttendanceTokenInput {
   token?: string;
   code?: string;

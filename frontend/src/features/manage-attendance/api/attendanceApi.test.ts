@@ -342,7 +342,7 @@ describe('attendanceApi history and tokens', () => {
     });
   });
 
-  it('redeemAttendanceToken → POST /attendance/redeem-token', async () => {
+  it('redeemAttendanceToken → POST /attendance/redeem', async () => {
     const data = {
       attendanceId: 1,
       sessionId: 7,
@@ -361,7 +361,7 @@ describe('attendanceApi history and tokens', () => {
     await expect(
       attendanceApi.redeemAttendanceToken({ token: 'ABCD1234' }),
     ).resolves.toEqual(data);
-    expect(mockedHttp).toHaveBeenCalledWith('/attendance/redeem-token', {
+    expect(mockedHttp).toHaveBeenCalledWith('/attendance/redeem', {
       method: 'POST',
       body: JSON.stringify({ code: 'ABCD1234' }),
     });

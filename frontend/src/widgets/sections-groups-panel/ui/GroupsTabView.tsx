@@ -9,6 +9,7 @@ import {
   GroupSchedulePreview,
   useGroupSchedulePreview,
 } from '@/features/manage-schedule';
+import { sessionHasPermission } from '@/shared/auth';
 import type { SectionsGroupsPanelModel } from '../model/useSectionsGroupsPanel';
 import groupRowStyles from '@/entities/group/ui/GroupTableRow.module.css';
 import styles from './SectionsGroupsPanel.module.css';
@@ -18,6 +19,8 @@ interface GroupsTabViewProps {
 }
 
 export const GroupsTabView = ({ model }: GroupsTabViewProps) => {
+  const canCreate = sessionHasPermission('sections.create');
+  const canEdit = sessionHasPermission('sections.edit');
   const selected = model.selectedGroup;
   const enrollment = useGroupEnrollmentPanel({
     groupId: selected?.id ?? null,
@@ -48,12 +51,14 @@ export const GroupsTabView = ({ model }: GroupsTabViewProps) => {
               ))}
             </Select>
           </label>
-          <Button
-            onClick={() => model.createGroupMode(model.groupSectionFilter || undefined)}
-            type="button"
-          >
-            <Plus size={16} /> Nueva sección
-          </Button>
+          {canCreate ? (
+            <Button
+              onClick={() => model.createGroupMode(model.groupSectionFilter || undefined)}
+              type="button"
+            >
+              <Plus size={16} /> Nueva sección
+            </Button>
+          ) : null}
         </div>
 
         {model.loadError && <Alert>{model.loadError}</Alert>}
@@ -92,6 +97,7 @@ export const GroupsTabView = ({ model }: GroupsTabViewProps) => {
                   <td>{formatStudentCount(group.studentCount)}</td>
                   <td>{group.guideTeacher?.name || 'Sin asignar'}</td>
                   <td onClick={(event) => event.stopPropagation()}>
+                    {canEdit ? (
                     <RowActions>
                       <RowActionButton
                         aria-label={`Editar ${group.name}`}
@@ -110,6 +116,7 @@ export const GroupsTabView = ({ model }: GroupsTabViewProps) => {
                         <Trash2 size={16} />
                       </RowActionButton>
                     </RowActions>
+                    ) : null}
                   </td>
                 </tr>
               ))}

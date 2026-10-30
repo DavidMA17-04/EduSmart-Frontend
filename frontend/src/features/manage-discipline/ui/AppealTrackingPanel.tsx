@@ -1,3 +1,4 @@
+import { portalPathForSession } from '@/shared/auth/portalPaths';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Alert, Badge, Button } from '@/shared/ui';
@@ -81,7 +82,7 @@ export const AppealTrackingPanel = () => {
               <div>
                 <dt>Expediente</dt>
                 <dd>
-                  <Link className={styles.caseLink} to={appealTrackingCaseHref(item.caseId)}>
+                  <Link className={styles.caseLink} to={portalPathForSession(appealTrackingCaseHref(item.caseId))}>
                     {item.caseNumber}
                   </Link>
                 </dd>
@@ -171,8 +172,8 @@ export const AppealTrackingPanel = () => {
           </div>
 
           <div className={styles.actions}>
-            <Link to={appealTrackingCaseHref(item.caseId)}>{APPEAL_TRACKING_COPY.caseLink}</Link>
-            <Link to={DISCIPLINE_APPEALS_PATH}>{APPEAL_TRACKING_COPY.back}</Link>
+            <Link to={portalPathForSession(appealTrackingCaseHref(item.caseId))}>{APPEAL_TRACKING_COPY.caseLink}</Link>
+            <Link to={portalPathForSession(DISCIPLINE_APPEALS_PATH)}>{APPEAL_TRACKING_COPY.back}</Link>
           </div>
 
           <AppealsListPanel studentUserId={item.studentUserId} title={APPEAL_TRACKING_COPY.history} />

@@ -16,6 +16,7 @@ import type {
 import {
   ATTENDANCE_HOME_PATH,
   ATTENDANCE_REDEEM_PATH,
+  HISTORY_EMPTY_COPY,
   ATTENDANCE_SESSION_PATH,
   useAttendanceHistoryPanel,
   type HistoryPageSize,
@@ -108,6 +109,24 @@ export const AttendanceHistoryPanel = () => {
             <DataToolbar
               filters={
                 <div className={styles.filters}>
+                  {model.isGuardianView && model.represented.length > 0 ? (
+                    <label className={styles.field}>
+                      <span className={styles.fieldLabel}>Estudiante</span>
+                      <Select
+                        aria-label="Filtrar por representado"
+                        onChange={(e) => model.setStudentId(e.target.value)}
+                        value={model.studentId}
+                      >
+                        <option value="">Todos mis representados</option>
+                        {model.represented.map((student) => (
+                          <option key={student.id} value={student.id}>
+                            {student.fullName}
+                          </option>
+                        ))}
+                      </Select>
+                    </label>
+                  ) : null}
+
                   {!model.isStudentView ? null : (
                     <label className={styles.field}>
                       <span className={styles.fieldLabel}>Curso / Materia</span>
@@ -295,9 +314,9 @@ export const AttendanceHistoryPanel = () => {
 
           {!model.isLoading && model.items.length === 0 ? (
             <EmptyState
-              description="Prueba ajustando el rango de fechas, el curso o el tipo de registro."
+              description={HISTORY_EMPTY_COPY[model.emptyKind].description}
               icon={Search}
-              title="Sin registros de asistencia"
+              title={HISTORY_EMPTY_COPY[model.emptyKind].title}
             />
           ) : null}
 
@@ -325,7 +344,9 @@ export const AttendanceHistoryPanel = () => {
                     <th>Tipo de registro</th>
                     <th>Estado</th>
                     <th>Registrado por</th>
-                    {!model.isStudentView ? <th>Estudiante</th> : null}
+                    {!model.isStudentView || model.isGuardianView ? (
+                      <th>Estudiante</th>
+                    ) : null}
                     {!model.isStudentView ? <th>Acciones</th> : null}
                   </tr>
                 </thead>
@@ -360,7 +381,7 @@ export const AttendanceHistoryPanel = () => {
                         </Badge>
                       </td>
                       <td>{row.registeredBy.fullName}</td>
-                      {!model.isStudentView ? (
+                      {!model.isStudentView || model.isGuardianView ? (
                         <td>
                           <div className={styles.studentCell}>
                             <strong>{row.student.fullName}</strong>
@@ -475,7 +496,7 @@ export const AttendanceHistoryPanel = () => {
         <article className={styles.quickCard}>
           <h3 className={styles.summaryTitle}>Accesos rápidos</h3>
           <div className={styles.quickLinks}>
-            {model.isStudentView ? (
+            {model.isGuardianView ? null : model.isStudentView ? (
               <Link className={styles.quickLink} to={ATTENDANCE_REDEEM_PATH}>
                 Ingresar código de asistencia
               </Link>

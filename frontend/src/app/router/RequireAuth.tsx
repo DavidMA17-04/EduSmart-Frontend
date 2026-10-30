@@ -1,6 +1,11 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/features/auth';
 import { getSessionUser } from '@/shared/auth';
+import {
+  isForcedPasswordPathAllowed,
+  resolveHouse,
+  settingsPath,
+} from '@/widgets/app-shell/model/territory';
 
 export const RequireAuth = () => {
   const location = useLocation();
@@ -11,10 +16,16 @@ export const RequireAuth = () => {
   }
 
   const session = getSessionUser();
-  const allowedWhileForced =
-    location.pathname === '/admin/settings' || location.pathname === '/admin/profile';
-  if (session?.mustChangePassword && !allowedWhileForced) {
-    return <Navigate replace to="/admin/settings" />;
+  const house = resolveHouse(session?.roles);
+  if (!house) {
+    return <Navigate replace to="/login" />;
+  }
+
+  if (
+    session?.mustChangePassword &&
+    !isForcedPasswordPathAllowed(location.pathname, house)
+  ) {
+    return <Navigate replace to={settingsPath(house)} />;
   }
 
   return <Outlet />;

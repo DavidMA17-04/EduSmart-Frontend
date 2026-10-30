@@ -9,8 +9,10 @@ import {
   ATTENDANCE_HOME_PATH,
   ATTENDANCE_NEW_PATH,
   ATTENDANCE_PERMISSIONS,
+  ATTENDANCE_REDEEM_PATH,
   ATTENDANCE_REPORTS_PATH,
   ATTENDANCE_ROUTE_GUARDS,
+  STUDENT_ATTENDANCE_PATH,
   canCreateAttendanceClass,
   canViewAttendanceHistory,
   parseAttendanceSessionId,
@@ -88,6 +90,16 @@ describe('attendanceRouting — route guards', () => {
       ATTENDANCE_PERMISSIONS.view,
       ATTENDANCE_PERMISSIONS.viewOwn,
     ]);
+  });
+
+  it('canje vive en /student/attendance/redeem; /student/attendance no aliasa rectoría', () => {
+    expect(ATTENDANCE_REDEEM_PATH).toBe('/student/attendance/redeem');
+    expect(STUDENT_ATTENDANCE_PATH).toBe('/student/attendance');
+    expect(STUDENT_ATTENDANCE_PATH).not.toBe(ATTENDANCE_HISTORY_PATH);
+    const guard = ATTENDANCE_ROUTE_GUARDS.find(
+      (r) => r.path === ATTENDANCE_REDEEM_PATH,
+    );
+    expect(guard?.page).toBe('AttendanceRedeemPage');
   });
 
   it('reports /admin/attendance/reports requiere attendance.view', () => {

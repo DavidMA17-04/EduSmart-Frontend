@@ -1,4 +1,5 @@
 .layout {
+  min-width: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 320px;
   gap: 1.25rem;
@@ -9,12 +10,16 @@
 .actions,
 .card,
 .form {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
 .heading {
+  flex-wrap: wrap;
   display: flex;
   justify-content: space-between;
   gap: 1rem;
@@ -225,7 +230,7 @@
 
 .grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
 }
 
@@ -251,6 +256,17 @@
   .layout,
   .facts,
   .grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .actions {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+  .heading > div {
+    min-width: 0;
+  }
+  .list li {
+    flex-wrap: wrap;
   }
 }

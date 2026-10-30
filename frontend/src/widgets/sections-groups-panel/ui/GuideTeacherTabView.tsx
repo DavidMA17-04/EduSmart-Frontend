@@ -1,6 +1,7 @@
 import { Edit3, Plus, Trash2 } from 'lucide-react';
 import { Alert, Button, Card, RowActionButton, RowActions, Table } from '@/shared/ui';
 import { formatStudentCount } from '@/entities/group';
+import { sessionHasPermission } from '@/shared/auth';
 import type { SectionsGroupsPanelModel } from '../model/useSectionsGroupsPanel';
 import groupRowStyles from '@/entities/group/ui/GroupTableRow.module.css';
 import styles from './SectionsGroupsPanel.module.css';
@@ -10,6 +11,7 @@ interface GuideTeacherTabViewProps {
 }
 
 export const GuideTeacherTabView = ({ model }: GuideTeacherTabViewProps) => {
+  const canMutateTeachers = sessionHasPermission('administrator.create');
   const selectedAssignments = model.selectedTeacher
     ? model.assignmentsByTeacherId.get(model.selectedTeacher.id) ?? []
     : [];
@@ -22,9 +24,11 @@ export const GuideTeacherTabView = ({ model }: GuideTeacherTabViewProps) => {
             <h2>Docentes guía</h2>
             <p className={styles.muted}>Cree, edite o elimine docentes. Luego asígnelos a una sección.</p>
           </div>
-          <Button onClick={model.createTeacherMode} type="button">
-            <Plus size={16} /> Nuevo docente
-          </Button>
+          {canMutateTeachers ? (
+            <Button onClick={model.createTeacherMode} type="button">
+              <Plus size={16} /> Nuevo docente
+            </Button>
+          ) : null}
         </div>
 
         {model.teacherMutationError && <Alert>{model.teacherMutationError}</Alert>}
@@ -62,6 +66,7 @@ export const GuideTeacherTabView = ({ model }: GuideTeacherTabViewProps) => {
                     <td>{teacher.email || '—'}</td>
                     <td>{teacher.phone || '—'}</td>
                     <td onClick={(event) => event.stopPropagation()}>
+                      {canMutateTeachers ? (
                       <RowActions>
                         <RowActionButton
                           aria-label={`Editar ${teacher.name}`}
@@ -80,6 +85,7 @@ export const GuideTeacherTabView = ({ model }: GuideTeacherTabViewProps) => {
                           <Trash2 size={16} />
                         </RowActionButton>
                       </RowActions>
+                      ) : null}
                     </td>
                   </tr>
                 );

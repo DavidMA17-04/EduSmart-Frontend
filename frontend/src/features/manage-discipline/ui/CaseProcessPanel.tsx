@@ -1,3 +1,4 @@
+import { portalPathForSession } from '@/shared/auth/portalPaths';
 import { FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { sessionHasPermission } from '@/shared/auth';
@@ -127,7 +128,7 @@ export function CaseProcessPanel({
           {appeals.map((item) => (
             <article key={item.id}>
               <strong>
-                <Link to={disciplineAppealTrackingPath(item.id)}>{appealHeading(item)}</Link>
+                <Link to={portalPathForSession(disciplineAppealTrackingPath(item.id))}>{appealHeading(item)}</Link>
               </strong>
               <p>{item.body}</p>
               {item.outcome ? (

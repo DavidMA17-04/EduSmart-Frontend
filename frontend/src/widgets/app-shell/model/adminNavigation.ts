@@ -27,6 +27,19 @@ import {
 } from 'lucide-react';
 import { STUDENT_ROLE_NAME } from '@/entities/role';
 import { getSessionUser } from '@/shared/auth';
+import {
+  ACADEMIC_PERIODS_MANAGE,
+  ACADEMIC_SECTIONS_MANAGE,
+  ACADEMIC_SPECIALTIES_MANAGE,
+  ACADEMIC_SUBJECTS_MANAGE,
+} from './academicCatalogAccess';
+import {
+  houseHome,
+  housePrefix,
+  isStaffHouse,
+  relocateAdminPath,
+  resolveHouse,
+} from './territory';
 
 export type AdminNavGroupId = 'users' | 'academic' | 'attendance' | 'discipline';
 
@@ -64,23 +77,11 @@ function roleMatches(role: string, ...candidates: string[]): boolean {
   return candidates.some((c) => c === value || c.toLowerCase() === lower);
 }
 
-/** Pantalla de inicio del alumno: horario propio, historial o canje. */
+/** Home canónico del alumno (no el primer permiso). */
 export function studentHomePath(
-  hasPermission: (permission: string) => boolean,
+  _hasPermission?: (permission: string) => boolean,
 ): string {
-  if (
-    hasPermission('schedules.view_own') &&
-    !hasPermission('schedules.view')
-  ) {
-    return '/admin/my-schedule';
-  }
-  if (
-    hasPermission('attendance.view_own') ||
-    hasPermission('attendance.view')
-  ) {
-    return '/admin/attendance/history';
-  }
-  return '/admin/attendance/redeem';
+  return houseHome('student');
 }
 
 export type RoleAudience = 'admin' | 'teacher' | 'staff' | 'student' | 'guardian';
@@ -117,6 +118,8 @@ export function sessionRolesIncludeStudent(
 /** Sidebar items for AdminShell — filtered by sessionHasPermission when permission is set. */
 export const adminNavigationItems: AdminNavItem[] = [
   { label: 'Dashboard', icon: LayoutDashboard, to: '/admin', audience: 'staff' },
+  { label: 'Inicio', icon: LayoutDashboard, to: '/student', audience: 'student' },
+  { label: 'Inicio', icon: LayoutDashboard, to: '/guardian', audience: 'guardian' },
   {
     label: 'Usuarios',
     icon: Users,
@@ -138,7 +141,7 @@ export const adminNavigationItems: AdminNavItem[] = [
     label: 'Estructura académica',
     icon: GraduationCap,
     to: '/admin/specialties',
-    permission: 'specialties.view',
+    anyOfPermissions: ACADEMIC_SPECIALTIES_MANAGE,
     group: 'academic',
     groupLead: true,
     audience: 'staff',
@@ -147,7 +150,7 @@ export const adminNavigationItems: AdminNavItem[] = [
     label: 'Materias',
     icon: BookOpen,
     to: '/admin/subjects',
-    permission: 'academic_structure.view',
+    anyOfPermissions: ACADEMIC_SUBJECTS_MANAGE,
     group: 'academic',
     audience: 'staff',
   },
@@ -155,7 +158,7 @@ export const adminNavigationItems: AdminNavItem[] = [
     label: 'Cursos lectivos',
     icon: CalendarRange,
     to: '/admin/academic-periods',
-    permission: 'periods.view',
+    anyOfPermissions: ACADEMIC_PERIODS_MANAGE,
     group: 'academic',
     audience: 'staff',
   },
@@ -163,7 +166,7 @@ export const adminNavigationItems: AdminNavItem[] = [
     label: 'Configurar ciclo',
     icon: CalendarClock,
     to: '/admin/academic-structure-wizard',
-    permission: 'periods.view',
+    permission: 'academic_structure.configure',
     group: 'academic',
     audience: 'staff',
   },
@@ -171,7 +174,7 @@ export const adminNavigationItems: AdminNavItem[] = [
     label: 'Niveles y secciones',
     icon: Layers,
     to: '/admin/sections-groups',
-    permission: 'sections.view',
+    anyOfPermissions: ACADEMIC_SECTIONS_MANAGE,
     group: 'academic',
     audience: 'staff',
   },
@@ -179,7 +182,7 @@ export const adminNavigationItems: AdminNavItem[] = [
     label: 'Asignaciones académicas',
     icon: BookMarked,
     to: '/admin/teaching-assignments',
-    permission: 'academic_structure.view',
+    anyOfPermissions: ACADEMIC_SUBJECTS_MANAGE,
     group: 'academic',
     audience: 'staff',
   },
@@ -198,6 +201,13 @@ export const adminNavigationItems: AdminNavItem[] = [
     permission: 'schedules.view_own',
     hideWhenPermission: 'schedules.view',
     group: 'academic',
+    audience: 'staff',
+  },
+  {
+    label: 'Mi horario',
+    icon: CalendarClock,
+    to: '/student/schedule',
+    audience: 'student',
   },
   {
     label: 'Asistencias',
@@ -214,6 +224,21 @@ export const adminNavigationItems: AdminNavItem[] = [
     to: '/admin/attendance/history',
     anyOfPermissions: ['attendance.view_own', 'attendance.view'],
     group: 'attendance',
+    audience: 'staff',
+  },
+  {
+    label: 'Historial de asistencia',
+    icon: History,
+    to: '/student/attendance',
+    anyOfPermissions: ['attendance.view_own', 'attendance.view'],
+    audience: 'student',
+  },
+  {
+    label: 'Historial de asistencia',
+    icon: History,
+    to: '/guardian/attendance',
+    anyOfPermissions: ['attendance.view_own', 'attendance.view'],
+    audience: 'guardian',
   },
   {
     label: 'Alertas de ausentismo',
@@ -237,35 +262,54 @@ export const adminNavigationItems: AdminNavItem[] = [
     to: '/admin/attendance/justifications',
     anyOfPermissions: ['attendance.justify', 'attendance.review', 'attendance.view'],
     group: 'attendance',
+    audience: 'staff',
+  },
+  {
+    label: 'Justificaciones',
+    icon: ClipboardList,
+    to: '/student/attendance/justifications',
+    anyOfPermissions: [
+      'attendance.justify',
+      'attendance.review',
+      'attendance.view',
+      'attendance.view_own',
+    ],
+    audience: 'student',
   },
   {
     label: 'Ingresar código',
     icon: KeyRound,
-    to: '/admin/attendance/redeem',
+    to: '/student/attendance/redeem',
     requireStudentRole: true,
     audience: 'student',
-    group: 'attendance',
   },
   {
-    label: 'Tablero',
+    label: 'Disciplina',
     icon: LayoutDashboard,
     to: '/admin/discipline/dashboard',
     anyOfPermissions: ['disciplinary.view', 'disciplinary.view_own'],
     group: 'discipline',
+    groupLead: true,
     audience: 'staff',
   },
   {
     label: 'Mi conducta',
     icon: GraduationCap,
-    to: '/admin/discipline/history',
+    to: '/student/discipline',
     permission: 'disciplinary.view_own',
     audience: 'student',
-    group: 'discipline',
   },
   {
     label: 'Historial',
     icon: GraduationCap,
-    to: '/admin/discipline/history',
+    to: '/guardian/discipline',
+    permission: 'disciplinary.view_own',
+    audience: 'guardian',
+  },
+  {
+    label: 'Centro de apelaciones',
+    icon: Scale,
+    to: '/guardian/discipline/appeals',
     permission: 'disciplinary.view_own',
     audience: 'guardian',
     group: 'discipline',
@@ -273,15 +317,7 @@ export const adminNavigationItems: AdminNavItem[] = [
   {
     label: 'Centro de apelaciones',
     icon: Scale,
-    to: '/admin/discipline/appeals',
-    permission: 'disciplinary.view_own',
-    audience: 'guardian',
-    group: 'discipline',
-  },
-  {
-    label: 'Centro de apelaciones',
-    icon: Scale,
-    to: '/admin/discipline/appeals',
+    to: '/student/discipline/appeals',
     permission: 'disciplinary.view_own',
     audience: 'student',
     group: 'discipline',
@@ -329,7 +365,7 @@ export const adminNavigationItems: AdminNavItem[] = [
   {
     label: 'Notificaciones',
     icon: Bell,
-    to: '/admin/discipline/notifications',
+    to: '/guardian/discipline/notifications',
     permission: 'disciplinary.respond',
     audience: 'guardian',
   },
@@ -347,7 +383,6 @@ export const adminNavigationItems: AdminNavItem[] = [
     to: '/admin/discipline/catalog',
     permission: 'disciplinary.view',
     group: 'discipline',
-    groupLead: true,
     audience: 'staff',
   },
   {
@@ -373,20 +408,13 @@ export const adminNavigationItems: AdminNavItem[] = [
     permission: 'administrator.view',
     audience: 'staff',
   },
-  {
-    label: 'Avisos y comunicados',
-    icon: Megaphone,
-    to: '/admin/communications',
-    permission: 'communications.view',
-  },
-  {
-    label: 'Gestor de comunicados',
-    icon: Megaphone,
-    to: '/admin/communications/manage',
-    permission: 'communications.create',
-    audience: 'staff',
-  },
-  { label: 'Configuración', icon: Settings, to: '/admin/settings' },
+  { label: 'Avisos y comunicados', icon: Megaphone, to: '/admin/communications', permission: 'communications.view', audience: 'staff' },
+  { label: 'Avisos y comunicados', icon: Megaphone, to: '/student/communications', permission: 'communications.view', audience: 'student' },
+  { label: 'Avisos y comunicados', icon: Megaphone, to: '/guardian/communications', permission: 'communications.view', audience: 'guardian' },
+  { label: 'Gestor de comunicados', icon: Megaphone, to: '/admin/communications/manage', permission: 'communications.create', audience: 'staff' },
+  { label: 'Configuración', icon: Settings, to: '/admin/settings', audience: 'staff' },
+  { label: 'Configuración', icon: Settings, to: '/student/settings', audience: 'student' },
+  { label: 'Configuración', icon: Settings, to: '/guardian/settings', audience: 'guardian' },
 ];
 
 export function filterAdminNavigation(
@@ -394,11 +422,18 @@ export function filterAdminNavigation(
   hasPermission: (permission: string) => boolean,
   roles?: readonly string[],
   audience?: RoleAudience,
+  /** Cambio de contraseña pendiente: solo Configuración, el resto rebotaría. */
+  passwordPending = false,
 ): AdminNavItem[] {
+  if (passwordPending) {
+    items = items.filter((item) => item.to.endsWith('/settings'));
+  }
   const effectiveRoles = roles ?? getSessionUser()?.roles ?? [];
   const resolvedAudience = audience ?? resolveRoleAudience(effectiveRoles);
   const studentOnly = resolvedAudience === 'student';
   const guardianOnly = resolvedAudience === 'guardian';
+  const house = resolveHouse(effectiveRoles);
+  const prefix = house ? housePrefix(house) : '/admin';
   return items.filter((item) => {
     if (item.anyOfPermissions?.length) {
       if (!item.anyOfPermissions.some((code) => hasPermission(code))) {
@@ -417,7 +452,25 @@ export function filterAdminNavigation(
     if (item.audience === 'student' && !studentOnly) return false;
     if (item.audience === 'guardian' && !guardianOnly) return false;
     return true;
+  }).map((item) => {
+    if (item.audience !== 'staff' || !house) return item;
+    const to =
+      item.to === '/admin' && house !== 'admin'
+        ? houseHome(house)
+        : relocateAdminPath(item.to, prefix);
+    return to === item.to ? item : { ...item, to };
   });
+}
+
+/** Runtime `/admin/...` → casa del personal (Fase 2). */
+export function staffPathForSession(
+  adminPath: string,
+  roles?: readonly string[],
+): string {
+  const house = resolveHouse(roles ?? getSessionUser()?.roles);
+  if (!house || !isStaffHouse(house)) return adminPath;
+  if (adminPath === '/admin' && house !== 'admin') return houseHome(house);
+  return relocateAdminPath(adminPath, housePrefix(house));
 }
 
 /** Fold related items under their lead. A group without a visible lead stays as plain links. */

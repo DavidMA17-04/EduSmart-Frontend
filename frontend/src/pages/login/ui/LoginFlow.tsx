@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   AlertCircle,
   CheckCircle2,
@@ -29,6 +29,7 @@ import {
   getRememberMePreference,
 } from '@/shared/auth';
 import { Button, Checkbox, Input } from '@/shared/ui';
+import { coerceReturnPath } from '@/widgets/app-shell/model/territory';
 import { runAppEnterTransition } from '@/shared/motion/runAppEnterTransition';
 import { AnimatedStep } from './AnimatedStep';
 import { RollingTextLabel } from './RollingTextLabel';
@@ -56,6 +57,7 @@ type LoginFlowProps = {
 
 export const LoginFlow = ({ resetDone = false }: LoginFlowProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const otpErrorId = useId();
   const passwordRef = useRef<HTMLInputElement>(null);
   const emailForVerifyRef = useRef<HTMLInputElement>(null);
@@ -69,6 +71,8 @@ export const LoginFlow = ({ resetDone = false }: LoginFlowProps) => {
   const [identifierError, setIdentifierError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const relogNotice =
+    (location.state as { notice?: string } | null)?.notice ?? null;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [verifyEmail, setVerifyEmail] = useState('');
@@ -208,7 +212,10 @@ export const LoginFlow = ({ resetDone = false }: LoginFlowProps) => {
     try {
       const result = await authApi.login(identifier, password, rememberMe);
       setPassword('');
-      const destination = result.user.mustChangePassword ? '/admin/settings' : '/admin';
+      const fromPath =
+        (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ??
+        new URLSearchParams(location.search).get('from');
+      const destination = coerceReturnPath(result.user, fromPath);
       await runAppEnterTransition(() => {
         navigate(destination, { replace: true });
       });
@@ -381,6 +388,12 @@ export const LoginFlow = ({ resetDone = false }: LoginFlowProps) => {
         </h2>
         <p>Cuenta institucional CTP Hojancha</p>
       </div>
+
+      {(step === 'email' || step === 'password') && !formError && relogNotice ? (
+        <p className={loginStyles.notice} role="status">
+          {relogNotice}
+        </p>
+      ) : null}
 
       <AnimatedStep stepKey={step}>
         {step === 'email' ? (

@@ -30,4 +30,8 @@
   /* Tipografía institucional */
   --brand-font-serif: 'Merriweather', 'Georgia', 'Times New Roman', serif;
   --brand-font-sans: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+
+  /* Cortes de layout (drawer / reflow) */
+  --bp-narrow: 640px;
+  --bp-medium: 1024px;
 }

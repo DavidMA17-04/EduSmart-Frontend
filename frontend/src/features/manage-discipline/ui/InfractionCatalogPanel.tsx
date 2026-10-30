@@ -180,7 +180,7 @@ export const InfractionCatalogPanel = () => {
           title="Sin tipos de falta"
         />
       ) : (
-        <div className={styles.tableWrap}>
+        <div className={`${styles.tableWrap} table-scroll`}>
           <table className={styles.table}>
             <thead>
               <tr>

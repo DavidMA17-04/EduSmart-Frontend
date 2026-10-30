@@ -72,6 +72,16 @@ describe('resolveRoleAudience', () => {
   });
 });
 
+describe('roleAudienceLabel', () => {
+  it('distingue Dirección y Orientación del rótulo genérico Personal', async () => {
+    const { roleAudienceLabel } = await import('../ui/roleAudience');
+    expect(roleAudienceLabel('staff', ['Director'])).toBe('Dirección');
+    expect(roleAudienceLabel('staff', ['Orientador'])).toBe('Orientación');
+    expect(roleAudienceLabel('staff', [])).toBe('Personal');
+    expect(roleAudienceLabel('teacher', ['Docente'])).toBe('Docente');
+  });
+});
+
 describe('groupAdminNavigation', () => {
   it('agrupa asistencias bajo el enlace principal cuando el lead está visible', () => {
     const entries = groupAdminNavigation(
@@ -89,7 +99,6 @@ describe('groupAdminNavigation', () => {
       'Alertas de ausentismo',
       'Indicadores',
       'Justificaciones',
-      'Ingresar código',
     ]);
   });
 
@@ -129,6 +138,54 @@ describe('adminNavigation — Asistencias', () => {
     expect(visible.some((nav) => nav.to === '/admin/attendance')).toBe(false);
   });
 
+  it('docente ve asistencia bajo /teacher', () => {
+    setSessionTokens(
+      encodeJwt({
+        sub: 4,
+        email: 'docente@ctphojancha.ed.cr',
+        roles: ['Docente'],
+        permissions: ['attendance.view'],
+      }),
+    );
+    const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
+    expect(visible.some((nav) => nav.label === 'Dashboard' && nav.to === '/teacher')).toBe(
+      true,
+    );
+    expect(visible.some((nav) => nav.to === '/teacher/attendance')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/admin/attendance')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/student/attendance/redeem')).toBe(
+      false,
+    );
+  });
+
+  it('encargado no ve canje ni ítems de gestión', () => {
+    setSessionTokens(
+      encodeJwt({
+        sub: 9,
+        email: 'encargado@ctphojancha.ed.cr',
+        roles: ['Encargado'],
+        permissions: [
+          'disciplinary.view_own',
+          'disciplinary.respond',
+          'attendance.view_own',
+        ],
+      }),
+    );
+    const visible = filterAdminNavigation(
+      adminNavigationItems,
+      sessionHasPermission,
+    ).map((item) => item.to);
+    expect(visible).not.toContain('/student/attendance/redeem');
+    expect(visible).not.toContain('/admin/attendance/redeem');
+    expect(visible).not.toContain('/admin/attendance');
+    expect(visible).not.toContain('/admin/users');
+    expect(visible).toContain('/guardian');
+    expect(visible).toContain('/guardian/discipline/notifications');
+    expect(visible).toContain('/guardian/discipline');
+    expect(visible).toContain('/guardian/attendance');
+    expect(visible).toContain('/guardian/settings');
+  });
+
   it('muestra Asistencias con attendance.view', () => {
     setSessionTokens(
       encodeJwt({
@@ -139,7 +196,7 @@ describe('adminNavigation — Asistencias', () => {
       }),
     );
     const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
-    expect(visible.some((nav) => nav.to === '/admin/attendance')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/teacher/attendance')).toBe(true);
   });
 });
 
@@ -148,23 +205,22 @@ describe('adminNavigation — Asignaciones académicas', () => {
     clearAccessToken();
   });
 
-  it('nav requiere academic_structure.view', () => {
+  it('nav de asignaciones exige mutación, no solo view', () => {
     const item = adminNavigationItems.find(
       (nav) => nav.to === '/admin/teaching-assignments',
     );
-    expect(item).toMatchObject({
-      label: 'Asignaciones académicas',
-      permission: 'academic_structure.view',
-    });
+    expect(item?.anyOfPermissions).toEqual(
+      expect.arrayContaining(['academic_structure.edit', 'academic_structure.configure']),
+    );
   });
 
-  it('oculta sin academic_structure.view', () => {
+  it('oculta sin academic_structure.edit', () => {
     setSessionTokens(
       encodeJwt({
         sub: 2,
         email: 'coord@ctphojancha.ed.cr',
         roles: ['COORDINATOR'],
-        permissions: ['sections.view'],
+        permissions: ['academic_structure.view', 'sections.view'],
       }),
     );
     const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
@@ -173,13 +229,13 @@ describe('adminNavigation — Asignaciones académicas', () => {
     );
   });
 
-  it('muestra con academic_structure.view', () => {
+  it('muestra con academic_structure.edit', () => {
     setSessionTokens(
       encodeJwt({
         sub: 1,
         email: 'admin@ctphojancha.ed.cr',
-        roles: ['ADMIN'],
-        permissions: ['academic_structure.view'],
+        roles: ['Administrador'],
+        permissions: ['academic_structure.edit'],
       }),
     );
     const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
@@ -188,12 +244,59 @@ describe('adminNavigation — Asignaciones académicas', () => {
     );
   });
 
-  it('nav Materias apunta a /admin/subjects con academic_structure.view', () => {
+  it('nav Materias apunta a /admin/subjects con mutación de estructura', () => {
     const item = adminNavigationItems.find((nav) => nav.to === '/admin/subjects');
     expect(item).toMatchObject({
       label: 'Materias',
-      permission: 'academic_structure.view',
+      to: '/admin/subjects',
     });
+    expect(item?.anyOfPermissions).toEqual(
+      expect.arrayContaining(['academic_structure.edit']),
+    );
+  });
+
+  it('Configurar ciclo exige academic_structure.configure, no periods.view', () => {
+    const item = adminNavigationItems.find(
+      (nav) => nav.to === '/admin/academic-structure-wizard',
+    );
+    expect(item).toMatchObject({
+      label: 'Configurar ciclo',
+      permission: 'academic_structure.configure',
+    });
+  });
+
+  it('Docente con solo view académico no ve oferta ni Configurar ciclo', () => {
+    setSessionTokens(
+      encodeJwt({
+        sub: 9,
+        email: 'docente.discqa@edusmart.test',
+        roles: ['Docente'],
+        permissions: [
+          'academic_structure.view',
+          'periods.view',
+          'sections.view',
+          'specialties.view',
+          'attendance.view',
+          'disciplinary.create',
+          'schedules.view_own',
+        ],
+      }),
+    );
+    const visible = filterAdminNavigation(
+      adminNavigationItems,
+      sessionHasPermission,
+      ['Docente'],
+    );
+    expect(visible.some((nav) => nav.to === '/teacher/academic-structure-wizard')).toBe(
+      false,
+    );
+    expect(visible.some((nav) => nav.to === '/teacher/academic-periods')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/teacher/specialties')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/teacher/subjects')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/teacher/sections-groups')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/teacher/teaching-assignments')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/teacher/attendance')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/teacher/my-schedule')).toBe(true);
   });
 });
 
@@ -234,7 +337,7 @@ describe('adminNavigation — Horario / Mi horario (D2)', () => {
       adminNavigationItems,
       sessionHasPermission,
     );
-    expect(visible.some((nav) => nav.to === '/admin/my-schedule')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/teacher/my-schedule')).toBe(true);
   });
 
   it('7. Docente NO ve Horario admin', () => {
@@ -301,6 +404,22 @@ describe('adminNavigation — Horario / Mi horario (D2)', () => {
     expect(visible.some((nav) => nav.to === '/admin/my-schedule')).toBe(false);
   });
 
+  it('Estudiante ve Mi horario aunque el JWT no traiga view_own', () => {
+    setSessionTokens(
+      encodeJwt({
+        sub: 521,
+        email: 'lvargas@edusmart.test',
+        roles: ['Estudiante'],
+        permissions: ['disciplinary.view_own'],
+      }),
+    );
+    const visible = filterAdminNavigation(
+      adminNavigationItems,
+      sessionHasPermission,
+    );
+    expect(visible.some((nav) => nav.to === '/student/schedule')).toBe(true);
+  });
+
   it('E2. Estudiante view_own sin view → ve Mi horario', () => {
     setSessionTokens(
       encodeJwt({
@@ -314,7 +433,57 @@ describe('adminNavigation — Horario / Mi horario (D2)', () => {
       adminNavigationItems,
       sessionHasPermission,
     );
-    expect(visible.some((nav) => nav.to === '/admin/my-schedule')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/student/schedule')).toBe(true);
+  });
+
+  it('Estudiante con view_own y view sigue viendo Mi horario', () => {
+    setSessionTokens(
+      encodeJwt({
+        sub: 521,
+        email: 'smoke_pbi24.alumno@edusmart.test',
+        roles: ['Estudiante'],
+        permissions: ['schedules.view_own', 'schedules.view'],
+      }),
+    );
+    const visible = filterAdminNavigation(
+      adminNavigationItems,
+      sessionHasPermission,
+    );
+    expect(visible.some((nav) => nav.to === '/student/schedule')).toBe(true);
+    expect(
+      adminNavigationItems.find((nav) => nav.to === '/student/schedule')
+        ?.hideWhenPermission,
+    ).toBeUndefined();
+  });
+
+  it('Estudiante sin students.view ve horario, asistencia, conducta, canje y settings', () => {
+    setSessionTokens(
+      encodeJwt({
+        sub: 88,
+        email: 'solanoaaron853@gmail.com',
+        roles: ['Estudiante'],
+        permissions: [
+          'attendance.view_own',
+          'attendance.justify',
+          'schedules.view_own',
+          'communications.view',
+          'appeals.create',
+          'disciplinary.view_own',
+        ],
+      }),
+    );
+    const visible = filterAdminNavigation(
+      adminNavigationItems,
+      sessionHasPermission,
+    ).map((item) => item.to);
+    expect(visible).toContain('/student/schedule');
+    expect(visible).toContain('/student/attendance');
+    expect(visible).toContain('/student/attendance/justifications');
+    expect(visible).toContain('/student/attendance/redeem');
+    expect(visible).toContain('/student/discipline');
+    expect(visible).toContain('/student/settings');
+    expect(visible).not.toContain('/admin/users');
+    expect(visible.every((to) => !to.includes('/students'))).toBe(true);
   });
 
   it('Estudiante ve Ingresar código (canje de token)', () => {
@@ -330,7 +499,7 @@ describe('adminNavigation — Horario / Mi horario (D2)', () => {
       adminNavigationItems,
       sessionHasPermission,
     );
-    expect(visible.some((nav) => nav.to === '/admin/attendance/redeem')).toBe(
+    expect(visible.some((nav) => nav.to === '/student/attendance/redeem')).toBe(
       true,
     );
   });
@@ -357,11 +526,11 @@ describe('adminNavigation — Horario / Mi horario (D2)', () => {
     expect(visible).not.toContain('/admin/attendance');
     expect(visible).not.toContain('/admin/attendance/alerts');
     expect(visible).not.toContain('/admin/attendance/reports');
-    expect(visible).toContain('/admin/attendance/history');
-    expect(visible).toContain('/admin/attendance/justifications');
-    expect(visible).toContain('/admin/attendance/redeem');
-    expect(visible).toContain('/admin/my-schedule');
-    expect(visible).toContain('/admin/settings');
+    expect(visible).toContain('/student/attendance');
+    expect(visible).toContain('/student/attendance/justifications');
+    expect(visible).toContain('/student/attendance/redeem');
+    expect(visible).toContain('/student/schedule');
+    expect(visible).toContain('/student/settings');
   });
 
   it('guía QA: Estudiante sin attendance.view conserva historial, justificaciones y canje', () => {
@@ -381,9 +550,9 @@ describe('adminNavigation — Horario / Mi horario (D2)', () => {
       adminNavigationItems,
       sessionHasPermission,
     ).map((item) => item.to);
-    expect(visible).toContain('/admin/attendance/redeem');
-    expect(visible).toContain('/admin/attendance/history');
-    expect(visible).toContain('/admin/attendance/justifications');
+    expect(visible).toContain('/student/attendance/redeem');
+    expect(visible).toContain('/student/attendance');
+    expect(visible).toContain('/student/attendance/justifications');
     expect(visible).not.toContain('/admin/attendance');
     expect(visible).not.toContain('/admin/attendance/alerts');
     expect(visible).not.toContain('/admin/attendance/reports');
@@ -402,6 +571,9 @@ describe('adminNavigation — Horario / Mi horario (D2)', () => {
       adminNavigationItems,
       sessionHasPermission,
     );
+    expect(visible.some((nav) => nav.to === '/student/attendance/redeem')).toBe(
+      false,
+    );
     expect(visible.some((nav) => nav.to === '/admin/attendance/redeem')).toBe(
       false,
     );
@@ -419,6 +591,9 @@ describe('adminNavigation — Horario / Mi horario (D2)', () => {
     const visible = filterAdminNavigation(
       adminNavigationItems,
       sessionHasPermission,
+    );
+    expect(visible.some((nav) => nav.to === '/student/attendance/redeem')).toBe(
+      false,
     );
     expect(visible.some((nav) => nav.to === '/admin/attendance/redeem')).toBe(
       false,
@@ -480,6 +655,20 @@ describe('adminNavigation — Disciplina', () => {
       permission: 'disciplinary.view',
       audience: 'staff',
     });
+    expect(item?.groupLead).toBeFalsy();
+  });
+
+  it('el lead del grupo se titula Disciplina y apunta al tablero', () => {
+    const entries = groupAdminNavigation(
+      adminNavigationItems.filter((item) => item.group === 'discipline'),
+    );
+    expect(entries[0]).toMatchObject({
+      type: 'group',
+      lead: { label: 'Disciplina', to: '/admin/discipline/dashboard', groupLead: true },
+    });
+    if (entries[0]?.type === 'group') {
+      expect(entries[0].children.some((item) => item.label === 'Catálogo de faltas')).toBe(true);
+    }
   });
 
   it('oculta el catálogo sin disciplinary.view', () => {
@@ -505,9 +694,9 @@ describe('adminNavigation — Disciplina', () => {
       }),
     );
     const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/register')).toBe(true);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/cases')).toBe(false);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/catalog')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/teacher/discipline/register')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/teacher/discipline/cases')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/teacher/discipline/catalog')).toBe(false);
   });
 
   it('muestra la bandeja a un docente con disciplinary.view_own y oculta el catálogo', () => {
@@ -520,9 +709,8 @@ describe('adminNavigation — Disciplina', () => {
       }),
     );
     const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/cases')).toBe(true);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/appeals')).toBe(true);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/catalog')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/teacher/discipline/cases')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/teacher/discipline/catalog')).toBe(false);
   });
 
   it('muestra el calendario a quien configura y lo oculta al docente', () => {
@@ -559,7 +747,7 @@ describe('adminNavigation — Disciplina', () => {
       }),
     );
     const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/catalog')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/teacher/discipline/catalog')).toBe(true);
   });
 
   it('muestra las notificaciones al encargado y oculta el catálogo y la bandeja de personal', () => {
@@ -572,16 +760,13 @@ describe('adminNavigation — Disciplina', () => {
       }),
     );
     const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/notifications')).toBe(true);
-    expect(visible.some((nav) => nav.label === 'Historial' && nav.to === '/admin/discipline/history')).toBe(true);
-    expect(visible.some((nav) => nav.label === 'Centro de apelaciones' && nav.to === '/admin/discipline/appeals')).toBe(
+    expect(visible.some((nav) => nav.label === 'Inicio' && nav.to === '/guardian')).toBe(
       true,
     );
-    expect(visible.every((nav) => nav.group !== 'attendance' || nav.to !== '/admin/discipline/appeals')).toBe(true);
     expect(
-      visible.filter((nav) => nav.label === 'Centro de apelaciones').every((nav) => nav.group === 'discipline'),
+      visible.some((nav) => nav.to === '/guardian/discipline/notifications'),
     ).toBe(true);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/calendar')).toBe(false);
+    expect(visible.some((nav) => nav.label === 'Historial' && nav.to === '/guardian/discipline')).toBe(true);
     expect(visible.some((nav) => nav.to === '/admin/discipline/dashboard')).toBe(false);
     expect(visible.some((nav) => nav.to === '/admin/discipline/cases')).toBe(false);
     expect(visible.some((nav) => nav.to === '/admin/discipline/catalog')).toBe(false);
@@ -595,9 +780,14 @@ describe('adminNavigation — Disciplina', () => {
       }),
     );
     const teacher = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
-    expect(teacher.some((nav) => nav.to === '/admin/discipline/notifications')).toBe(false);
+    expect(teacher.some((nav) => nav.to === '/guardian')).toBe(false);
+    expect(teacher.some((nav) => nav.to === '/teacher/discipline/notifications')).toBe(
+      false,
+    );
     expect(teacher.some((nav) => nav.label === 'Historial de conducta')).toBe(true);
-    expect(teacher.some((nav) => nav.to === '/admin/discipline/dashboard')).toBe(true);
+    expect(teacher.some((nav) => nav.to === '/teacher/discipline/dashboard')).toBe(
+      true,
+    );
     expect(teacher.some((nav) => nav.label === 'Historial')).toBe(false);
   });
 
@@ -612,14 +802,19 @@ describe('adminNavigation — Disciplina', () => {
     );
     const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
     expect(visible.some((nav) => nav.label === 'Mi conducta')).toBe(true);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/appeals')).toBe(true);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/cases')).toBe(false);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/notifications')).toBe(false);
-    expect(studentHomePath(sessionHasPermission)).toBe('/admin/my-schedule');
-    expect(studentHomePath(sessionHasPermission)).not.toBe('/admin/discipline/cases');
+    expect(visible.some((nav) => nav.to === '/student/discipline/appeals')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/student/discipline/cases')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/student/discipline/notifications')).toBe(false);
+    expect(studentHomePath(sessionHasPermission)).toBe('/student');
+    expect(studentHomePath(sessionHasPermission)).not.toBe('/student/discipline/cases');
+    expect(visible.some((nav) => nav.to === '/student/discipline')).toBe(true);
   });
 
   it('Orientador y Director ven la bandeja de personal y no el registro', () => {
+    const prefixByRole: Record<string, string> = {
+      Orientador: '/counselor',
+      Director: '/director',
+    };
     for (const role of ['Orientador', 'Director']) {
       setSessionTokens(
         encodeJwt({
@@ -630,10 +825,22 @@ describe('adminNavigation — Disciplina', () => {
         }),
       );
       const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
-      expect(visible.some((nav) => nav.to === '/admin/discipline/cases')).toBe(true);
-      expect(visible.some((nav) => nav.to === '/admin/discipline/dashboard')).toBe(true);
-      expect(visible.some((nav) => nav.to === '/admin/discipline/register')).toBe(false);
-      expect(visible.some((nav) => nav.to === '/admin/discipline/notifications')).toBe(false);
+      const prefix = prefixByRole[role];
+      expect(visible.some((nav) => nav.label === 'Dashboard' && nav.to === prefix)).toBe(
+        true,
+      );
+      expect(visible.some((nav) => nav.to === `${prefix}/discipline/cases`)).toBe(
+        true,
+      );
+      expect(
+        visible.some((nav) => nav.to === `${prefix}/discipline/dashboard`),
+      ).toBe(true);
+      expect(
+        visible.some((nav) => nav.to === `${prefix}/discipline/register`),
+      ).toBe(false);
+      expect(
+        visible.some((nav) => nav.to === `${prefix}/discipline/notifications`),
+      ).toBe(false);
     }
   });
 
@@ -647,10 +854,10 @@ describe('adminNavigation — Disciplina', () => {
       }),
     );
     const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/appeals/review')).toBe(true);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/appeals/reports')).toBe(true);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/register')).toBe(false);
-    expect(visible.filter((nav) => nav.to === '/admin/discipline/appeals/review').every((nav) => nav.group === 'discipline')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/director/discipline/appeals/review')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/director/discipline/appeals/reports')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/director/discipline/register')).toBe(false);
+    expect(visible.filter((nav) => nav.to === '/director/discipline/appeals/review').every((nav) => nav.group === 'discipline')).toBe(true);
   });
 
   it('Administrador con view y export ve el Centro, reportes y no un grupo Apelaciones', () => {
@@ -680,10 +887,10 @@ describe('adminNavigation — Disciplina', () => {
       }),
     );
     const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/appeals')).toBe(true);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/appeals/review')).toBe(true);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/appeals/reports')).toBe(false);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/register')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/teacher/discipline/appeals')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/teacher/discipline/appeals/review')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/teacher/discipline/appeals/reports')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/teacher/discipline/register')).toBe(true);
   });
 
   it('el encargado no ve la bandeja de revisión', () => {
