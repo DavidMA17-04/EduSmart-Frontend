@@ -58,6 +58,22 @@ export const CaseDetailPanel = ({ caseId }: { caseId: number }) => {
   const [participants, setParticipants] = useState('');
   const [tab, setTab] = useState<'resumen' | 'tramite' | 'historia'>('resumen');
   const [closing, setClosing] = useState<{ id: number; outcome: 'MET' | 'UNMET'; note: string } | null>(null);
+  const actionFormRef = useRef<HTMLFormElement | null>(null);
+  const messageRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const selectAction = (next: CaseAction) => {
+    setAction(next);
+    setError(null);
+    setMessage('');
+  };
+
+  useEffect(() => {
+    if (!action || action === 'communicate' || action === 'followUp') return;
+    actionFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (action !== 'investigate') {
+      window.setTimeout(() => messageRef.current?.focus(), 50);
+    }
+  }, [action]);
 
   const reload = () => {
     setLoading(true);
@@ -127,32 +143,43 @@ export const CaseDetailPanel = ({ caseId }: { caseId: number }) => {
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     if (!action || action === 'communicate' || action === 'followUp') return;
+    const needsText = action !== 'investigate';
+    const minLength = action === 'resolve' ? 50 : action === 'archive' || action === 'annul' ? 20 : 10;
+    if (needsText && message.trim().length < minLength) {
+      setError(`Escriba al menos ${minLength} caracteres antes de continuar.`);
+      messageRef.current?.focus();
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
       const path = `/disciplinary/cases/${detail.id}`;
       if (action === 'investigate') await disciplineApi.postCaseAction(`${path}/investigation`);
-      if (action === 'observe') await disciplineApi.postCaseAction(`${path}/observations`, { message });
+      if (action === 'observe') await disciplineApi.postCaseAction(`${path}/observations`, { message: message.trim() });
       if (action === 'requestInformation') {
-        await disciplineApi.postCaseAction(`${path}/information-requests`, { message });
+        await disciplineApi.postCaseAction(`${path}/information-requests`, { message: message.trim() });
       }
       if (action === 'respondInformation') {
         await disciplineApi.postCaseAction(`${path}/information-requests/response`, {
           requestEventId: Number(requestEventId),
-          message,
+          message: message.trim(),
         });
       }
-      if (action === 'requestCounsel') await disciplineApi.postCaseAction(`${path}/counsel-requests`, { message });
-      if (action === 'issueCounsel') await disciplineApi.postCaseAction(`${path}/counsel-opinions`, { message });
+      if (action === 'requestCounsel') {
+        await disciplineApi.postCaseAction(`${path}/counsel-requests`, { message: message.trim() });
+      }
+      if (action === 'issueCounsel') {
+        await disciplineApi.postCaseAction(`${path}/counsel-opinions`, { message: message.trim() });
+      }
       if (action === 'resolve') {
         await disciplineApi.postCaseAction(`${path}/resolution`, {
           outcome,
-          reasoning: message,
+          reasoning: message.trim(),
           severity: outcome === 'MODIFY' ? severity : undefined,
         });
       }
-      if (action === 'archive') await disciplineApi.postCaseAction(`${path}/archive`, { reason: message });
-      if (action === 'annul') await disciplineApi.postCaseAction(`${path}/annulment`, { reason: message });
+      if (action === 'archive') await disciplineApi.postCaseAction(`${path}/archive`, { reason: message.trim() });
+      if (action === 'annul') await disciplineApi.postCaseAction(`${path}/annulment`, { reason: message.trim() });
       setAction(null);
       setMessage('');
       reload();
@@ -451,26 +478,15 @@ export const CaseDetailPanel = ({ caseId }: { caseId: number }) => {
         {actions.filter((item) => item !== 'followUp').length === 0 ? (
           <p className={styles.muted}>En este estado su rol no tiene acciones. Puede revisar los hechos y la cronología.</p>
         ) : null}
-        <div className={styles.actionList}>
-          {actions
-            .filter((item) => item !== 'followUp' && item !== 'communicate')
-            .map((item) => (
-              <button
-                className={`${styles.actionChoice} ${action === item ? styles.actionChoiceActive : ''}`}
-                key={item}
-                type="button"
-                onClick={() => setAction(item)}
-              >
-                <strong>{CASE_ACTION_LABELS[item]}</strong>
-                {ACTION_HINTS[item] ? <span>{ACTION_HINTS[item]}</span> : null}
-              </button>
-            ))}
-          {actions.includes('communicate') ? (
-            <p className={styles.muted}>Comunicar el cargo está en la pestaña Trámite.</p>
-          ) : null}
-        </div>
         {action && action !== 'communicate' && action !== 'followUp' ? (
-          <form className={styles.form} onSubmit={submit}>
+          <form className={styles.form} ref={actionFormRef} onSubmit={submit}>
+            <div className={styles.composerHead}>
+              <p className={styles.composerTitle}>{CASE_ACTION_LABELS[action]}</p>
+              <button className={styles.composerCancel} type="button" onClick={() => setAction(null)}>
+                Cancelar
+              </button>
+            </div>
+            {ACTION_HINTS[action] ? <p className={styles.muted}>{ACTION_HINTS[action]}</p> : null}
             {action === 'respondInformation' ? (
               <label>
                 Solicitud
@@ -510,15 +526,42 @@ export const CaseDetailPanel = ({ caseId }: { caseId: number }) => {
               <p>El expediente pasa a investigación y abre 10 días hábiles.</p>
             ) : (
               <label>
-                {action === 'resolve' ? 'Fundamentación' : action === 'archive' || action === 'annul' ? 'Justificación' : 'Texto'}
-                <Textarea rows={4} value={message} onChange={(event) => setMessage(event.target.value)} />
+                {action === 'resolve'
+                  ? 'Fundamentación (mín. 50)'
+                  : action === 'archive' || action === 'annul'
+                    ? 'Justificación (mín. 20)'
+                    : 'Texto (mín. 10 caracteres)'}
+                <Textarea
+                  ref={messageRef}
+                  rows={4}
+                  value={message}
+                  onChange={(event) => setMessage(event.target.value)}
+                />
               </label>
             )}
             <Button type="submit" disabled={saving}>
-              {saving ? 'Guardando…' : CASE_ACTION_LABELS[action]}
+              {saving ? 'Guardando…' : `Confirmar: ${CASE_ACTION_LABELS[action]}`}
             </Button>
           </form>
         ) : null}
+        <div className={styles.actionList}>
+          {actions
+            .filter((item) => item !== 'followUp' && item !== 'communicate')
+            .map((item) => (
+              <button
+                className={`${styles.actionChoice} ${action === item ? styles.actionChoiceActive : ''}`}
+                key={item}
+                type="button"
+                onClick={() => selectAction(item)}
+              >
+                <strong>{CASE_ACTION_LABELS[item]}</strong>
+                {ACTION_HINTS[item] ? <span>{ACTION_HINTS[item]}</span> : null}
+              </button>
+            ))}
+          {actions.includes('communicate') ? (
+            <p className={styles.muted}>Comunicar el cargo está en la pestaña Trámite.</p>
+          ) : null}
+        </div>
       </aside>
     </div>
   );
