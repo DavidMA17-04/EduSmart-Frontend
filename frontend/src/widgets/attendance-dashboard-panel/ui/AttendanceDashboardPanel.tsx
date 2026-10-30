@@ -23,6 +23,7 @@ import { ATTENDANCE_REPORTS_PATH, useAttendanceDashboardKpis } from '@/features/
 import { brandColors } from '@/styles/brandColors';
 import { Alert, Button } from '@/shared/ui';
 import { Link } from 'react-router-dom';
+import { staffPathForSession } from '@/widgets/app-shell/model/adminNavigation';
 import styles from './AttendanceDashboardPanel.module.css';
 
 type AttendanceDashboardPanelProps = {
@@ -69,7 +70,7 @@ export const AttendanceDashboardPanel = ({
             Actualizar
           </Button>
           {compact ? (
-            <Link to={ATTENDANCE_REPORTS_PATH}>
+            <Link to={staffPathForSession(ATTENDANCE_REPORTS_PATH)}>
               <Button type="button" variant="secondary">
                 Ver reportes
               </Button>

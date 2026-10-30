@@ -74,6 +74,19 @@ describe('rutas de módulos integradas', () => {
     expect(host.textContent).toContain('home-page');
     expect(router.state.location.pathname).toBe('/student');
   });
+  it.each([
+    ['Estudiante', 'student', 'discipline/appeals/review'],
+    ['Encargado', 'guardian', 'discipline/appeals/review'],
+    ['Encargado', 'guardian', 'discipline/appeals/review/42'],
+    ['Estudiante', 'student', 'discipline/appeals/reports'],
+    ['Encargado', 'guardian', 'communications/manage'],
+  ])('%s en /%s/%s vuelve a su home sin tratarlo como id de recurso', async (role, house, path) => {
+    session.roles = [role]; session.permissions = ['disciplinary.view_own', 'communications.view'];
+    const router = await render(`/${house}/${path}`);
+    expect(host.textContent).toContain('home-page');
+    expect(host.textContent).not.toContain('tracking-page');
+    expect(router.state.location.pathname).toBe(`/${house}`);
+  });
   it('review se reconoce como ruta estática y la revisión vuelve al portal docente', async () => {
     session.roles = ['Docente']; session.permissions = ['disciplinary.resolve'];
     const router = await render('/teacher/discipline/appeals/review');

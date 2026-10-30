@@ -10,6 +10,7 @@ import {
 } from '@/pages/discipline';
 import { CommunicationsFeedPage } from '@/pages/communications/CommunicationsFeedPage';
 import { CommunicationsAdminPage } from '@/pages/communications/CommunicationsAdminPage';
+import { HouseHomeRedirect } from './HouseHomeRedirect';
 import { RequirePermission } from './RequirePermission';
 
 /** Route elements, composed inside each house; the API also enforces actor scope. */
@@ -24,6 +25,14 @@ export const roleModuleRoutes = (staff = false) => (
       <Route element={<DisciplineAppealTrackingPage />} path="discipline/appeals/:appealId" />
       {!staff && <Route element={<DisciplineCasePage />} path="discipline/cases/:caseId" />}
     </Route>
+    {!staff && (
+      <>
+        {/* Static staff-only paths must not fall through to :appealId. */}
+        <Route element={<HouseHomeRedirect />} path="communications/manage" />
+        <Route element={<HouseHomeRedirect />} path="discipline/appeals/review/*" />
+        <Route element={<HouseHomeRedirect />} path="discipline/appeals/reports" />
+      </>
+    )}
     {staff && (
       <>
         <Route element={<RequirePermission permission="communications.create" />}>
