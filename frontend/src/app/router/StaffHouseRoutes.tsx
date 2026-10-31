@@ -50,6 +50,13 @@ import {
   ACADEMIC_SPECIALTIES_MANAGE,
   ACADEMIC_SUBJECTS_MANAGE,
 } from '@/widgets/app-shell/model/academicCatalogAccess';
+import {
+  SecurityCheckOutPage,
+  SecurityDashboardPage,
+  SecurityHistoryPage,
+  SecurityPermitsPage,
+} from '@/pages/security';
+import { DEPARTURE_PERMISSIONS } from '@/features/student-departures';
 import { HouseHomeRedirect } from './HouseHomeRedirect';
 import { RequirePermission } from './RequirePermission';
 import { RoleHome } from './RoleHome';
@@ -234,6 +241,23 @@ export const staffHouseRoutes = (
           path="discipline/notifications"
         />
       </Route>
+    </Route>
+
+    <Route
+      element={
+        <RequirePermission
+          anyOf={[DEPARTURE_PERMISSIONS.validate, DEPARTURE_PERMISSIONS.viewHistory]}
+        />
+      }
+    >
+      <Route element={<SecurityDashboardPage />} path="security/dashboard" />
+    </Route>
+    <Route element={<RequirePermission permission={DEPARTURE_PERMISSIONS.validate} />}>
+      <Route element={<SecurityCheckOutPage />} path="security/check-out" />
+    </Route>
+    <Route element={<RequirePermission permission={DEPARTURE_PERMISSIONS.viewHistory} />}>
+      <Route element={<SecurityPermitsPage />} path="security/permits" />
+      <Route element={<SecurityHistoryPage />} path="security/history" />
     </Route>
 
     {roleModuleRoutes(true)}

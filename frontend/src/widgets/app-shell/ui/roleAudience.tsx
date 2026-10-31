@@ -34,6 +34,7 @@ export function roleAudienceLabel(
   }
   if (audience === 'student') return 'Estudiante';
   if (audience === 'guardian') return 'Encargado';
+  if (audience === 'security') return 'Seguridad';
   return 'Administración';
 }
 

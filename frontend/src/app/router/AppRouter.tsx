@@ -20,6 +20,13 @@ import { ProfileSettingsPage } from '@/pages/profile-settings';
 import { ResetPasswordPage } from '@/pages/reset-password';
 import { GuardianHomePage } from '@/pages/guardian-home';
 import { StudentHomePage } from '@/pages/student-home';
+import {
+  SecurityCheckOutPage,
+  SecurityDashboardPage,
+  SecurityHistoryPage,
+  SecurityPermitsPage,
+} from '@/pages/security';
+import { DEPARTURE_PERMISSIONS } from '@/features/student-departures';
 import { RoleShell } from '@/widgets/app-shell';
 import { HouseHomeRedirect } from './HouseHomeRedirect';
 import { RequireAuth } from './RequireAuth';
@@ -48,6 +55,22 @@ export const AppRouter = () => (
         </Route>
         <Route element={<RoleShell />} path="/director">
           {staffHouseRoutes}
+        </Route>
+
+        <Route element={<RoleShell />} path="/security">
+          <Route element={<Navigate replace to="dashboard" />} index />
+          <Route element={<SecurityDashboardPage />} path="dashboard" />
+          <Route element={<RequirePermission permission={DEPARTURE_PERMISSIONS.validate} />}>
+            <Route element={<SecurityCheckOutPage />} path="check-out" />
+          </Route>
+          <Route element={<RequirePermission permission={DEPARTURE_PERMISSIONS.viewHistory} />}>
+            <Route element={<SecurityPermitsPage />} path="permits" />
+            <Route element={<SecurityHistoryPage />} path="history" />
+          </Route>
+          <Route element={<ProfileSettingsPage />} path="settings" />
+          <Route element={<ProfileSettingsPage />} path="profile" />
+          {roleModuleRoutes()}
+          <Route element={<HouseHomeRedirect />} path="*" />
         </Route>
 
         <Route element={<RoleShell />} path="/student">

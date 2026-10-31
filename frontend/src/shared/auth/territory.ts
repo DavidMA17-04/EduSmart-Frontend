@@ -6,7 +6,8 @@ export type TerritoryHouse =
   | 'counselor'
   | 'director'
   | 'student'
-  | 'guardian';
+  | 'guardian'
+  | 'security';
 
 export type TerritoryTree =
   | '/admin'
@@ -14,7 +15,8 @@ export type TerritoryTree =
   | '/counselor'
   | '/director'
   | '/student'
-  | '/guardian';
+  | '/guardian'
+  | '/security';
 
 export type SessionLike = {
   roles?: readonly string[] | null;
@@ -33,14 +35,16 @@ const HOUSE_TABLE: Record<TerritoryHouse, HouseSlot> = {
   director: { prefix: '/director', home: '/director' },
   student: { prefix: '/student', home: '/student' },
   guardian: { prefix: '/guardian', home: '/guardian' },
+  security: { prefix: '/security', home: '/security/dashboard' },
 };
 
-/** Admin > Director > Orientador > Docente > Encargado > Estudiante */
+/** Admin > Director > Orientador > Docente > Guarda > Encargado > Estudiante */
 const HOUSE_PRIORITY: { house: TerritoryHouse; aliases: string[] }[] = [
   { house: 'admin', aliases: ['Administrador', 'ADMIN'] },
   { house: 'director', aliases: ['Director'] },
   { house: 'counselor', aliases: ['Orientador', 'COUNSELOR'] },
   { house: 'teacher', aliases: ['Docente', 'TEACHER'] },
+  { house: 'security', aliases: ['Guarda de Seguridad', 'SECURITY_GUARD'] },
   { house: 'guardian', aliases: ['Encargado', 'Padre de familia', 'GUARDIAN'] },
   { house: 'student', aliases: ['Estudiante', 'STUDENT'] },
 ];
@@ -59,6 +63,7 @@ export const TREE_ALLOWLIST: Record<TerritoryTree, readonly TerritoryHouse[]> = 
   '/director': ['director'],
   '/student': ['student'],
   '/guardian': ['guardian'],
+  '/security': ['security'],
 };
 
 const STUDENT_LEGACY: { from: string; to: string }[] = [
@@ -170,6 +175,7 @@ const TREE_PREFIXES: readonly TerritoryTree[] = [
   '/director',
   '/student',
   '/guardian',
+  '/security',
 ];
 
 export function treeFromPath(pathname: string): TerritoryTree | null {
@@ -216,6 +222,10 @@ export function mapLegacyPath(pathname: string, house: TerritoryHouse): string {
   }
   if (house === 'guardian') {
     return rewriteLegacy(pathname, GUARDIAN_LEGACY) ?? houseHome(house);
+  }
+  if (house === 'security') {
+    // El guarda no tiene equivalentes en /admin: siempre vuelve a su panel.
+    return houseHome(house);
   }
   if (isAdminRedeemPath(pathname)) {
     return houseHome(house);

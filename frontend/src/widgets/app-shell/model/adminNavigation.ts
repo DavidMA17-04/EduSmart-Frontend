@@ -9,7 +9,9 @@ import {
   CalendarClock,
   CalendarOff,
   CalendarRange,
+  DoorOpen,
   FileBarChart,
+  FileCheck,
   Gavel,
   GraduationCap,
   History,
@@ -17,6 +19,7 @@ import {
   Layers,
   LayoutDashboard,
   Megaphone,
+  ScanLine,
   Scale,
   Settings,
   ShieldAlert,
@@ -41,7 +44,7 @@ import {
   resolveHouse,
 } from './territory';
 
-export type AdminNavGroupId = 'users' | 'academic' | 'attendance' | 'discipline';
+export type AdminNavGroupId = 'users' | 'academic' | 'attendance' | 'discipline' | 'security';
 
 export type AdminNavItem = {
   label: string;
@@ -54,8 +57,8 @@ export type AdminNavItem = {
   hideWhenPermission?: string;
   /** Show only when the session has an Estudiante / STUDENT role. */
   requireStudentRole?: boolean;
-  /** staff = administrador, docente, orientador y director. student = solo el alumno. guardian = encargado. */
-  audience?: 'staff' | 'student' | 'guardian' | 'all';
+  /** staff = administrador, docente, orientador y director. student = solo el alumno. guardian = encargado. security = guarda. */
+  audience?: 'staff' | 'student' | 'guardian' | 'security' | 'all';
   /** Collapsible sidebar section. Shown as a group only when the lead and at least one child are visible. */
   group?: AdminNavGroupId;
   /** Main link of a group; children appear when it is expanded. */
@@ -84,7 +87,7 @@ export function studentHomePath(
   return houseHome('student');
 }
 
-export type RoleAudience = 'admin' | 'teacher' | 'staff' | 'student' | 'guardian';
+export type RoleAudience = 'admin' | 'teacher' | 'staff' | 'student' | 'guardian' | 'security';
 
 export function resolveRoleAudience(
   roles?: readonly string[],
@@ -98,6 +101,9 @@ export function resolveRoleAudience(
   }
   if (effective.some((role) => roleMatches(role, 'Docente', 'TEACHER'))) {
     return 'teacher';
+  }
+  if (effective.some((role) => roleMatches(role, 'Guarda de Seguridad', 'SECURITY_GUARD'))) {
+    return 'security';
   }
   if (effective.some((role) => roleMatches(role, 'Encargado', 'Padre de familia', 'GUARDIAN'))) {
     return 'guardian';
@@ -120,6 +126,28 @@ export const adminNavigationItems: AdminNavItem[] = [
   { label: 'Dashboard', icon: LayoutDashboard, to: '/admin', audience: 'staff' },
   { label: 'Inicio', icon: LayoutDashboard, to: '/student', audience: 'student' },
   { label: 'Inicio', icon: LayoutDashboard, to: '/guardian', audience: 'guardian' },
+  { label: 'Panel de caseta', icon: LayoutDashboard, to: '/security/dashboard', audience: 'security' },
+  {
+    label: 'Terminal de salida',
+    icon: ScanLine,
+    to: '/security/check-out',
+    permission: 'departures.validate',
+    audience: 'security',
+  },
+  {
+    label: 'Permisos programados',
+    icon: FileCheck,
+    to: '/security/permits',
+    permission: 'departures.view_history',
+    audience: 'security',
+  },
+  {
+    label: 'Bitácora de salidas',
+    icon: History,
+    to: '/security/history',
+    permission: 'departures.view_history',
+    audience: 'security',
+  },
   {
     label: 'Usuarios',
     icon: Users,
@@ -402,6 +430,39 @@ export const adminNavigationItems: AdminNavItem[] = [
     audience: 'staff',
   },
   {
+    label: 'Control de salidas',
+    icon: DoorOpen,
+    to: '/admin/security/dashboard',
+    permission: 'departures.view_history',
+    group: 'security',
+    groupLead: true,
+    audience: 'staff',
+  },
+  {
+    label: 'Terminal de salida',
+    icon: ScanLine,
+    to: '/admin/security/check-out',
+    permission: 'departures.validate',
+    group: 'security',
+    audience: 'staff',
+  },
+  {
+    label: 'Permisos programados',
+    icon: FileCheck,
+    to: '/admin/security/permits',
+    permission: 'departures.view_history',
+    group: 'security',
+    audience: 'staff',
+  },
+  {
+    label: 'Bitácora de salidas',
+    icon: History,
+    to: '/admin/security/history',
+    permission: 'departures.view_history',
+    group: 'security',
+    audience: 'staff',
+  },
+  {
     label: 'Reportes',
     icon: FileBarChart,
     to: '/admin/reports',
@@ -415,6 +476,7 @@ export const adminNavigationItems: AdminNavItem[] = [
   { label: 'Configuración', icon: Settings, to: '/admin/settings', audience: 'staff' },
   { label: 'Configuración', icon: Settings, to: '/student/settings', audience: 'student' },
   { label: 'Configuración', icon: Settings, to: '/guardian/settings', audience: 'guardian' },
+  { label: 'Configuración', icon: Settings, to: '/security/settings', audience: 'security' },
 ];
 
 export function filterAdminNavigation(
@@ -432,6 +494,7 @@ export function filterAdminNavigation(
   const resolvedAudience = audience ?? resolveRoleAudience(effectiveRoles);
   const studentOnly = resolvedAudience === 'student';
   const guardianOnly = resolvedAudience === 'guardian';
+  const securityOnly = resolvedAudience === 'security';
   const house = resolveHouse(effectiveRoles);
   const prefix = house ? housePrefix(house) : '/admin';
   return items.filter((item) => {
@@ -448,9 +511,10 @@ export function filterAdminNavigation(
     if (item.requireStudentRole && !sessionRolesIncludeStudent(effectiveRoles)) {
       return false;
     }
-    if (item.audience === 'staff' && (studentOnly || guardianOnly)) return false;
+    if (item.audience === 'staff' && (studentOnly || guardianOnly || securityOnly)) return false;
     if (item.audience === 'student' && !studentOnly) return false;
     if (item.audience === 'guardian' && !guardianOnly) return false;
+    if (item.audience === 'security' && !securityOnly) return false;
     return true;
   }).map((item) => {
     if (item.audience !== 'staff' || !house) return item;
