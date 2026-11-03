@@ -209,14 +209,6 @@ export function BatchEnrollModal({ model }: Props) {
             Verificación
           </Button>
           <div className={styles.footerRight}>
-            <Button
-              disabled={model.isSubmitting}
-              onClick={model.closeModal}
-              type="button"
-              variant="secondary"
-            >
-              Cancelar
-            </Button>
             {canEnrollAll && (
               <Button
                 disabled={model.isSubmitting}
@@ -230,6 +222,14 @@ export function BatchEnrollModal({ model }: Props) {
                   : `Matricular ${summary.total} estudiante(s)`}
               </Button>
             )}
+            <Button
+              disabled={model.isSubmitting}
+              onClick={model.closeModal}
+              type="button"
+              variant="secondary"
+            >
+              Cancelar
+            </Button>
           </div>
         </footer>
       </section>

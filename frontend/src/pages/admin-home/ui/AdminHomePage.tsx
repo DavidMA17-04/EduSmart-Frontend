@@ -20,6 +20,7 @@ import { useAuthStore } from '@/features/auth';
 import { getSessionUser, sessionHasPermission } from '@/shared/auth';
 import { profileDisplayName } from '../model/profileDisplayName';
 import { brandColors } from '@/styles/brandColors';
+import { chartTheme } from '@/styles/chartTheme';
 import { AttendanceDashboardPanel } from '@/widgets/attendance-dashboard-panel';
 import { HouseWelcome } from './HouseWelcome';
 import styles from './AdminHomePage.module.css';
@@ -36,15 +37,8 @@ const ROLE_COLORS: Record<string, string> = {
   Estudiante: brandColors.primary,
 };
 
-const FALLBACK_COLORS = [
-  brandColors.navy,
-  brandColors.muted,
-  brandColors.green,
-  brandColors.goldDark,
-];
-
 function colorForRole(role: string, index: number): string {
-  return ROLE_COLORS[role] ?? FALLBACK_COLORS[index % FALLBACK_COLORS.length];
+  return ROLE_COLORS[role] ?? chartTheme.series[index % chartTheme.series.length];
 }
 
 type DonutSlice = { name: string; shortName: string; count: number; color: string };
@@ -233,10 +227,10 @@ export const AdminHomePage = () => {
         name: 'Talleres exploratorios',
         shortName: 'Talleres',
         count: data.totalExploratoryWorkshops ?? 0,
-        color: '#0E7490',
+        color: brandColors.primaryHover,
       },
       {
-        name: 'Carreras Técnicas',
+        name: 'Carreras técnicas',
         shortName: 'Carreras',
         count: data.totalSpecialties,
         color: brandColors.goldDark,

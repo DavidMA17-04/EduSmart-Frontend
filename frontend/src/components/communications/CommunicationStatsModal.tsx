@@ -35,7 +35,7 @@ const StatTile: React.FC<{
       className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm"
     >
       <div className="flex items-center justify-between">
-        <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">{label}</span>
+        <span className="text-[11px] font-semibold text-slate-500 tracking-normal">{label}</span>
         <span className="text-slate-400">{icon}</span>
       </div>
       <span className={`text-2xl font-bold mt-1.5 block tabular-nums ${tone}`}>
@@ -103,7 +103,7 @@ export const CommunicationStatsModal: React.FC<Props> = ({ communicationId, isOp
               <button
                 type="button"
                 onClick={handleExportCSV}
-                className="bg-[#0d2346] hover:bg-[#133261] text-white font-medium text-sm px-4 py-2 rounded-lg shadow-sm transition-colors flex items-center gap-2"
+                className="bg-brand-primary hover:bg-brand-primary-hover text-white font-medium text-sm px-4 py-2 rounded-lg shadow-sm transition-colors flex items-center gap-2"
               >
                 <Download className="w-4 h-4" />
                 Exportar nómina (CSV)
@@ -123,7 +123,7 @@ export const CommunicationStatsModal: React.FC<Props> = ({ communicationId, isOp
       <div className="p-5 sm:p-6 space-y-5 bg-slate-50/60 min-h-[280px]">
         {isLoading ? (
           <div className="py-16 flex flex-col items-center gap-3 text-sm text-slate-500">
-            <Loader2 className="w-6 h-6 animate-spin text-[#0d2346]" />
+            <Loader2 className="w-6 h-6 animate-spin text-brand-primary" />
             Calculando indicadores de lectura…
           </div>
         ) : isError || !stats ? (
@@ -132,8 +132,8 @@ export const CommunicationStatsModal: React.FC<Props> = ({ communicationId, isOp
           <>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <StatTile label="Audiencia" value={stats.totalAudience} hint="usuarios alcanzados" tone="text-slate-900" icon={<Users className="w-4 h-4" />} delay={0} />
-              <StatTile label="Lecturas" value={stats.totalReads} hint="lectores únicos" tone="text-[#0d2346]" icon={<Eye className="w-4 h-4" />} delay={0.05} />
-              <StatTile label="Tasa de lectura" value={stats.readRate} suffix="%" hint="de la audiencia" tone="text-emerald-600" icon={<BarChart3 className="w-4 h-4" />} delay={0.1} />
+              <StatTile label="Lecturas" value={stats.totalReads} hint="lectores únicos" tone="text-brand-primary" icon={<Eye className="w-4 h-4" />} delay={0.05} />
+              <StatTile label="Tasa de lectura" value={stats.readRate} suffix="%" hint="de la audiencia" tone="text-brand-green" icon={<BarChart3 className="w-4 h-4" />} delay={0.1} />
               <StatTile
                 label="Acuses"
                 value={stats.totalAcknowledged}
@@ -145,9 +145,9 @@ export const CommunicationStatsModal: React.FC<Props> = ({ communicationId, isOp
             </div>
 
             <div className="bg-white border border-slate-200/80 rounded-xl p-4 space-y-4 shadow-sm">
-              <ProgressRow label="Alcance de lectura" value={stats.readRate} color="bg-[#0d2346]" />
+              <ProgressRow label="Alcance de lectura" value={stats.readRate} color="bg-brand-primary" />
               {stats.requiresAcknowledgment && (
-                <ProgressRow label="Confirmaciones sobre lectores" value={stats.ackRate} color="bg-emerald-500" />
+                <ProgressRow label="Confirmaciones sobre lectores" value={stats.ackRate} color="bg-brand-green" />
               )}
             </div>
 
@@ -189,7 +189,7 @@ export const CommunicationStatsModal: React.FC<Props> = ({ communicationId, isOp
                             {formatDateTime(reader.readAt)}
                           </p>
                           {reader.acknowledgedAt ? (
-                            <span className="mt-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-semibold px-2 py-0.5 rounded-md inline-flex items-center gap-1">
+                            <span className="mt-1 bg-brand-green-light text-brand-green border border-brand-green/30 text-[11px] font-semibold px-2 py-0.5 rounded-md inline-flex items-center gap-1">
                               <CheckCircle2 className="w-3 h-3" />
                               Confirmado
                             </span>

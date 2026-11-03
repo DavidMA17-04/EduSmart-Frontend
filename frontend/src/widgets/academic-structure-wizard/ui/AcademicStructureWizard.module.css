@@ -33,12 +33,12 @@
 }
 
 .stepActive {
-  color: var(--primary-500, #2563eb);
+  color: var(--primary-500, var(--brand-primary));
   font-weight: 600;
 }
 
 .stepDone {
-  color: #059669;
+  color: var(--brand-green);
 }
 
 .stepNumber {
@@ -58,8 +58,8 @@
 
 .panel {
   display: grid;
-  gap: 16px;
-  padding: 1.25rem;
+  gap: 12px;
+  padding: 1rem 1.15rem;
   border: 1px solid var(--admin-border, #e4e7ec);
   border-radius: 12px;
   background: var(--admin-surface, #fff);
@@ -74,7 +74,7 @@
 .requirement {
   margin: 0;
   font-size: 0.9rem;
-  color: var(--admin-muted, #667085);
+  color: var(--admin-muted, var(--brand-muted));
 }
 
 .requirement {
@@ -84,7 +84,13 @@
 .formGrid {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 840px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .field {
@@ -122,7 +128,7 @@
   display: grid;
   gap: 6px;
   font-size: 0.9rem;
-  color: var(--admin-muted, #667085);
+  color: var(--admin-muted, var(--brand-muted));
 }
 
 .summary strong {

@@ -19,8 +19,8 @@ const META: Record<
     Icon: Layers,
   },
   TECHNICAL_SPECIALTY: {
-    crumb: 'Carreras Técnicas',
-    title: 'Carreras Técnicas',
+    crumb: 'Carreras técnicas',
+    title: 'Carreras técnicas',
     description: 'Gestión de carreras técnicas para décimo, undécimo y duodécimo.',
     Icon: Wrench,
   },

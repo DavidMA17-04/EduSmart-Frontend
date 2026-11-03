@@ -342,7 +342,7 @@ export const AdministrativeReportsPage = () => {
           <FileBarChart size={22} />
         </span>
         <div>
-          <h1>Reportes Administrativos</h1>
+          <h1>Reportes administrativos</h1>
           <p>Consulta, filtra y exporta información administrativa del sistema.</p>
         </div>
       </header>

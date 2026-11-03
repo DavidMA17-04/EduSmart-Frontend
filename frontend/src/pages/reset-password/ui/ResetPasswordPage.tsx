@@ -24,7 +24,9 @@ export const ResetPasswordPage = () => {
       return;
     }
     if (!isValidInitialPassword(password)) {
-      setError('La contraseña debe tener entre 8 y 72 caracteres.');
+      setError(
+        'La contraseña debe tener 8–72 caracteres, mayúscula, minúscula, número y un carácter especial.',
+      );
       return;
     }
     if (password !== confirm) {

@@ -15,6 +15,7 @@
   'PUBLISH',
   'MANAGE',
   'STATS',
+  'VALIDATE',
 ] as const;
 export type PermissionAction = (typeof PERMISSION_ACTIONS)[number];
 
@@ -31,6 +32,7 @@ export const PERMISSION_MODULES = [
   'SPECIALTIES',
   'SECTIONS',
   'SCHEDULES',
+  'DEPARTURES',
 ] as const;
 export type PermissionModule = (typeof PERMISSION_MODULES)[number];
 
@@ -51,6 +53,7 @@ export const PERMISSION_ACTION_LABELS: Record<PermissionAction, string> = {
   PUBLISH: 'Publicar',
   MANAGE: 'Gestionar',
   STATS: 'Métricas',
+  VALIDATE: 'Validar',
 };
 
 export const PERMISSION_MODULE_LABELS: Record<PermissionModule, string> = {
@@ -66,6 +69,7 @@ export const PERMISSION_MODULE_LABELS: Record<PermissionModule, string> = {
   SPECIALTIES: 'Especialidades',
   SECTIONS: 'Secciones',
   SCHEDULES: 'Horarios',
+  DEPARTURES: 'Salidas',
 };
 
 export interface Permission {

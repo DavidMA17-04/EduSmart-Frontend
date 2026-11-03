@@ -157,7 +157,7 @@ export const PRIORITY_THEME: Record<CommunicationPriority, PriorityTheme> = {
   },
   NORMAL: {
     label: 'Informativo',
-    accent: 'bg-[#0d2346]',
+    accent: 'bg-brand-primary',
     softBg: 'bg-slate-50',
     text: 'text-slate-700',
     ring: 'border-slate-200',

@@ -13,10 +13,10 @@ export function ScheduledPermitsList({ onSelect, selectedId }: { onSelect?: (per
     <section className={CARD} aria-labelledby="permits-title">
       <div className="px-4 py-3.5 border-b border-slate-100 flex items-center justify-between">
         <h2 data-preserve-case id="permits-title" className="text-sm font-bold text-slate-900 flex items-center gap-2">
-          <CalendarCheck className="w-4 h-4 text-purple-700" />
+          <CalendarCheck className="w-4 h-4 text-brand-primary" />
           Permisos programados para hoy
         </h2>
-        <span className="text-xs font-semibold text-purple-700 bg-purple-50 border border-purple-200 rounded-full px-2 py-0.5 tabular">
+        <span className="text-xs font-semibold text-brand-primary bg-brand-primary-light border border-brand-primary/25 rounded-full px-2 py-0.5 tabular">
           {permits.length}
         </span>
       </div>
@@ -27,7 +27,7 @@ export function ScheduledPermitsList({ onSelect, selectedId }: { onSelect?: (per
           ))}
         </div>
       ) : permits.length === 0 ? (
-        <p className="px-4 py-8 text-center text-sm text-slate-500">No hay permisos pendientes para hoy.</p>
+        <p className="px-4 py-5 text-center text-sm text-slate-500">No hay permisos pendientes para hoy.</p>
       ) : (
         <ul className="divide-y divide-slate-100 max-h-80 overflow-y-auto smooth-scroll">
           <AnimatePresence initial={false}>
@@ -47,10 +47,10 @@ export function ScheduledPermitsList({ onSelect, selectedId }: { onSelect?: (per
                     onClick={() => onSelect?.(permit)}
                     disabled={!onSelect}
                     className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-colors ${
-                      selected ? 'bg-purple-50' : 'hover:bg-slate-50'
+                      selected ? 'bg-brand-primary-light' : 'hover:bg-slate-50'
                     } disabled:cursor-default`}
                   >
-                    <span className="w-9 h-9 rounded-full bg-purple-100 text-purple-800 text-xs font-bold flex items-center justify-center shrink-0">
+                    <span className="w-9 h-9 rounded-full bg-brand-primary-light text-brand-primary text-xs font-bold flex items-center justify-center shrink-0">
                       {initials(permit.student.fullName)}
                     </span>
                     <span className="min-w-0 flex-1">

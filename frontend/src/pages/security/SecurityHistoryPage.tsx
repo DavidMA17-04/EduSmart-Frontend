@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, History, RotateCcw, Search } from 'lucide-react';
 import { sessionHasPermission } from '@/shared/auth';
 import {
-  BTN_SECONDARY,
   CARD,
   DEPARTURE_PERMISSIONS,
   DeparturesTable,
@@ -19,6 +18,7 @@ import {
 import { departureGroupsApi } from '@/features/student-departures/api/departuresApi';
 import { costaRicaToday } from '@/features/student-departures/model/format';
 import '@/features/student-departures/ui/security.css';
+import { Button } from '@/shared/ui/Button';
 import { SecurityPageHeader } from './SecurityPageHeader';
 
 const PAGE_SIZE = 20;
@@ -82,14 +82,14 @@ export function SecurityHistoryPage() {
 
   return (
     <div className="edu-security bg-slate-50 min-h-full p-4 sm:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto space-y-5">
+      <div className="max-w-7xl mx-auto min-h-[calc(100vh-6rem)] flex flex-col gap-5">
         <SecurityPageHeader
           icon={History}
           title="Bitácora de salidas"
           subtitle="Consulta histórica de salidas autorizadas e intentos denegados."
         />
 
-        <motion.section initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={`${CARD} p-5`}>
+        <motion.section initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={`${CARD} p-5 shrink-0`}>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
             <div>
               <label htmlFor="h-start" className={LABEL}>Desde</label>
@@ -138,38 +138,38 @@ export function SecurityHistoryPage() {
           )}
           <div className="mt-4 flex flex-wrap items-center gap-2">
             {canExport && !rangeInvalid && <ExportButtons filters={filters} />}
-            <button type="button" onClick={() => setForm(initialForm())} className={BTN_SECONDARY}>
+            <Button type="button" variant="secondary" onClick={() => setForm(initialForm())}>
               <RotateCcw className="w-4 h-4" />
               Limpiar filtros
-            </button>
+            </Button>
           </div>
         </motion.section>
 
-        <section className={CARD}>
-          <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between gap-3">
-            <h2 data-preserve-case className="text-sm font-bold text-slate-900">Registros</h2>
+        <section className={`${CARD} flex-1 flex flex-col min-h-0`}>
+          <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between gap-3 shrink-0">
+            <h2 className="text-sm font-bold text-slate-900">Registros</h2>
             <span className="text-xs text-slate-500 tabular">
               {data ? (data.total === 0 ? 'Sin resultados' : `${from}–${to} de ${data.total}`) : ' '}
             </span>
           </div>
           {isError ? (
-            <p className="px-5 py-10 text-center text-sm text-rose-700">No se pudo cargar la bitácora. Intente de nuevo.</p>
+            <p className="px-5 py-6 text-center text-sm text-rose-700 flex-1 flex items-center justify-center">No se pudo cargar la bitácora. Intente de nuevo.</p>
           ) : (
-            <div className={`transition-opacity ${isFetching && !isLoading ? 'opacity-70' : ''}`}>
+            <div className={`flex-1 transition-opacity ${isFetching && !isLoading ? 'opacity-70' : ''}`}>
               <DeparturesTable items={rangeInvalid ? [] : data?.items ?? []} loading={isLoading} showDate emptyText="No hay salidas registradas con estos filtros." />
             </div>
           )}
           {data && totalPages > 1 && !rangeInvalid && (
-            <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-between gap-3">
-              <button type="button" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className={`${BTN_SECONDARY} !py-1.5`}>
+            <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-between gap-3 shrink-0">
+              <Button type="button" variant="secondary" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
                 <ChevronLeft className="w-4 h-4" />
                 Anterior
-              </button>
+              </Button>
               <span className="text-xs text-slate-500 tabular">Página {data.page} de {totalPages}</span>
-              <button type="button" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} className={`${BTN_SECONDARY} !py-1.5`}>
+              <Button type="button" variant="secondary" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
                 Siguiente
                 <ChevronRight className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           )}
         </section>

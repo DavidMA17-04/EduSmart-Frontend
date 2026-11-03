@@ -25,7 +25,7 @@
   min-width: max-content;
   padding: 0.35rem 0.55rem 0.35rem 0.35rem;
   border-radius: 999px;
-  color: #667085;
+  color: var(--brand-muted);
   font-size: 0.78rem;
   font-weight: 650;
 }
@@ -37,7 +37,7 @@
   height: 1.35rem;
   border-radius: 999px;
   background: #eef2f6;
-  color: #667085;
+  color: var(--brand-muted);
   font-size: 0.72rem;
 }
 

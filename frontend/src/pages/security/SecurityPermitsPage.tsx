@@ -30,8 +30,8 @@ const STATUS_TABS: { value: ScheduledPermitStatus | 'ALL'; label: string }[] = [
 ];
 
 const STATUS_BADGE: Record<ScheduledPermitStatus, { label: string; className: string }> = {
-  PENDING: { label: 'Pendiente', className: 'bg-purple-50 text-purple-700 border-purple-200' },
-  COMPLETED: { label: 'Completado', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  PENDING: { label: 'Pendiente', className: 'bg-brand-primary-light text-brand-primary border-brand-primary/25' },
+  COMPLETED: { label: 'Completado', className: 'bg-brand-green-light text-brand-green border-brand-green/30' },
   EXPIRED: { label: 'Vencido', className: 'bg-slate-100 text-slate-600 border-slate-200' },
 };
 
@@ -148,11 +148,17 @@ export function SecurityPermitsPage() {
           }
         />
 
+        {!canManage ? (
+          <p className={`${CARD} px-4 py-3 text-sm text-slate-600`}>
+            Para registrar un permiso programado se requiere el permiso «gestión de permisos de salida» (roles Administración / Dirección).
+          </p>
+        ) : null}
+
         <AnimatePresence initial={false}>
           {canManage && showForm && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className={`${CARD} overflow-hidden`}>
               <div className="px-5 py-3.5">
-                <h2 data-preserve-case className="text-sm font-bold text-slate-900">Nuevo permiso de salida</h2>
+                <h2 className="text-sm font-bold text-slate-900">Nuevo permiso de salida</h2>
                 <p className="text-xs text-slate-500">El guarda lo verá en su panel el día indicado.</p>
               </div>
               <CreatePermitForm onCreated={() => setShowForm(false)} />
@@ -170,7 +176,7 @@ export function SecurityPermitsPage() {
                   onClick={() => setStatus(tab.value)}
                   className={`relative text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${status === tab.value ? 'text-white' : 'text-slate-600 hover:text-slate-900'}`}
                 >
-                  {status === tab.value && <motion.span layoutId="permit-tab" className="absolute inset-0 bg-[#0d2346] rounded-md" />}
+                  {status === tab.value && <motion.span layoutId="permit-tab" className="absolute inset-0 bg-brand-primary rounded-md" />}
                   <span className="relative">{tab.label}</span>
                 </button>
               ))}
@@ -191,7 +197,7 @@ export function SecurityPermitsPage() {
           {isLoading ? (
             <div className="p-5 space-y-3">{[0, 1, 2].map((i) => <div key={i} className="h-12 rounded-lg bg-slate-100 animate-pulse" />)}</div>
           ) : permits.length === 0 ? (
-            <p className="px-5 py-12 text-center text-sm text-slate-500">No hay permisos para esta fecha y estado.</p>
+            <p className="px-5 py-8 text-center text-sm text-slate-500">No hay permisos para esta fecha y estado.</p>
           ) : (
             <div className={`transition-opacity ${isFetching ? 'opacity-70' : ''}`}>
               {/* Teléfono: tarjetas; estado y acción siempre visibles. */}
@@ -216,7 +222,7 @@ export function SecurityPermitsPage() {
               </ul>
               <div className="overflow-x-auto hidden sm:block">
               <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 text-[11px] font-semibold text-slate-500 uppercase tracking-wide border-b border-slate-200">
+                <thead className="bg-slate-50 text-[11px] font-semibold text-slate-500 tracking-normal border-b border-slate-200">
                   <tr>
                     <th className="px-5 py-2.5">Hora</th>
                     <th className="px-3 py-2.5">Estudiante</th>

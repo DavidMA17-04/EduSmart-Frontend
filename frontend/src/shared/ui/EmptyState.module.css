@@ -2,7 +2,7 @@
   display: grid;
   justify-items: center;
   gap: 10px;
-  padding: 48px 24px;
+  padding: 28px 20px;
   text-align: center;
 }
 
@@ -14,7 +14,7 @@
   margin-bottom: 4px;
   border-radius: 9999px;
   background: #f1f5f9;
-  color: #94a3b8;
+  color: var(--brand-muted);
 }
 
 .title {

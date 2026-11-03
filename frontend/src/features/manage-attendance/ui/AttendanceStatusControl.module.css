@@ -58,7 +58,7 @@
 
 .justified.checked {
   border-color: #bfdbfe;
-  background: #eff6ff;
+  background: var(--brand-primary-light);
   color: #1d4ed8;
 }
 

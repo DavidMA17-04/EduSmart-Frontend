@@ -1,7 +1,7 @@
 .panel {
   display: grid;
   grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
-  gap: 16px;
+  gap: 12px;
   align-items: start;
 }
 
@@ -20,21 +20,20 @@
 .rolesHeader {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
   gap: 8px;
-  padding: 14px 16px;
+  padding: 12px 14px;
   border-bottom: 1px solid var(--admin-border);
 }
 
-.rolesHeader h2,
-.infoCard h2 {
+.rolesHeader h2 {
   font-size: 14px;
 }
 
-.rolesHeader p,
-.infoCard p {
+.rolesHeader p {
   margin-top: 3px;
   color: var(--admin-muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.4;
 }
 
@@ -54,19 +53,8 @@
   display: grid;
   gap: 4px;
   padding: 0 8px 10px;
-}
-
-.infoCard h2 {
-  margin-bottom: 6px;
-}
-
-.infoCard ul {
-  display: grid;
-  gap: 8px;
-  margin: 10px 0 0 16px;
-  color: var(--admin-muted);
-  font-size: 11px;
-  line-height: 1.45;
+  max-height: min(70vh, 640px);
+  overflow: auto;
 }
 
 .muted {
@@ -77,25 +65,25 @@
 
 .detailColumn {
   display: grid;
-  gap: 14px;
+  gap: 12px;
   min-width: 0;
 }
 
 .emptyDetail {
-  min-height: 200px;
+  min-height: 160px;
 }
 
 .detailHeader {
   display: grid;
-  gap: 12px;
-  padding: 18px 20px;
+  gap: 0;
+  padding: 14px 16px;
 }
 
 .detailTop {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
 }
 
 .detailIdentity {
@@ -103,44 +91,30 @@
   flex: 1;
 }
 
-.eyebrow {
-  color: var(--admin-primary);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .04em;
-  text-transform: uppercase;
+.titleRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .detailHeader h1 {
-  margin-top: 4px;
-  font-size: 24px;
-  line-height: 1.15;
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.2;
 }
 
 .description {
-  margin-top: 6px;
+  margin-top: 4px;
   color: var(--admin-muted);
   font-size: 13px;
   line-height: 1.4;
 }
 
-.detailMeta {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, max-content));
-  gap: 12px 28px;
-  padding-top: 12px;
-  border-top: 1px solid var(--admin-border);
-}
-
-.detailMeta dt {
+.createdAt {
+  margin-top: 6px;
   color: var(--admin-muted);
-  font-size: 10px;
-  text-transform: uppercase;
-}
-
-.detailMeta dd {
-  margin: 4px 0 0;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .actions {
@@ -159,21 +133,22 @@
 
 .permissionsTitle {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
+  padding: 0 16px;
   border-bottom: 1px solid var(--admin-border);
   background: #fafbfd;
 }
 
 .permissionsTitle h2 {
-  padding: 12px 4px 10px;
+  padding: 10px 2px 9px;
   border-bottom: 2px solid var(--admin-primary);
   color: var(--admin-primary);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
 }
 
 .permissionsContent {
-  padding: 18px 20px 20px;
+  padding: 12px 16px 16px;
 }
 
 .matrixHeader {
@@ -181,7 +156,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .matrixIntro {
@@ -195,7 +170,7 @@
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 16px;
+  margin-top: 14px;
 }
 
 @media (max-width: 960px) {
@@ -205,16 +180,14 @@
 
   .sidebarColumn {
     position: static;
-    grid-template-columns: 1fr 1fr;
-    align-items: start;
+  }
+
+  .roleList {
+    max-height: 280px;
   }
 }
 
 @media (max-width: 720px) {
-  .sidebarColumn {
-    grid-template-columns: 1fr;
-  }
-
   .detailTop {
     flex-direction: column;
   }

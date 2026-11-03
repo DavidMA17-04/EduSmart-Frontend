@@ -25,7 +25,7 @@ const SPECIALTY_CARDS: Array<{
   },
   {
     kind: 'TECHNICAL_SPECIALTY',
-    title: 'Carreras Técnicas',
+    title: 'Carreras técnicas',
     subtitle: 'Oferta para décimo a duodécimo',
     to: '/admin/specialties/technical',
     icon: Wrench,

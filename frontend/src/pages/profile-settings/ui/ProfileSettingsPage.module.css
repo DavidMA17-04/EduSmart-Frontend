@@ -1,17 +1,28 @@
 .page {
   display: grid;
-  gap: 18px;
+  gap: 16px;
+}
+
+.formsRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
 }
 
 .section {
   display: grid;
-  gap: 14px;
+  gap: 12px;
+  height: 100%;
 }
 
-.sectionTitle {
+.sectionHead {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.sectionTitle {
   margin: 0;
   color: var(--admin-primary);
   font-size: 14px;
@@ -20,7 +31,17 @@
 
 .form {
   display: grid;
-  gap: 12px;
+  gap: 10px;
+}
+
+.formFields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.formFieldsFull {
+  grid-column: 1 / -1;
 }
 
 .info {
@@ -33,4 +54,11 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+@media (max-width: 900px) {
+  .formsRow,
+  .formFields {
+    grid-template-columns: 1fr;
+  }
 }

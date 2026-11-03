@@ -7,7 +7,7 @@ const BASE = 'text-xs font-semibold px-2.5 py-0.5 rounded-full inline-flex items
 export function DepartureStatusBadge({ status, manual = false }: { status: DepartureStatus; manual?: boolean }) {
   if (status === 'AUTHORIZED') {
     return (
-      <span className={`bg-emerald-50 text-emerald-700 border border-emerald-200 ${BASE}`}>
+      <span className={`bg-brand-green-light text-brand-green border border-brand-green/30 ${BASE}`}>
         <CheckCircle2 className="w-3.5 h-3.5" />
         Autorizado
       </span>
@@ -15,14 +15,14 @@ export function DepartureStatusBadge({ status, manual = false }: { status: Depar
   }
   if (manual) {
     return (
-      <span className={`bg-rose-50 text-rose-700 border border-rose-200 ${BASE}`}>
+      <span className={`bg-[#ffebeb] text-brand-danger border border-[#ffd7d7] ${BASE}`}>
         <XCircle className="w-3.5 h-3.5" />
         Denegado por el guarda
       </span>
     );
   }
   return (
-    <span className={`bg-rose-50 text-rose-700 border border-rose-200 ${BASE} animate-pulse`}>
+    <span className={`bg-[#ffebeb] text-brand-danger border border-[#ffd7d7] ${BASE} animate-pulse`}>
       <XCircle className="w-3.5 h-3.5" />
       Denegado / No coincide
     </span>
@@ -32,7 +32,7 @@ export function DepartureStatusBadge({ status, manual = false }: { status: Depar
 export function DepartureTypeBadge({ type, fromPermit = false }: { type: DepartureType; fromPermit?: boolean }) {
   if (fromPermit) {
     return (
-      <span className={`bg-purple-50 text-purple-700 border border-purple-200 ${BASE}`}>
+      <span className={`bg-brand-primary-light text-brand-primary border border-brand-primary/25 ${BASE}`}>
         <CalendarCheck className="w-3.5 h-3.5" />
         Permiso programado
       </span>
@@ -40,7 +40,7 @@ export function DepartureTypeBadge({ type, fromPermit = false }: { type: Departu
   }
   if (type === 'EARLY') {
     return (
-      <span className={`bg-blue-50 text-blue-700 border border-blue-200 ${BASE}`}>
+      <span className={`bg-brand-primary-light text-brand-primary border border-brand-primary/25 ${BASE}`}>
         <Clock className="w-3.5 h-3.5" />
         Salida anticipada
       </span>
@@ -64,7 +64,7 @@ export function DepartureTypeBadge({ type, fromPermit = false }: { type: Departu
 
 export function PermitBadge() {
   return (
-    <span className={`bg-purple-50 text-purple-700 border border-purple-200 ${BASE}`}>
+    <span className={`bg-brand-primary-light text-brand-primary border border-brand-primary/25 ${BASE}`}>
       <CalendarCheck className="w-3.5 h-3.5" />
       Permiso programado
     </span>

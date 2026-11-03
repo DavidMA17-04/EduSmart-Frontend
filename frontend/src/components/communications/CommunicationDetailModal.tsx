@@ -44,19 +44,19 @@ export const CommunicationDetailModal: React.FC<Props> = ({
             key="done"
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex items-center gap-3 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200"
+            className="flex items-center gap-3 p-3.5 rounded-xl bg-brand-green-light border border-brand-green/30"
           >
             <motion.span
               initial={{ scale: 0, rotate: -30 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ type: 'spring', stiffness: 420, damping: 18 }}
-              className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0"
+              className="w-8 h-8 rounded-full bg-brand-green text-white flex items-center justify-center shrink-0"
             >
               <CheckCircle2 className="w-4 h-4" />
             </motion.span>
             <div>
-              <p className="text-sm font-semibold text-emerald-800">Lectura confirmada</p>
-              <p className="text-xs text-emerald-700">
+              <p className="text-sm font-semibold text-brand-green">Lectura confirmada</p>
+              <p className="text-xs text-brand-green">
                 Registrada el {formatDateTime(current.acknowledgedAt)}.
               </p>
             </div>
@@ -102,12 +102,12 @@ export const CommunicationDetailModal: React.FC<Props> = ({
                 whileTap={{ scale: 0.96 }}
                 onClick={() => onConfirmAcknowledgment(current.id)}
                 disabled={isConfirming}
-                className="bg-[#0d2346] hover:bg-[#133261] text-white font-medium text-sm px-4 py-2 rounded-lg shadow-sm transition-colors flex items-center gap-2 disabled:opacity-60"
+                className="bg-brand-primary hover:bg-brand-primary-hover text-white font-medium text-sm px-4 py-2 rounded-lg shadow-sm transition-colors flex items-center gap-2 disabled:opacity-60"
               >
                 {isConfirming ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+                  <CheckCircle2 className="w-4 h-4 text-brand-green-light" />
                 )}
                 {isConfirming ? 'Confirmando…' : 'Confirmar lectura'}
               </motion.button>

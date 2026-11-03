@@ -23,7 +23,7 @@
 }
 
 .hint {
-  color: #94a3b8;
+  color: var(--brand-muted);
   font-weight: 500;
 }
 
@@ -131,7 +131,7 @@
 
 .chip:hover,
 .chip:focus-visible {
-  border-color: #94a3b8;
+  border-color: var(--brand-muted);
   background: #e2e8f0;
   outline: none;
 }

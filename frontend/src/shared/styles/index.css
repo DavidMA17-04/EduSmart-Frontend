@@ -10,13 +10,14 @@
   --primary-600: hsl(var(--primary-hue), 85%, 48%);
   --primary-700: hsl(var(--primary-hue), 90%, 38%);
 
-  --accent-emerald: #10b981;
-  --accent-emerald-light: #d1fae5;
-  --accent-amber: #f59e0b;
-  --accent-amber-light: #fef3c7;
-  --accent-rose: #f43f5e;
-  --accent-rose-light: #ffe4e6;
-  --accent-indigo: #6366f1;
+  /* Mapped to CTP brand — do not reintroduce Tailwind emerald/indigo as product brand */
+  --accent-emerald: var(--brand-green);
+  --accent-emerald-light: var(--brand-green-light);
+  --accent-amber: var(--brand-warning);
+  --accent-amber-light: #fff2d6;
+  --accent-rose: var(--brand-danger);
+  --accent-rose-light: #ffebeb;
+  --accent-indigo: var(--brand-primary);
 
   /* Surfaces & Backgrounds */
   --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);

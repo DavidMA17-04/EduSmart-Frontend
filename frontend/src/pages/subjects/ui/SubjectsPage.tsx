@@ -12,7 +12,7 @@ export const SubjectsPage = () => (
         { label: 'Materias' },
       ]}
       icon={BookOpen}
-      subtitle="CRUD de materias regulares. Crea aquí el nombre antes de asignarlas a docentes o tomar asistencia."
+      subtitle="Registre las materias del colegio antes de asignarlas a docentes o tomar asistencia."
       title="Materias"
     />
     <SubjectsPanel />

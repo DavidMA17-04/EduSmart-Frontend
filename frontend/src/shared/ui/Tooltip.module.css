@@ -14,7 +14,7 @@
 
 .trigger:focus-visible {
   border-radius: 9999px;
-  box-shadow: 0 0 0 2px var(--color-focus-ring, #2563eb);
+  box-shadow: 0 0 0 2px var(--color-focus-ring, var(--brand-primary));
 }
 
 .bubble {

@@ -10,19 +10,19 @@
 }
 
 .pending {
-  background: #fffbeb;
-  color: #b45309;
-  border-color: #fde68a;
+  background: #fff2d6;
+  color: var(--brand-warning);
+  border-color: color-mix(in srgb, var(--brand-warning) 35%, transparent);
 }
 
 .approved {
-  background: #ecfdf5;
-  color: #047857;
-  border-color: #a7f3d0;
+  background: var(--brand-green-light);
+  color: var(--brand-green);
+  border-color: color-mix(in srgb, var(--brand-green) 35%, transparent);
 }
 
 .rejected {
-  background: #fff1f2;
-  color: #be123c;
-  border-color: #fecdd3;
+  background: #ffebeb;
+  color: var(--brand-danger);
+  border-color: color-mix(in srgb, var(--brand-danger) 35%, transparent);
 }

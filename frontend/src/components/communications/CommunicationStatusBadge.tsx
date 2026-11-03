@@ -9,8 +9,8 @@ export const CommunicationStatusBadge: React.FC<Props> = ({ status }) => {
   switch (status) {
     case 'PUBLISHED':
       return (
-        <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+        <span className="bg-brand-green-light text-brand-green border border-brand-green/30 text-[11px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-brand-green" />
           Publicado
         </span>
       );

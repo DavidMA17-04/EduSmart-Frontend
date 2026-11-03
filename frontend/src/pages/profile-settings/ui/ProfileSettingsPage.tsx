@@ -78,7 +78,9 @@ export const ProfileSettingsPage = () => {
     event.preventDefault();
     setPasswordError(null);
     if (!isValidInitialPassword(newPassword)) {
-      setPasswordError('La nueva contraseña debe tener entre 8 y 72 caracteres.');
+      setPasswordError(
+        'La nueva contraseña debe tener 8–72 caracteres, mayúscula, minúscula, número y un carácter especial.',
+      );
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -145,88 +147,95 @@ export const ProfileSettingsPage = () => {
 
       <OwnGeneralInfoPanel user={profile ?? undefined} />
 
-      <Card>
-        <form className={`${styles.section} ${styles.form}`} onSubmit={onSaveProfile}>
-          <h2 className={styles.sectionTitle}>
-            <UserRound size={16} /> Información básica
-          </h2>
-          {profileError ? <Alert>{profileError}</Alert> : null}
-          {profileInfo ? <p className={styles.info}>{profileInfo}</p> : null}
-          <label>
-            Correo institucional
-            <Input disabled value={profile?.email ?? ''} />
-          </label>
-          <label>
-            Nombre
-            <Input onChange={(event) => setName(event.target.value)} required value={name} />
-          </label>
-          <label>
-            Primer apellido
-            <Input onChange={(event) => setFirstLastName(event.target.value)} required value={firstLastName} />
-          </label>
-          <label>
-            Segundo apellido
-            <Input onChange={(event) => setSecondLastName(event.target.value)} value={secondLastName} />
-          </label>
-          <label>
-            Teléfono
-            <Input onChange={(event) => setPhone(event.target.value)} value={phone} />
-          </label>
-          <Button disabled={savingProfile} type="submit">
-            {savingProfile ? 'Guardando…' : 'Guardar perfil'}
-          </Button>
-        </form>
-      </Card>
+      <div className={styles.formsRow}>
+        <Card>
+          <form className={`${styles.section} ${styles.form}`} onSubmit={onSaveProfile}>
+            <div className={styles.sectionHead}>
+              <UserRound size={16} aria-hidden="true" />
+              <h2 className={styles.sectionTitle}>Información básica</h2>
+            </div>
+            {profileError ? <Alert>{profileError}</Alert> : null}
+            {profileInfo ? <p className={styles.info}>{profileInfo}</p> : null}
+            <div className={styles.formFields}>
+              <label className={styles.formFieldsFull}>
+                Correo institucional
+                <Input disabled value={profile?.email ?? ''} />
+              </label>
+              <label>
+                Nombre
+                <Input onChange={(event) => setName(event.target.value)} required value={name} />
+              </label>
+              <label>
+                Primer apellido
+                <Input onChange={(event) => setFirstLastName(event.target.value)} required value={firstLastName} />
+              </label>
+              <label>
+                Segundo apellido
+                <Input onChange={(event) => setSecondLastName(event.target.value)} value={secondLastName} />
+              </label>
+              <label>
+                Teléfono
+                <Input onChange={(event) => setPhone(event.target.value)} value={phone} />
+              </label>
+            </div>
+            <Button disabled={savingProfile} type="submit">
+              {savingProfile ? 'Guardando…' : 'Guardar perfil'}
+            </Button>
+          </form>
+        </Card>
 
-      <Card>
-        <form className={`${styles.section} ${styles.form}`} onSubmit={onChangePassword}>
-          <h2 className={styles.sectionTitle}>
-            <KeyRound size={16} /> Cambiar contraseña
-          </h2>
-          {passwordError ? <Alert>{passwordError}</Alert> : null}
-          <label>
-            Contraseña actual
-            <Input
-              autoComplete="current-password"
-              onChange={(event) => setCurrentPassword(event.target.value)}
-              required
-              type="password"
-              value={currentPassword}
-            />
-          </label>
-          <label>
-            Nueva contraseña
-            <Input
-              autoComplete="new-password"
-              minLength={8}
-              onChange={(event) => setNewPassword(event.target.value)}
-              required
-              type="password"
-              value={newPassword}
-            />
-          </label>
-          <label>
-            Confirmar nueva contraseña
-            <Input
-              autoComplete="new-password"
-              minLength={8}
-              onChange={(event) => setConfirmPassword(event.target.value)}
-              required
-              type="password"
-              value={confirmPassword}
-            />
-          </label>
-          <Button disabled={savingPassword} type="submit">
-            {savingPassword ? 'Actualizando…' : 'Actualizar contraseña'}
-          </Button>
-        </form>
-      </Card>
+        <Card>
+          <form className={`${styles.section} ${styles.form}`} onSubmit={onChangePassword}>
+            <div className={styles.sectionHead}>
+              <KeyRound size={16} aria-hidden="true" />
+              <h2 className={styles.sectionTitle}>Cambiar contraseña</h2>
+            </div>
+            {passwordError ? <Alert>{passwordError}</Alert> : null}
+            <label>
+              Contraseña actual
+              <Input
+                autoComplete="current-password"
+                onChange={(event) => setCurrentPassword(event.target.value)}
+                required
+                type="password"
+                value={currentPassword}
+              />
+            </label>
+            <label>
+              Nueva contraseña
+              <Input
+                autoComplete="new-password"
+                minLength={8}
+                onChange={(event) => setNewPassword(event.target.value)}
+                required
+                type="password"
+                value={newPassword}
+              />
+            </label>
+            <label>
+              Confirmar nueva contraseña
+              <Input
+                autoComplete="new-password"
+                minLength={8}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                required
+                type="password"
+                value={confirmPassword}
+              />
+            </label>
+            <Button disabled={savingPassword} type="submit">
+              {savingPassword ? 'Actualizando…' : 'Actualizar contraseña'}
+            </Button>
+          </form>
+        </Card>
+      </div>
 
       <Card>
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>
-            <MonitorSmartphone size={16} /> Sesiones activas
-          </h2>
+          <div className={styles.sectionHead}>
+            <MonitorSmartphone size={16} aria-hidden="true" />
+            <h2 className={styles.sectionTitle}>Sesiones activas</h2>
+          </div>
           {sessionsError ? <Alert>{sessionsError}</Alert> : null}
           <Table>
             <thead>

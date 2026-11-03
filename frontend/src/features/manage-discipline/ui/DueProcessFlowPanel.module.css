@@ -53,7 +53,7 @@
 }
 
 .trackDirect {
-  color: #2b6cb0;
+  color: var(--brand-primary-hover);
 }
 
 .trackDue {
@@ -110,7 +110,7 @@
 .owner {
   font-size: 0.82rem;
   font-weight: 600;
-  color: #2b6cb0;
+  color: var(--brand-primary-hover);
 }
 
 .detail {
@@ -210,7 +210,7 @@
 .timelineStep {
   font-size: 0.82rem;
   font-weight: 600;
-  color: #2b6cb0;
+  color: var(--brand-primary-hover);
 }
 
 .timelineDate {

@@ -1,17 +1,26 @@
 .layout {
-  display: grid;
-  gap: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .mainColumn {
-  display: grid;
-  gap: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   min-width: 0;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .tableCard {
-  display: grid;
-  gap: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1 1 auto;
+  min-height: 12rem;
 }
 
 .toolbar {

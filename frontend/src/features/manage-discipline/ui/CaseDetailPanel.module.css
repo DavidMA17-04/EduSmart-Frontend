@@ -104,7 +104,7 @@
 .composerCancel {
   border: 0;
   background: transparent;
-  color: #667085;
+  color: var(--brand-muted);
   cursor: pointer;
   font-size: 0.85rem;
   text-decoration: underline;
@@ -138,7 +138,7 @@
 }
 
 .actionChoice span {
-  color: #667085;
+  color: var(--brand-muted);
   font-size: 0.78rem;
   line-height: 1.35;
 }
@@ -161,7 +161,7 @@
 }
 
 .facts dt {
-  color: #667085;
+  color: var(--brand-muted);
   font-size: 0.8rem;
 }
 
@@ -225,7 +225,7 @@
 .note,
 .back {
   margin: 0;
-  color: #667085;
+  color: var(--brand-muted);
 }
 
 .grid {

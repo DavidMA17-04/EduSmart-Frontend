@@ -14,7 +14,7 @@ export const AcademicPeriodsPage = () => (
       ]}
       icon={CalendarRange}
       subtitle="Defina los cursos lectivos institucionales y controle su activación y cierre."
-      title="Gestión de Cursos lectivos"
+      title="Gestión de cursos lectivos"
     />
     <AcademicPeriodsPanel />
   </section>

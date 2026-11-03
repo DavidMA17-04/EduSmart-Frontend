@@ -80,7 +80,7 @@
 .kpi3 { border-top-color: var(--brand-gold); }
 .kpi4 { border-top-color: var(--brand-primary-hover); }
 .kpi5 { border-top-color: var(--brand-muted); }
-.kpi6 { border-top-color: #0E7490; }
+.kpi6 { border-top-color: var(--brand-primary-hover); }
 .kpi7 { border-top-color: var(--brand-gold-dark); }
 
 .kpiIcon {
@@ -97,7 +97,7 @@
 .kpi3 .kpiIcon { background: color-mix(in srgb, var(--brand-gold) 15%, transparent); color: var(--brand-gold-dark); }
 .kpi4 .kpiIcon { background: color-mix(in srgb, var(--brand-primary-hover) 10%, transparent); color: var(--brand-primary-hover); }
 .kpi5 .kpiIcon { background: color-mix(in srgb, var(--brand-muted) 10%, transparent); color: var(--brand-muted); }
-.kpi6 .kpiIcon { background: rgba(14, 116, 144, 0.12); color: #0E7490; }
+.kpi6 .kpiIcon { background: color-mix(in srgb, var(--brand-primary-hover) 10%, transparent); color: var(--brand-primary-hover); }
 .kpi7 .kpiIcon { background: color-mix(in srgb, var(--brand-gold-dark) 10%, transparent); color: var(--brand-gold-dark); }
 
 .kpiBody {

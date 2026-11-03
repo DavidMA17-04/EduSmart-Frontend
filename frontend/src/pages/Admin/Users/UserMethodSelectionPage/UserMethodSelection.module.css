@@ -6,8 +6,6 @@
   max-width: 1200px;
   margin: 0 auto;
   font-family: var(--font-family-sans);
-  height: calc(100vh - 64px - 56px);
-  overflow: hidden;
   min-height: 0;
 }
 
@@ -17,7 +15,7 @@
   gap: 1rem;
   flex: 0 1 auto;
   min-height: 0;
-  align-items: start;
+  align-items: stretch;
 }
 
 .card {
@@ -31,6 +29,7 @@
   box-shadow: var(--shadow-card);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   min-height: 0;
+  height: 100%;
   overflow: hidden;
 }
 
@@ -123,7 +122,8 @@
 }
 
 .actionGroup {
-  margin-top: 0.85rem;
+  margin-top: auto;
+  padding-top: 0.85rem;
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
@@ -197,10 +197,8 @@
   grid-template-columns: repeat(2, 1fr);
   gap: 0.85rem;
   margin-top: 0;
-  flex: 1;
-  max-height: 26%;
-  min-height: 0;
-  align-content: start;
+  flex: 0 0 auto;
+  align-items: start;
 }
 
 .infoCard {
@@ -209,8 +207,16 @@
   border-radius: var(--radius-lg);
   padding: 0.85rem 1rem;
   box-shadow: var(--shadow-subtle);
-  min-height: 0;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.infoCardHead {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0 0 0.15rem;
 }
 
 .infoCardTitle {
@@ -218,10 +224,7 @@
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--color-primary-dark);
-  margin: 0 0 0.65rem 0;
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
+  margin: 0;
 }
 
 .infoList {
@@ -293,17 +296,9 @@
 }
 
 @media (max-width: 1023px) {
-  .container {
-    height: auto;
-    overflow: visible;
-    max-height: none;
-  }
-
   .cardsGrid,
   .bottomGrid {
     grid-template-columns: 1fr;
-    flex: none;
-    max-height: none;
   }
 }
 

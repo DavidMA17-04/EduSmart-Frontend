@@ -130,7 +130,7 @@ export const CommunicationsFeedPage: React.FC = () => {
           transition={{ duration: 0.35 }}
           className="edu-comms-hero relative overflow-hidden rounded-2xl text-white shadow-md"
         >
-          <div className="absolute -right-16 -top-20 w-64 h-64 rounded-full bg-[#cfac65]/10" aria-hidden="true" />
+          <div className="absolute -right-16 -top-20 w-64 h-64 rounded-full bg-brand-gold/10" aria-hidden="true" />
           <div className="absolute right-24 -bottom-24 w-56 h-56 rounded-full bg-white/5" aria-hidden="true" />
           <div className="relative p-6 sm:p-7 flex flex-col md:flex-row md:items-center justify-between gap-5">
             <div className="flex items-start gap-4">
@@ -143,7 +143,7 @@ export const CommunicationsFeedPage: React.FC = () => {
                 <Megaphone className="w-6 h-6 text-[#cfac65]" />
               </motion.span>
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#cfac65]">
+                <p className="text-[11px] font-semibold tracking-normal text-brand-gold">
                   Comunidad CTP Hojancha
                 </p>
                 <h1 className="text-2xl font-bold tracking-tight mt-0.5" style={{ fontFamily: 'var(--brand-font-serif)' }}>
@@ -175,7 +175,7 @@ export const CommunicationsFeedPage: React.FC = () => {
                   whileHover={{ y: -1 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={() => navigate(portalPathForSession('/admin/communications/manage'))}
-                  className="bg-[#cfac65] hover:bg-[#d9bb7d] text-[#0d2346] font-semibold text-sm px-4 py-2.5 rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2"
+                  className="bg-brand-gold hover:bg-brand-gold text-brand-primary font-semibold text-sm px-4 py-2.5 rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2"
                 >
                   <PenSquare className="w-4 h-4" />
                   Gestor de comunicados
@@ -215,7 +215,7 @@ export const CommunicationsFeedPage: React.FC = () => {
                 disabled={isFetching}
                 title="Actualizar"
                 aria-label="Actualizar avisos"
-                className="p-2.5 rounded-lg border border-slate-300 bg-white text-slate-600 hover:text-[#0d2346] hover:bg-slate-50 transition-colors shrink-0"
+                className="p-2.5 rounded-lg border border-slate-300 bg-white text-slate-600 hover:text-brand-primary hover:bg-slate-50 transition-colors shrink-0"
               >
                 <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
               </motion.button>
@@ -245,7 +245,7 @@ export const CommunicationsFeedPage: React.FC = () => {
             <button
               type="button"
               onClick={() => refetch()}
-              className="mt-4 bg-[#0d2346] hover:bg-[#133261] text-white font-medium text-sm px-4 py-2 rounded-lg shadow-sm transition-colors"
+              className="mt-4 bg-brand-primary hover:bg-brand-primary-hover text-white font-medium text-sm px-4 py-2 rounded-lg shadow-sm transition-colors"
             >
               Reintentar
             </button>
@@ -264,7 +264,7 @@ export const CommunicationsFeedPage: React.FC = () => {
                   initial={{ y: 6 }}
                   animate={{ y: [6, -4, 6] }}
                   transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
-                  className="w-14 h-14 rounded-2xl bg-[#0d2346]/[0.06] text-[#0d2346] flex items-center justify-center mx-auto mb-4"
+                  className="w-14 h-14 rounded-2xl bg-brand-primary/[0.06] text-brand-primary flex items-center justify-center mx-auto mb-4"
                 >
                   {emptyState.icon}
                 </motion.div>

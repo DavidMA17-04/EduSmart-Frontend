@@ -14,7 +14,7 @@ import {
 import { academicPeriodApi } from '@/features/manage-academic-period/api/academicPeriodApi';
 import { groupApi } from '@/features/manage-group';
 import type { AcademicGroup } from '@/entities/group';
-import { brandColors } from '@/styles/brandColors';
+import { chartTheme } from '@/styles/chartTheme';
 import { Alert, Button, EmptyState, Select } from '@/shared/ui';
 import { disciplineApi } from '../api/disciplineApi';
 import { disciplineCasePath, disciplineHistoryPath } from '../model/disciplineRouting';
@@ -192,21 +192,21 @@ export function DisciplineDashboardPanel({ canExport }: { canExport: boolean }) 
             </article>
           </div>
 
-          <div className={styles.charts}>
-            {board.total === 0 ? (
+          {board.total === 0 ? (
+            <div className={styles.chartsEmpty}>
               <EmptyState description="Pruebe con otro período, nivel o sección." icon={Inbox} title="Sin expedientes" />
-            ) : (
-              <>
-                <ChartCard title="Por gravedad" data={board.bySeverity.map((item) => ({ name: item.label, count: item.count }))} />
-                <ChartCard title="Por estado" data={board.byStatus.map((item) => ({ name: item.label, count: item.count }))} />
-                <ChartCard
-                  title="Por mes"
-                  data={board.byMonth.map((item) => ({ name: formatDashboardMonth(item.month), count: item.count }))}
-                />
-                <ChartCard title="Por sección" data={board.bySection.map((item) => ({ name: dedupeSectionLabel(item.sectionLabel), count: item.count }))} />
-              </>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className={styles.charts}>
+              <ChartCard title="Por gravedad" data={board.bySeverity.map((item) => ({ name: item.label, count: item.count }))} />
+              <ChartCard title="Por estado" data={board.byStatus.map((item) => ({ name: item.label, count: item.count }))} />
+              <ChartCard
+                title="Por mes"
+                data={board.byMonth.map((item) => ({ name: formatDashboardMonth(item.month), count: item.count }))}
+              />
+              <ChartCard title="Por sección" data={board.bySection.map((item) => ({ name: dedupeSectionLabel(item.sectionLabel), count: item.count }))} />
+            </div>
+          )}
 
           <div className={styles.split}>
             <article className={styles.card}>
@@ -263,13 +263,23 @@ function ChartCard({ title, data }: { title: string; data: Array<{ name: string;
         <p className={styles.muted}>Sin datos.</p>
       ) : (
         <div className={styles.chart}>
-          <ResponsiveContainer height={220} width="100%">
-            <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
-              <CartesianGrid stroke={brandColors.border} vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-              <YAxis allowDecimals={false} width={28} />
-              <Tooltip />
-              <Bar dataKey="count" fill={brandColors.primary} name="Expedientes" radius={[4, 4, 0, 0]} />
+          <ResponsiveContainer height={160} width="100%">
+            <BarChart
+              data={data}
+              margin={{ top: 8, right: 8, left: 0, bottom: 8 }}
+              barCategoryGap={data.length <= 2 ? '35%' : '18%'}
+            >
+              <CartesianGrid stroke={chartTheme.grid.stroke} strokeDasharray={chartTheme.grid.strokeDasharray} vertical={false} />
+              <XAxis dataKey="name" tick={chartTheme.axis.tick} />
+              <YAxis allowDecimals={false} tick={chartTheme.axis.tick} width={28} />
+              <Tooltip contentStyle={chartTheme.tooltip.contentStyle} />
+              <Bar
+                dataKey="count"
+                fill={chartTheme.bar.fill}
+                maxBarSize={data.length <= 2 ? 48 : 64}
+                name="Expedientes"
+                radius={[4, 4, 0, 0]}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>

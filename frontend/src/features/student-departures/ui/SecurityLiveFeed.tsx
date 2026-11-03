@@ -28,13 +28,13 @@ export function SecurityLiveFeed() {
     <section className={CARD} aria-labelledby="feed-title">
       <div className="px-4 py-3.5 border-b border-slate-100 flex items-center justify-between">
         <h2 data-preserve-case id="feed-title" className="text-sm font-bold text-slate-900 flex items-center gap-2">
-          <Activity className="w-4 h-4 text-[#0d2346]" />
+          <Activity className="w-4 h-4 text-brand-primary" />
           Eventos en vivo
         </h2>
-        <span className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-700">
+        <span className="flex items-center gap-1.5 text-[11px] font-medium text-brand-green">
           <span className="relative flex w-2 h-2">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-60 animate-ping" />
-            <span className="relative inline-flex w-2 h-2 rounded-full bg-emerald-500" />
+            <span className="absolute inline-flex h-full w-full rounded-full bg-brand-green opacity-60 animate-ping" />
+            <span className="relative inline-flex w-2 h-2 rounded-full bg-brand-green" />
           </span>
           Últimos {WINDOW_MINUTES} min
         </span>
@@ -65,7 +65,7 @@ export function SecurityLiveFeed() {
                   >
                     <span
                       className={`absolute -left-[9px] top-0.5 w-[18px] h-[18px] rounded-full flex items-center justify-center ring-4 ring-white ${
-                        ok ? 'bg-emerald-500' : 'bg-rose-500'
+                        ok ? 'bg-brand-green' : 'bg-rose-500'
                       }`}
                     >
                       {ok ? <CheckCircle2 className="w-3 h-3 text-white" /> : <ShieldX className="w-3 h-3 text-white" />}

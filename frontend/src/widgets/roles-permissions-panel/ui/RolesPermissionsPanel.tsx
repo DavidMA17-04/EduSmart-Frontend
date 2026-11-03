@@ -7,6 +7,17 @@ import { PermissionMatrix } from '@/features/manage-role-permissions';
 import { useRolesPermissionsPanel } from '../model/useRolesPermissionsPanel';
 import styles from './RolesPermissionsPanel.module.css';
 
+function readableDescription(value: string | null | undefined): string {
+  if (!value?.trim()) return 'Sin descripción registrada.';
+  if (!/\?\?|Ã.|�/.test(value)) return value;
+  return value
+    .replace(/m\?\?dulo/gi, 'módulo')
+    .replace(/informaci\?\?n/gi, 'información')
+    .replace(/secci\?\?n/gi, 'sección')
+    .replace(/permisos\?\?/gi, 'permisos')
+    .replace(/\?\?/g, 'ó');
+}
+
 export const RolesPermissionsPanel = () => {
   const model = useRolesPermissionsPanel();
   const toast = useToast();
@@ -41,7 +52,7 @@ export const RolesPermissionsPanel = () => {
           <div className={styles.rolesHeader}>
             <div>
               <h2>Roles del sistema</h2>
-              <p>Administre los roles disponibles en la plataforma.</p>
+              <p>Seleccione un rol para ver y editar sus permisos.</p>
             </div>
             <Button onClick={() => model.openDialog('create')} type="button">
               <Plus size={15} /> Nuevo rol
@@ -85,15 +96,6 @@ export const RolesPermissionsPanel = () => {
             )}
           </div>
         </Card>
-
-        <Card className={styles.infoCard}>
-          <h2>Información</h2>
-          <p>Los permisos determinan qué acciones puede realizar este rol en cada módulo.</p>
-          <ul>
-            <li>El permiso activo está otorgado.</li>
-            <li>Los cambios se aplican a usuarios con este rol.</li>
-          </ul>
-        </Card>
       </div>
 
       <div className={styles.detailColumn}>
@@ -105,10 +107,18 @@ export const RolesPermissionsPanel = () => {
             <Card className={styles.detailHeader}>
               <div className={styles.detailTop}>
                 <div className={styles.detailIdentity}>
-                  <p className={styles.eyebrow}>Detalle del rol</p>
-                  <h1>{model.selectedRole.name}</h1>
+                  <div className={styles.titleRow}>
+                    <h1>{model.selectedRole.name}</h1>
+                    <RoleStatusBadge status={model.selectedRole.status} />
+                  </div>
                   <p className={styles.description}>
-                    {model.selectedRole.description || 'Sin descripción registrada.'}
+                    {readableDescription(model.selectedRole.description)}
+                  </p>
+                  <p className={styles.createdAt}>
+                    Creado el{' '}
+                    {new Intl.DateTimeFormat('es-CR', { dateStyle: 'medium' }).format(
+                      new Date(model.selectedRole.createdAt),
+                    )}
                   </p>
                 </div>
                 <div className={styles.actions}>
@@ -121,18 +131,6 @@ export const RolesPermissionsPanel = () => {
                   </Button>
                 </div>
               </div>
-              <dl className={styles.detailMeta}>
-                <div>
-                  <dt>Estado</dt>
-                  <dd><RoleStatusBadge status={model.selectedRole.status} /></dd>
-                </div>
-                <div>
-                  <dt>Fecha de creación</dt>
-                  <dd>
-                    {new Intl.DateTimeFormat('es-CR', { dateStyle: 'medium' }).format(new Date(model.selectedRole.createdAt))}
-                  </dd>
-                </div>
-              </dl>
             </Card>
 
             <Card className={styles.permissionsCard}>
@@ -168,14 +166,37 @@ export const RolesPermissionsPanel = () => {
                 )}
                 {model.isEditing && (
                   <div className={styles.savePermissions}>
-                    <Button disabled={model.isSaving || model.isResetting || model.isLoadingPermissions || !model.hasChanges} onClick={() => void model.save()} type="button">
+                    <Button
+                      disabled={
+                        model.isSaving ||
+                        model.isResetting ||
+                        model.isLoadingPermissions ||
+                        !model.hasChanges
+                      }
+                      onClick={() => void model.save()}
+                      type="button"
+                    >
                       {model.isSaving ? 'Guardando…' : 'Guardar permisos'}
                     </Button>
-                    <Button disabled={model.isSaving || model.isResetting || model.isLoadingPermissions} onClick={model.cancelEditing} type="button" variant="secondary">
-                      Cancelar
-                    </Button>
-                    <Button disabled={model.isSaving || model.isResetting || model.isLoadingPermissions} onClick={() => setConfirmResetOpen(true)} type="button" variant="secondary">
+                    <Button
+                      disabled={
+                        model.isSaving || model.isResetting || model.isLoadingPermissions
+                      }
+                      onClick={() => setConfirmResetOpen(true)}
+                      type="button"
+                      variant="secondary"
+                    >
                       <RotateCcw size={14} /> Restablecer a predeterminado
+                    </Button>
+                    <Button
+                      disabled={
+                        model.isSaving || model.isResetting || model.isLoadingPermissions
+                      }
+                      onClick={model.cancelEditing}
+                      type="button"
+                      variant="secondary"
+                    >
+                      Cancelar
                     </Button>
                   </div>
                 )}

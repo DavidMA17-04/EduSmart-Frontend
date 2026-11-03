@@ -1,9 +1,11 @@
 import { useCallback, useState } from 'react';
 import {
   CalendarClock,
+  Download,
   Link2,
   Pencil,
   Plus,
+  Printer,
   Settings2,
   Trash2,
   Users,
@@ -11,11 +13,14 @@ import {
 import { useNavigate } from 'react-router-dom';
 import type { ScheduleEntry, ScheduleTimeSlot } from '@/entities/schedule';
 import {
+  downloadScheduleExcel,
   formatSlotRange,
   nonClassSlotLabel,
+  printSchedule,
   SCHEDULE_WEEKDAYS,
   ScheduleEntryForm,
   useSchedulePanel,
+  type ScheduleExportContext,
 } from '@/features/manage-schedule';
 import { ScheduleTimeSlotsPanel } from '@/widgets/schedule-time-slots-panel';
 import {
@@ -27,6 +32,7 @@ import {
   ModalCrud,
   SegmentedTabs,
   Select,
+  useToast,
 } from '@/shared/ui';
 import styles from './SchedulePanel.module.css';
 
@@ -156,6 +162,7 @@ function slotSecondaryLabel(slot: ScheduleTimeSlot): string | null {
 export const SchedulePanel = () => {
   const model = useSchedulePanel();
   const navigate = useNavigate();
+  const toast = useToast();
   const [configOpen, setConfigOpen] = useState(false);
   const dayTabs = SCHEDULE_WEEKDAYS.map((d) => ({
     id: String(d.dayOfWeek),
@@ -164,6 +171,53 @@ export const SchedulePanel = () => {
 
   const blockingError = model.catalogError || model.slotsError || null;
   const matrixSlots = model.matrixSlots;
+  const canShareMatrix = !model.slotsLoading && matrixSlots.length > 0 && Boolean(model.filterPeriodId);
+
+  const buildExportContext = useCallback((): ScheduleExportContext | null => {
+    if (!model.filterPeriodId || matrixSlots.length === 0) return null;
+    const period = model.periods.find((item) => String(item.id) === model.filterPeriodId);
+    const teacher = model.teachers.find((item) => String(item.id) === model.filterTeacherId);
+    const group = model.groups.find((item) => String(item.id) === model.filterGroupId);
+    return {
+      periodLabel: period?.name ?? `Curso ${model.filterPeriodId}`,
+      teacherLabel: teacher ? model.teacherDisplayName(teacher) : 'Todos',
+      groupLabel: group?.name ?? 'Todas',
+      slots: matrixSlots,
+      entriesByCell: model.entriesByCell,
+      showTeacher: !model.filterTeacherId,
+      showGroup: !model.filterGroupId,
+    };
+  }, [matrixSlots, model]);
+
+  const onPrint = () => {
+    const ctx = buildExportContext();
+    if (!ctx) {
+      toast.push('Seleccione un curso lectivo con bloques para imprimir.', 'error');
+      return;
+    }
+    try {
+      printSchedule(ctx);
+    } catch (reason) {
+      toast.push(
+        reason instanceof Error ? reason.message : 'No se pudo abrir la impresión.',
+        'error',
+      );
+    }
+  };
+
+  const onExportExcel = () => {
+    const ctx = buildExportContext();
+    if (!ctx) {
+      toast.push('Seleccione un curso lectivo con bloques para exportar.', 'error');
+      return;
+    }
+    try {
+      downloadScheduleExcel(ctx);
+      toast.push('Excel del horario generado.', 'success');
+    } catch {
+      toast.push('No se pudo exportar el horario.', 'error');
+    }
+  };
 
   const handleSlotsChanged = useCallback(async () => {
     await model.reloadSlots();
@@ -211,16 +265,36 @@ export const SchedulePanel = () => {
             ))}
           </Select>
         </div>
-        {model.canEdit ? (
+        <div className={styles.toolbarActions}>
           <Button
-            onClick={() => setConfigOpen((open) => !open)}
+            disabled={!canShareMatrix}
+            onClick={onPrint}
             type="button"
             variant="secondary"
           >
-            <Settings2 aria-hidden size={16} />
-            {configOpen ? 'Ocultar bloques' : 'Configurar bloques'}
+            <Printer aria-hidden size={16} />
+            Imprimir
           </Button>
-        ) : null}
+          <Button
+            disabled={!canShareMatrix}
+            onClick={onExportExcel}
+            type="button"
+            variant="secondary"
+          >
+            <Download aria-hidden size={16} />
+            Exportar Excel
+          </Button>
+          {model.canEdit ? (
+            <Button
+              onClick={() => setConfigOpen((open) => !open)}
+              type="button"
+              variant="secondary"
+            >
+              <Settings2 aria-hidden size={16} />
+              {configOpen ? 'Ocultar bloques' : 'Configurar bloques'}
+            </Button>
+          ) : null}
+        </div>
       </div>
 
       {configOpen && model.canEdit ? (
@@ -266,12 +340,12 @@ export const SchedulePanel = () => {
             <table className={styles.matrix}>
               <thead>
                 <tr>
-                  <th className={styles.timeCol} scope="col">
+                  <th className={`${styles.timeCol} ${styles.timeHead}`} scope="col">
                     Hora
                   </th>
                   {SCHEDULE_WEEKDAYS.map((day) => (
                     <th
-                      className={styles.slotHead}
+                      className={`${styles.slotHead} ${styles[`day${day.dayOfWeek}`]}`}
                       key={day.dayOfWeek}
                       scope="col"
                     >

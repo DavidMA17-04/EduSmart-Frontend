@@ -26,7 +26,7 @@ export function SecurityCheckOutPage() {
           title="Terminal de salida"
           subtitle="Escanee o digite la cédula del estudiante y la de quien lo retira."
         />
-        <div className={`grid gap-5 items-start ${canView ? 'lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]' : ''}`}>
+        <div className={`grid gap-4 items-stretch ${canView ? 'lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]' : ''}`}>
           <SecurityTerminalCard prefill={prefill} large />
           {canView && (
             <ScheduledPermitsList

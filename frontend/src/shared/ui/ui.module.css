@@ -45,6 +45,10 @@
 .tabActive { color: var(--admin-primary); border-bottom-color: var(--brand-gold); font-weight: 600; }
 .tableWrapper { max-width: 100%; overflow-x: auto; }.table { width: 100%; border-collapse: collapse; font-size: 14px; }.table th { padding: 10px; color: var(--admin-muted); background: var(--admin-background, var(--brand-background)); text-align: left; font-weight: 600; border-bottom: 2px solid var(--brand-gold); }.table td { padding: 11px 10px; border-top: 1px solid var(--admin-border); }
 .alert { display: flex; gap: 9px; padding: 12px; border: 1px solid var(--admin-border); border-left: 3px solid var(--brand-gold); border-radius: 8px; background: var(--brand-primary-light); color: var(--admin-primary, var(--brand-primary)); font-size: 14px; }
+.alertInfo { border-left-color: var(--brand-primary); background: var(--brand-primary-light); color: var(--brand-primary); }
+.alertSuccess { border-left-color: var(--brand-green); background: var(--brand-green-light); color: var(--brand-green); }
+.alertWarning { border-left-color: var(--brand-warning); background: #fff2d6; color: var(--brand-warning); }
+.alertError { border-left-color: var(--brand-danger); background: #ffebeb; color: var(--brand-danger); }
 .pagination { display: flex; align-items: center; justify-content: end; flex-wrap: nowrap; gap: 12px; padding-top: 4px; color: var(--admin-muted); font-size: 14px; }
 .paginationButton { white-space: nowrap; flex-shrink: 0; min-width: 90px; }
 .paginationInfo { white-space: nowrap; flex-shrink: 0; min-width: 60px; text-align: center; }

@@ -65,7 +65,7 @@ export const CommunicationCard = React.forwardRef<HTMLElement, Props>(function C
       transition={{ duration: 0.32, delay: Math.min(index, 8) * 0.05, ease: [0.22, 1, 0.36, 1] }}
       whileHover={reduceMotion ? undefined : { y: -2 }}
       className={`group relative overflow-hidden bg-white border rounded-2xl shadow-sm hover:shadow-md transition-shadow ${
-        isUnread ? 'border-[#0d2346]/20' : 'border-slate-200/80'
+        isUnread ? 'border-brand-primary/20' : 'border-slate-200/80'
       }`}
     >
       {/* Franja lateral por prioridad */}
@@ -84,10 +84,10 @@ export const CommunicationCard = React.forwardRef<HTMLElement, Props>(function C
             <div className="flex flex-wrap items-center gap-2">
               <CommunicationPriorityBadge priority={communication.priority} />
               {isUnread && (
-                <span className="bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1.5">
+                <span className="bg-brand-primary-light text-brand-primary border border-brand-primary/25 text-[11px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1.5">
                   <span className="relative flex w-1.5 h-1.5">
-                    <span className="absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-70 animate-ping" />
-                    <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-blue-600" />
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-brand-primary opacity-70 animate-ping" />
+                    <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-brand-primary" />
                   </span>
                   Nuevo
                 </span>
@@ -112,10 +112,10 @@ export const CommunicationCard = React.forwardRef<HTMLElement, Props>(function C
           <button
             type="button"
             onClick={() => onOpenDetail(communication)}
-            className="text-left w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0d2346]/30 rounded-md"
+            className="text-left w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30 rounded-md"
           >
             <h3
-              className={`text-[17px] leading-snug tracking-tight text-slate-900 group-hover:text-[#0d2346] transition-colors ${
+              className={`text-[17px] leading-snug tracking-tight text-slate-900 group-hover:text-brand-primary transition-colors ${
                 isUnread ? 'font-bold' : 'font-semibold'
               }`}
               style={{ fontFamily: 'var(--brand-font-serif)' }}
@@ -130,7 +130,7 @@ export const CommunicationCard = React.forwardRef<HTMLElement, Props>(function C
           {/* Pie */}
           <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0 text-xs text-slate-500">
-              <span className="w-7 h-7 rounded-full bg-[#0d2346] text-white text-[10px] font-bold flex items-center justify-center shrink-0 ring-2 ring-[#cfac65]/40">
+              <span className="w-7 h-7 rounded-full bg-brand-primary text-white text-[10px] font-bold flex items-center justify-center shrink-0 ring-2 ring-[#cfac65]/40">
                 {initials(communication.authorName)}
               </span>
               <div className="min-w-0">
@@ -152,12 +152,12 @@ export const CommunicationCard = React.forwardRef<HTMLElement, Props>(function C
                   whileTap={{ scale: 0.96 }}
                   onClick={() => onConfirmAcknowledgment(communication.id)}
                   disabled={isConfirming}
-                  className="bg-[#0d2346] hover:bg-[#133261] text-white font-medium text-sm px-3.5 py-2 rounded-lg shadow-sm transition-colors flex items-center gap-2 disabled:opacity-60"
+                  className="bg-brand-primary hover:bg-brand-primary-hover text-white font-medium text-sm px-3.5 py-2 rounded-lg shadow-sm transition-colors flex items-center gap-2 disabled:opacity-60"
                 >
                   {isConfirming ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+                    <CheckCircle2 className="w-4 h-4 text-brand-green-light" />
                   )}
                   {isConfirming ? 'Confirmando…' : 'Confirmar lectura'}
                 </motion.button>
@@ -165,7 +165,7 @@ export const CommunicationCard = React.forwardRef<HTMLElement, Props>(function C
                 <motion.span
                   initial={{ scale: 0.85, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold px-2.5 py-1.5 rounded-lg inline-flex items-center gap-1.5"
+                  className="bg-brand-green-light text-brand-green border border-brand-green/30 text-xs font-semibold px-2.5 py-1.5 rounded-lg inline-flex items-center gap-1.5"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   Lectura confirmada

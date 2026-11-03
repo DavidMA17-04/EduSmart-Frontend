@@ -11,6 +11,9 @@ export type SubjectFormValues = {
   status: SubjectStatus;
 };
 
+export type SubjectSortKey = 'name' | 'code' | 'status';
+export type SubjectSortDir = 'asc' | 'desc';
+
 type DialogMode = 'create' | 'edit' | null;
 type StatusFilter = 'ALL' | SubjectStatus;
 
@@ -19,6 +22,28 @@ const emptyForm = (): SubjectFormValues => ({
   code: '',
   status: 'ACTIVE',
 });
+
+function compareSubjects(
+  left: Subject,
+  right: Subject,
+  sortKey: SubjectSortKey,
+  sortDir: SubjectSortDir,
+): number {
+  const direction = sortDir === 'asc' ? 1 : -1;
+  const leftValue =
+    sortKey === 'name'
+      ? left.name
+      : sortKey === 'code'
+        ? (left.code ?? '')
+        : left.status;
+  const rightValue =
+    sortKey === 'name'
+      ? right.name
+      : sortKey === 'code'
+        ? (right.code ?? '')
+        : right.status;
+  return leftValue.localeCompare(rightValue, 'es', { sensitivity: 'base' }) * direction;
+}
 
 export function useSubjectsPanel() {
   const toast = useToast();
@@ -32,6 +57,8 @@ export function useSubjectsPanel() {
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
+  const [sortKey, setSortKey] = useState<SubjectSortKey>('name');
+  const [sortDir, setSortDir] = useState<SubjectSortDir>('asc');
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
@@ -65,7 +92,7 @@ export function useSubjectsPanel() {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return rows.filter((row) => {
+    const matched = rows.filter((row) => {
       if (statusFilter !== 'ALL' && row.status !== statusFilter) return false;
       if (!q) return true;
       return (
@@ -73,7 +100,10 @@ export function useSubjectsPanel() {
         (row.code ?? '').toLowerCase().includes(q)
       );
     });
-  }, [rows, search, statusFilter]);
+    return [...matched].sort((left, right) =>
+      compareSubjects(left, right, sortKey, sortDir),
+    );
+  }, [rows, search, statusFilter, sortKey, sortDir]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = Math.min(page, totalPages);
@@ -84,7 +114,36 @@ export function useSubjectsPanel() {
 
   useEffect(() => {
     setPage(1);
-  }, [search, statusFilter]);
+  }, [search, statusFilter, sortKey, sortDir]);
+
+  const hasFilters = Boolean(search.trim()) || statusFilter !== 'ALL';
+
+  const resultSummary = useMemo(() => {
+    if (rows.length === 0) return 'Sin materias registradas';
+    if (!hasFilters) {
+      return filtered.length === 1
+        ? '1 materia'
+        : `${filtered.length} materias`;
+    }
+    return filtered.length === 1
+      ? `1 resultado de ${rows.length}`
+      : `${filtered.length} resultados de ${rows.length}`;
+  }, [filtered.length, hasFilters, rows.length]);
+
+  const toggleSort = (key: SubjectSortKey) => {
+    if (sortKey === key) {
+      setSortDir((current) => (current === 'asc' ? 'desc' : 'asc'));
+      return;
+    }
+    setSortKey(key);
+    setSortDir('asc');
+  };
+
+  const clearFilters = () => {
+    setSearch('');
+    setStatusFilter('ALL');
+    setPage(1);
+  };
 
   const setField = <K extends keyof SubjectFormValues>(
     field: K,
@@ -192,6 +251,9 @@ export function useSubjectsPanel() {
   return {
     rows: pageRows,
     total: filtered.length,
+    totalAll: rows.length,
+    resultSummary,
+    hasFilters,
     isLoading,
     error,
     mutationError,
@@ -200,6 +262,10 @@ export function useSubjectsPanel() {
     setSearch,
     statusFilter,
     setStatusFilter,
+    sortKey,
+    sortDir,
+    toggleSort,
+    clearFilters,
     page: currentPage,
     setPage,
     totalPages,

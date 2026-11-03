@@ -1,0 +1,149 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--admin-surface, var(--brand-surface));
+  border: 1px solid var(--admin-border, var(--brand-border));
+  border-top: 3px solid transparent;
+  box-shadow: 0 1px 4px rgba(2, 26, 83, 0.05);
+  transition: box-shadow 0.2s, transform 0.2s;
+  min-width: 0;
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px rgba(2, 26, 83, 0.1);
+  transform: translateY(-1px);
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.body {
+  display: grid;
+  gap: 0;
+  min-width: 0;
+}
+
+.value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--admin-text, var(--brand-navy));
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--admin-text, var(--brand-navy));
+  text-transform: none;
+}
+
+.hint {
+  font-size: 10px;
+  color: var(--admin-muted, var(--brand-muted));
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--admin-border, var(--brand-border));
+  font-size: 11px;
+  font-weight: 600;
+  width: fit-content;
+}
+
+/* Tones — top border + icon chip */
+.navy {
+  border-top-color: var(--brand-primary);
+}
+.navy .icon {
+  background: color-mix(in srgb, var(--brand-primary) 10%, transparent);
+  color: var(--brand-primary);
+}
+.navy .badge {
+  background: color-mix(in srgb, var(--brand-primary) 8%, transparent);
+  color: var(--brand-primary);
+  border-color: color-mix(in srgb, var(--brand-primary) 25%, transparent);
+}
+
+.gold {
+  border-top-color: var(--brand-gold);
+}
+.gold .icon {
+  background: color-mix(in srgb, var(--brand-gold) 15%, transparent);
+  color: var(--brand-gold-dark);
+}
+.gold .badge {
+  background: var(--brand-gold-light);
+  color: var(--brand-gold-dark);
+  border-color: color-mix(in srgb, var(--brand-gold) 40%, transparent);
+}
+
+.green {
+  border-top-color: var(--brand-green);
+}
+.green .icon {
+  background: color-mix(in srgb, var(--brand-green) 10%, transparent);
+  color: var(--brand-green);
+}
+.green .badge {
+  background: var(--brand-green-light);
+  color: var(--brand-green);
+  border-color: color-mix(in srgb, var(--brand-green) 30%, transparent);
+}
+
+.warning {
+  border-top-color: var(--brand-warning);
+}
+.warning .icon {
+  background: color-mix(in srgb, var(--brand-warning) 12%, transparent);
+  color: var(--brand-warning);
+}
+.warning .badge {
+  background: #fff2d6;
+  color: var(--brand-warning);
+  border-color: color-mix(in srgb, var(--brand-warning) 30%, transparent);
+}
+
+.danger {
+  border-top-color: var(--brand-danger);
+}
+.danger .icon {
+  background: color-mix(in srgb, var(--brand-danger) 10%, transparent);
+  color: var(--brand-danger);
+}
+.danger .badge {
+  background: #ffebeb;
+  color: var(--brand-danger);
+  border-color: color-mix(in srgb, var(--brand-danger) 30%, transparent);
+}
+
+.muted {
+  border-top-color: var(--brand-muted);
+}
+.muted .icon {
+  background: color-mix(in srgb, var(--brand-muted) 10%, transparent);
+  color: var(--brand-muted);
+}
+.muted .badge {
+  background: #edf1f6;
+  color: var(--brand-muted);
+}

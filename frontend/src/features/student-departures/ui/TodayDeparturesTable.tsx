@@ -25,7 +25,7 @@ export function TodayDeparturesTable() {
       <DeparturesTable items={data?.items ?? []} loading={isLoading} emptyText="Aún no hay salidas registradas hoy." hideGuard />
       {data && data.total > data.items.length && (
         <div className="px-5 py-3 border-t border-slate-100 text-right">
-          <Link to={`${securityBasePath()}/history`} className="text-sm font-semibold text-[#0d2346] hover:underline">
+          <Link to={`${securityBasePath()}/history`} className="text-sm font-semibold text-brand-primary hover:underline">
             Ver bitácora completa ({data.total})
           </Link>
         </div>

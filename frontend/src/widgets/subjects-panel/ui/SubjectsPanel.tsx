@@ -1,5 +1,5 @@
-import { BookOpen, Edit3, Plus, Trash2 } from 'lucide-react';
-import { useSubjectsPanel } from '@/features/manage-subject';
+import { ArrowDown, ArrowUp, ArrowUpDown, BookOpen, Edit3, Plus, Trash2, X } from 'lucide-react';
+import { useSubjectsPanel, type SubjectSortKey } from '@/features/manage-subject';
 import { sessionHasPermission } from '@/shared/auth';
 import {
   Alert,
@@ -26,49 +26,100 @@ export const SubjectsPanel = () => {
     model.dialogMode === 'create' ? 'Nueva materia' : 'Editar materia';
   const submitLabel =
     model.dialogMode === 'create' ? 'Crear materia' : 'Guardar cambios';
-  const hasFilters =
-    Boolean(model.search.trim()) || model.statusFilter !== 'ALL';
+
+  const sortIcon = (key: SubjectSortKey) => {
+    if (model.sortKey !== key) return <ArrowUpDown size={13} aria-hidden="true" />;
+    return model.sortDir === 'asc' ? (
+      <ArrowUp size={13} aria-hidden="true" />
+    ) : (
+      <ArrowDown size={13} aria-hidden="true" />
+    );
+  };
+
+  const sortAria = (key: SubjectSortKey) => {
+    if (model.sortKey !== key) return 'none' as const;
+    return model.sortDir === 'asc' ? ('ascending' as const) : ('descending' as const);
+  };
 
   return (
     <section className={styles.layout}>
       <DataTableShell
         footer={
-          model.totalPages > 1 ? (
-            <Pagination
-              currentPage={model.page}
-              onPageChange={model.setPage}
-              totalPages={model.totalPages}
-            />
+          !model.isLoading && model.totalAll > 0 ? (
+            <div className={styles.footerBar}>
+              <p className={styles.resultCount}>{model.resultSummary}</p>
+              {model.totalPages > 1 ? (
+                <Pagination
+                  currentPage={model.page}
+                  onPageChange={model.setPage}
+                  totalPages={model.totalPages}
+                />
+              ) : null}
+            </div>
           ) : null
         }
         toolbar={
-          <div className={styles.toolbar}>
-            <div className={styles.filters}>
-              <Input
-                aria-label="Buscar materia"
-                onChange={(e) => model.setSearch(e.target.value)}
-                placeholder="Buscar por nombre o código…"
-                value={model.search}
-              />
-              <Select
-                aria-label="Filtrar por estado"
-                onChange={(e) =>
-                  model.setStatusFilter(
-                    e.target.value as 'ALL' | 'ACTIVE' | 'INACTIVE',
-                  )
-                }
-                value={model.statusFilter}
-              >
-                <option value="ALL">Estado: Todos</option>
-                <option value="ACTIVE">Activas</option>
-                <option value="INACTIVE">Inactivas</option>
-              </Select>
+          <div className={styles.toolbarStack}>
+            <div className={styles.toolbar}>
+              <div className={styles.filters}>
+                <Input
+                  aria-label="Buscar materia"
+                  onChange={(e) => model.setSearch(e.target.value)}
+                  placeholder="Buscar por nombre o código…"
+                  value={model.search}
+                />
+                <Select
+                  aria-label="Filtrar por estado"
+                  onChange={(e) =>
+                    model.setStatusFilter(
+                      e.target.value as 'ALL' | 'ACTIVE' | 'INACTIVE',
+                    )
+                  }
+                  value={model.statusFilter}
+                >
+                  <option value="ALL">Estado: Todos</option>
+                  <option value="ACTIVE">Activas</option>
+                  <option value="INACTIVE">Inactivas</option>
+                </Select>
+              </div>
+              {canEdit ? (
+                <Button onClick={model.openCreate} type="button">
+                  <Plus size={16} />
+                  Nueva materia
+                </Button>
+              ) : null}
             </div>
-            {canEdit ? (
-              <Button onClick={model.openCreate} type="button">
-                <Plus size={16} />
-                Nueva materia
-              </Button>
+
+            {model.hasFilters ? (
+              <div className={styles.filterChips} aria-label="Filtros activos">
+                {model.search.trim() ? (
+                  <button
+                    className={styles.chip}
+                    type="button"
+                    onClick={() => model.setSearch('')}
+                  >
+                    Búsqueda: {model.search.trim()}
+                    <X size={12} aria-hidden="true" />
+                  </button>
+                ) : null}
+                {model.statusFilter !== 'ALL' ? (
+                  <button
+                    className={styles.chip}
+                    type="button"
+                    onClick={() => model.setStatusFilter('ALL')}
+                  >
+                    Estado: {model.statusFilter === 'ACTIVE' ? 'Activas' : 'Inactivas'}
+                    <X size={12} aria-hidden="true" />
+                  </button>
+                ) : null}
+                <button
+                  className={styles.clearFilters}
+                  type="button"
+                  onClick={model.clearFilters}
+                >
+                  Limpiar filtros
+                </button>
+              </div>
             ) : null}
           </div>
         }
@@ -82,68 +133,97 @@ export const SubjectsPanel = () => {
         {!model.isLoading && model.rows.length === 0 ? (
           <EmptyState
             action={
-              hasFilters || !canEdit
-                ? undefined
-                : {
-                    label: 'Nueva materia',
-                    onClick: model.openCreate,
-                    icon: Plus,
-                  }
+              model.hasFilters
+                ? { label: 'Limpiar filtros', onClick: model.clearFilters }
+                : canEdit
+                  ? {
+                      label: 'Nueva materia',
+                      onClick: model.openCreate,
+                      icon: Plus,
+                    }
+                  : undefined
             }
             description={
-              hasFilters
+              model.hasFilters
                 ? 'No hay resultados con esos filtros.'
-                : 'Crea materias regulares (por ejemplo Matemática, Español) para poder asignarlas a docentes.'
+                : 'Registre materias como Matemática o Español para asignarlas a docentes.'
             }
             icon={BookOpen}
-            title="Sin materias"
+            title={model.hasFilters ? 'Sin resultados' : 'Sin materias'}
           />
         ) : null}
 
         {!model.isLoading && model.rows.length > 0 ? (
-          <Table>
+          <Table className={styles.table}>
             <thead>
               <tr>
-                <th>Nombre de la materia</th>
-                <th>Código</th>
-                <th>Estado</th>
-                <th>Acciones</th>
+                <th aria-sort={sortAria('name')} className={styles.colName}>
+                  <button
+                    className={styles.sortButton}
+                    type="button"
+                    onClick={() => model.toggleSort('name')}
+                  >
+                    Nombre de la materia
+                    {sortIcon('name')}
+                  </button>
+                </th>
+                <th aria-sort={sortAria('code')} className={styles.colCode}>
+                  <button
+                    className={styles.sortButton}
+                    type="button"
+                    onClick={() => model.toggleSort('code')}
+                  >
+                    Código
+                    {sortIcon('code')}
+                  </button>
+                </th>
+                <th aria-sort={sortAria('status')} className={styles.colStatus}>
+                  <button
+                    className={styles.sortButton}
+                    type="button"
+                    onClick={() => model.toggleSort('status')}
+                  >
+                    Estado
+                    {sortIcon('status')}
+                  </button>
+                </th>
+                <th className={styles.colActions}>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {model.rows.map((row) => (
                 <tr key={row.id}>
-                  <td>
+                  <td className={styles.colName}>
                     <strong>{row.name}</strong>
                   </td>
-                  <td>{row.code ?? '—'}</td>
-                  <td>
+                  <td className={styles.colCode}>{row.code ?? '—'}</td>
+                  <td className={styles.colStatus}>
                     <Badge
                       tone={row.status === 'ACTIVE' ? 'success' : 'neutral'}
                     >
                       {row.status === 'ACTIVE' ? 'Activa' : 'Inactiva'}
                     </Badge>
                   </td>
-                  <td>
+                  <td className={styles.colActions}>
                     {canEdit ? (
-                    <RowActions>
-                      <RowActionButton
-                        aria-label={`Editar ${row.name}`}
-                        onClick={() => model.openEdit(row)}
-                        title="Editar"
-                        tone="primary"
-                      >
-                        <Edit3 size={16} />
-                      </RowActionButton>
-                      <RowActionButton
-                        aria-label={`Inactivar ${row.name}`}
-                        onClick={() => model.requestDeactivate(row)}
-                        title="Inactivar"
-                        tone="danger"
-                      >
-                        <Trash2 size={16} />
-                      </RowActionButton>
-                    </RowActions>
+                      <RowActions>
+                        <RowActionButton
+                          aria-label={`Editar ${row.name}`}
+                          onClick={() => model.openEdit(row)}
+                          title="Editar"
+                          tone="primary"
+                        >
+                          <Edit3 size={16} />
+                        </RowActionButton>
+                        <RowActionButton
+                          aria-label={`Inactivar ${row.name}`}
+                          onClick={() => model.requestDeactivate(row)}
+                          title="Inactivar"
+                          tone="danger"
+                        >
+                          <Trash2 size={16} />
+                        </RowActionButton>
+                      </RowActions>
                     ) : null}
                   </td>
                 </tr>

@@ -105,7 +105,7 @@ export const AnimatedModal: React.FC<Props> = ({
               <div className="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3 min-w-0">
                   {icon && (
-                    <span className="w-10 h-10 rounded-xl bg-[#0d2346]/[0.07] text-[#0d2346] flex items-center justify-center shrink-0">
+                    <span className="w-10 h-10 rounded-xl bg-brand-primary/[0.07] text-brand-primary flex items-center justify-center shrink-0">
                       {icon}
                     </span>
                   )}

@@ -9,10 +9,12 @@ export const CATALOG_SYNC_ACTIONS = ['VIEW', 'CREATE', 'EDIT', 'DELETE', 'EXPORT
 
 /**
  * Modules auto-synced by admin UI.
- * SCHEDULES permissions are migration-managed — do not invent rows from FE.
+ * SCHEDULES / DEPARTURES permissions are migration-managed — do not invent rows from FE.
  */
+const SYNC_EXCLUDED_MODULES = new Set<PermissionModule>(['SCHEDULES', 'DEPARTURES']);
+
 export const CATALOG_SYNC_MODULES = PERMISSION_MODULES.filter(
-  (module): module is Exclude<PermissionModule, 'SCHEDULES'> => module !== 'SCHEDULES',
+  (module) => !SYNC_EXCLUDED_MODULES.has(module),
 );
 
 export function buildPermissionCode(module: PermissionModule, action: PermissionAction): string {

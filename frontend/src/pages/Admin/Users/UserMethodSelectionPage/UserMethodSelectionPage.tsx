@@ -174,10 +174,10 @@ export const UserMethodSelectionPage: React.FC = () => {
       <section className={styles.bottomGrid}>
         {/* Antes de Importar */}
         <div className={styles.infoCard}>
-          <h3 className={styles.infoCardTitle}>
-            <HelpCircle size={20} color="var(--color-primary-blue)" />
-            Antes de importar
-          </h3>
+          <div className={styles.infoCardHead}>
+            <HelpCircle size={20} color="var(--color-primary-blue)" aria-hidden="true" />
+            <h3 className={styles.infoCardTitle}>Antes de importar</h3>
+          </div>
           <ul className={styles.infoList}>
             <li className={styles.infoItem}>
               <FileCheck size={16} color="var(--color-primary-green)" />
@@ -196,10 +196,10 @@ export const UserMethodSelectionPage: React.FC = () => {
 
         {/* Importaciones Recientes */}
         <div className={styles.infoCard}>
-          <h3 className={styles.infoCardTitle}>
-            <History size={20} color="var(--color-primary-blue)" />
-            Importaciones recientes
-          </h3>
+          <div className={styles.infoCardHead}>
+            <History size={20} color="var(--color-primary-blue)" aria-hidden="true" />
+            <h3 className={styles.infoCardTitle}>Importaciones recientes</h3>
+          </div>
           {recentImports.length === 0 ? (
             <p className={styles.emptyRecent}>Aún no hay importaciones recientes registradas en este equipo.</p>
           ) : (

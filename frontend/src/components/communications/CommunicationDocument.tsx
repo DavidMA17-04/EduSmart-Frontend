@@ -76,11 +76,11 @@ export const CommunicationDocument: React.FC<Props> = ({
               className={`${isPreview ? 'w-10 h-10' : 'w-12 h-12'} rounded-full border-2 border-[#cfac65]/70 object-cover bg-white shrink-0`}
             />
             <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9b7d2e]">
+              <p className="text-[10px] font-semibold tracking-normal text-brand-gold-dark">
                 Ministerio de Educación Pública
               </p>
               <p
-                className={`${isPreview ? 'text-sm' : 'text-base'} font-bold text-[#0d2346] leading-tight`}
+                className={`${isPreview ? 'text-sm' : 'text-base'} font-bold text-brand-primary leading-tight`}
                 style={{ fontFamily: 'var(--brand-font-serif)' }}
               >
                 Colegio Técnico Profesional de Hojancha
@@ -90,7 +90,7 @@ export const CommunicationDocument: React.FC<Props> = ({
           </div>
 
           <div className="sm:text-right shrink-0">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Referencia</p>
+            <p className="text-[10px] font-semibold tracking-normal text-slate-400">Referencia</p>
             <p className="text-xs font-mono font-semibold text-slate-700">{referenceCode(communication)}</p>
           </div>
         </motion.header>
@@ -98,13 +98,13 @@ export const CommunicationDocument: React.FC<Props> = ({
         {/* Filete dorado */}
         <div className="mt-4 mb-5 flex items-center gap-2" aria-hidden="true">
           <span className="h-px flex-1 bg-gradient-to-r from-[#cfac65] via-[#cfac65]/60 to-transparent" />
-          <span className="w-1.5 h-1.5 rotate-45 bg-[#cfac65]" />
+          <span className="w-1.5 h-1.5 rotate-45 bg-brand-gold" />
         </div>
 
         {/* Tipo, prioridad y fecha */}
         <motion.div {...item(1)} className="flex flex-wrap items-center justify-between gap-2 mb-4">
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#0d2346]">
+            <span className="text-[11px] font-bold tracking-normal text-brand-primary">
               Comunicado oficial
             </span>
             <span
@@ -119,7 +119,7 @@ export const CommunicationDocument: React.FC<Props> = ({
 
         {/* Destinatarios */}
         <motion.div {...item(2)} className="flex items-start gap-2 mb-5 text-xs">
-          <span className="inline-flex items-center gap-1.5 font-semibold text-slate-500 uppercase tracking-wide pt-1 shrink-0">
+          <span className="inline-flex items-center gap-1.5 font-semibold text-slate-500 tracking-normal pt-1 shrink-0">
             <Users className="w-3.5 h-3.5" />
             Dirigido a
           </span>
@@ -127,7 +127,7 @@ export const CommunicationDocument: React.FC<Props> = ({
             {audience.map((label) => (
               <span
                 key={label}
-                className="bg-[#0d2346]/[0.06] text-[#0d2346] border border-[#0d2346]/10 px-2 py-0.5 rounded-md font-medium"
+                className="bg-brand-primary/[0.06] text-brand-primary border border-brand-primary/10 px-2 py-0.5 rounded-md font-medium"
               >
                 {label}
               </span>
@@ -158,7 +158,7 @@ export const CommunicationDocument: React.FC<Props> = ({
                 <motion.ul key={index} {...item(4 + index)} className="space-y-1.5 pl-1">
                   {block.items.map((text, i) => (
                     <li key={i} className="flex gap-2.5">
-                      <span className="mt-[0.6em] w-1.5 h-1.5 rounded-full bg-[#cfac65] shrink-0" />
+                      <span className="mt-[0.6em] w-1.5 h-1.5 rounded-full bg-brand-gold shrink-0" />
                       <span>{text}</span>
                     </li>
                   ))}
@@ -189,7 +189,7 @@ export const CommunicationDocument: React.FC<Props> = ({
               )}
               {communication.requiresAcknowledgment && (
                 <span className="inline-flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#0d2346]" />
+                  <ShieldCheck className="w-3.5 h-3.5 text-brand-primary" />
                   Requiere confirmación de lectura
                 </span>
               )}

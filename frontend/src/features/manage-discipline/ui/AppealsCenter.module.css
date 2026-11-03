@@ -28,7 +28,7 @@
 .intro p,
 .muted {
   margin: 0;
-  color: #667085;
+  color: var(--brand-muted);
 }
 
 .actions,
@@ -44,7 +44,7 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  color: #667085;
+  color: var(--brand-muted);
   font-size: 0.92rem;
 }
 
@@ -89,7 +89,7 @@
 .choice span,
 .preview dd {
   display: block;
-  color: #667085;
+  color: var(--brand-muted);
   font-size: 0.88rem;
 }
 
@@ -144,7 +144,7 @@
   font-size: 0.75rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #667085;
+  color: var(--brand-muted);
 }
 
 .table tbody td {
@@ -201,7 +201,7 @@
   flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
-  color: #667085;
+  color: var(--brand-muted);
   font-size: 0.88rem;
 }
 
@@ -215,25 +215,29 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  padding: 1rem;
-  border-radius: 16px;
-  background: #021a53;
-  color: #fff;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  background: var(--brand-surface);
+  color: var(--brand-navy);
+  border: 1px solid var(--brand-border);
+  border-top: 3px solid var(--brand-primary);
+  box-shadow: 0 1px 4px rgba(2, 26, 83, 0.05);
 }
 
 .kpi strong {
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   line-height: 1;
+  color: var(--brand-navy);
 }
 
 .kpi span {
   font-size: 0.82rem;
-  color: #d6e0f5;
+  color: var(--brand-muted);
 }
 
 .timeline em {
   font-style: normal;
-  color: #667085;
+  color: var(--brand-muted);
   font-size: 0.88rem;
 }
 

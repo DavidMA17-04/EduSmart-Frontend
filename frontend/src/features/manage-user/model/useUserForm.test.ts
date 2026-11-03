@@ -12,8 +12,8 @@ const base: UserFormValues = {
   lastName: 'Pérez Soto',
   email: 'Ana@CTPHOJANCHA.ed.cr',
   phone: '88887777',
-  password: 'Secret123',
-  confirmPassword: 'Secret123',
+  password: 'Secret123!',
+  confirmPassword: 'Secret123!',
   status: 'ACTIVE',
   roleIds: [1],
   departmentId: '',
@@ -42,7 +42,7 @@ describe('toCreatePayload', () => {
       second_lastname: 'Soto',
       email: 'ana@ctphojancha.ed.cr',
       phone: '88887777',
-      password: 'Secret123',
+      password: 'Secret123!',
       status: 'ACTIVE',
       roleIds: [1],
     });
@@ -112,7 +112,7 @@ describe('validateUserForm', () => {
     expect(missing.confirmPassword).toMatch(/Confirme/i);
 
     const mismatch = validateUserForm(
-      { ...base, password: 'Secret123', confirmPassword: 'Other123' },
+      { ...base, password: 'Secret123!', confirmPassword: 'Other123!' },
       'create',
     );
     expect(mismatch.confirmPassword).toMatch(/coinciden/i);
@@ -127,13 +127,13 @@ describe('validateUserForm', () => {
     expect(validateUserForm(base, 'edit', { requiresGroup: true }).groupId).toMatch(/sección/i);
   });
 
-  it('allows empty password on edit and validates length only when provided', () => {
+  it('allows empty password on edit and validates strength when provided', () => {
     expect(
       validateUserForm({ ...base, password: '', confirmPassword: '' }, 'edit'),
     ).toEqual({});
 
-    const short = validateUserForm({ ...base, password: 'short', confirmPassword: '' }, 'edit');
-    expect(short.password).toMatch(/8 y 72/);
-    expect(short.confirmPassword).toBeUndefined();
+    const weak = validateUserForm({ ...base, password: 'Secret12', confirmPassword: '' }, 'edit');
+    expect(weak.password).toMatch(/carácter especial|mayúscula|minúscula|número/i);
+    expect(weak.confirmPassword).toBeUndefined();
   });
 });

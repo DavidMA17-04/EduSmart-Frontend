@@ -30,8 +30,7 @@
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--admin-muted, #6b7280);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.01em;
 }
 
 .kpiSub {
@@ -74,12 +73,51 @@
   font-size: 0.9rem;
 }
 
+.donutRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.donutWrap {
+  position: relative;
+  width: 168px;
+  height: 168px;
+  flex-shrink: 0;
+}
+
+.donutCenter {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  place-items: center;
+  gap: 2px;
+  pointer-events: none;
+}
+
+.donutTotal {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--brand-navy, #021a53);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.donutTotalLabel {
+  font-size: 10px;
+  color: var(--admin-muted, #6b7280);
+}
+
 .legend {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
   gap: 6px;
+  flex: 1;
+  min-width: 0;
 }
 
 .legend li {
@@ -110,7 +148,6 @@
 
 .alerts th {
   font-size: 0.75rem;
-  text-transform: uppercase;
   color: var(--admin-muted, #6b7280);
 }
 

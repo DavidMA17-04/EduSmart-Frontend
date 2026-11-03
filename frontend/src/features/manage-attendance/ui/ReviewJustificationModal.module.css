@@ -51,7 +51,7 @@
 }
 
 .muted {
-  color: #94a3b8 !important;
+  color: var(--brand-muted) !important;
 }
 
 .evidenceList {
@@ -73,7 +73,7 @@
 }
 
 .evidenceList a {
-  color: #2563eb;
+  color: var(--brand-primary);
   text-decoration: none;
   font-weight: 600;
 }
@@ -99,35 +99,4 @@
   gap: 10px;
 }
 
-.approve,
-.reject {
-  border: 0;
-  border-radius: 12px;
-  padding: 10px 16px;
-  font: inherit;
-  font-weight: 600;
-  color: #fff;
-  cursor: pointer;
-}
-
-.approve {
-  background: #059669;
-}
-
-.approve:hover:not(:disabled) {
-  background: #047857;
-}
-
-.reject {
-  background: #e11d48;
-}
-
-.reject:hover:not(:disabled) {
-  background: #be123c;
-}
-
-.approve:disabled,
-.reject:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
+/* Approve / reject use shared Button (primary / danger) */

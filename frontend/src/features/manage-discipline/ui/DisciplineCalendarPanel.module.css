@@ -2,7 +2,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.8fr);
   gap: 1rem;
-  align-items: start;
+  align-items: stretch;
 }
 
 .card,
@@ -15,9 +15,10 @@
 .card {
   padding: 1.1rem;
   border: 1px solid #e7ebf0;
-  border-radius: 20px;
+  border-radius: 14px;
   background: #fff;
   box-shadow: 0 12px 30px rgb(2 26 83 / 6%);
+  height: 100%;
 }
 
 .card h2 {
@@ -28,7 +29,7 @@
 .muted,
 .notice {
   margin: 0;
-  color: #667085;
+  color: var(--brand-muted);
 }
 
 .notice {
@@ -64,7 +65,7 @@
 
 .list span {
   display: block;
-  color: #667085;
+  color: var(--brand-muted);
 }
 
 @media (max-width: 800px) {

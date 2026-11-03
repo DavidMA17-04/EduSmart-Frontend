@@ -21,6 +21,8 @@ interface UserImportState {
   importResult: ImportResult | null;
   selectedFilter: ImportFilter;
   method: 'MANUAL' | 'BULK' | null;
+  /** Last file-processing error (replaces window.alert) */
+  fileError: string | null;
 
   // Actions
   setMethod: (method: 'MANUAL' | 'BULK') => void;
@@ -28,6 +30,7 @@ interface UserImportState {
   setFilter: (filter: ImportFilter) => void;
   loadMockData: () => void;
   handleFileUpload: (file: File) => Promise<void>;
+  clearFileError: () => void;
   updateRowCell: (tempId: string, field: UserFieldKey, newValue: string) => void;
   deleteRow: (tempId: string) => void;
   resetStore: () => void;
@@ -61,17 +64,20 @@ export const useUserImport = create<UserImportState>((set, get) => ({
   importResult: null,
   selectedFilter: 'ALL',
   method: null,
+  fileError: null,
 
   setMethod: (method) => {
-    set({ method });
+    set({ method, fileError: null });
     if (method === 'BULK') {
       set({ currentStep: 'UPLOAD_FILE' });
     }
   },
 
-  setStep: (step) => set({ currentStep: step }),
+  setStep: (step) => set({ currentStep: step, fileError: null }),
 
   setFilter: (selectedFilter) => set({ selectedFilter }),
+
+  clearFileError: () => set({ fileError: null }),
 
   loadMockData: () => {
     const summary = calculateSummary(MOCK_IMPORTED_ROWS, 'datos_simulados_ctp_hojancha.xlsx', 45000);
@@ -80,11 +86,12 @@ export const useUserImport = create<UserImportState>((set, get) => ({
       summary,
       currentStep: 'PREVIEW_DATA',
       selectedFilter: 'ALL',
+      fileError: null,
     });
   },
 
   handleFileUpload: async (file: File) => {
-    set({ isProcessingFile: true });
+    set({ isProcessingFile: true, fileError: null });
     try {
       const rows = await parseFileToUserRows(file);
       const summary = calculateSummary(rows, file.name, file.size);
@@ -95,10 +102,12 @@ export const useUserImport = create<UserImportState>((set, get) => ({
         isProcessingFile: false,
         currentStep: 'PREVIEW_DATA',
         selectedFilter: 'ALL',
+        fileError: null,
       });
-    } catch (err: any) {
-      set({ isProcessingFile: false });
-      alert(err?.message || 'Error al procesar el archivo');
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Error al procesar el archivo';
+      set({ isProcessingFile: false, fileError: message });
     }
   },
 
@@ -143,6 +152,7 @@ export const useUserImport = create<UserImportState>((set, get) => ({
       importResult: null,
       selectedFilter: 'ALL',
       method: null,
+      fileError: null,
     });
   },
 

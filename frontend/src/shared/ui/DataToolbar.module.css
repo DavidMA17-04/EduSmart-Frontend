@@ -48,7 +48,7 @@
   border-radius: 6px;
   border: 1px solid color-mix(in srgb, var(--brand-border, #c1c5c8) 70%, transparent);
   background: #f8fafc;
-  color: #94a3b8;
+  color: var(--brand-muted);
   font-family: inherit;
   font-size: 11px;
   font-weight: 650;

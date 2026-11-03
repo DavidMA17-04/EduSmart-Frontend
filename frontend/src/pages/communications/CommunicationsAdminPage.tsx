@@ -46,7 +46,8 @@ import {
   formatShortDate,
 } from '@/components/communications/communicationFormat';
 import { getStoredSessionUser, sessionHasPermission } from '@/shared/auth';
-import { useToast } from '@/shared/ui';
+import { KpiCard, KpiGrid, useToast, type KpiTone } from '@/shared/ui';
+import type { LucideIcon } from 'lucide-react';
 import '@/components/communications/communications.css';
 
 type StatusTab = CommunicationStatus | 'ALL';
@@ -59,30 +60,27 @@ const ACTION_COPY: Record<PendingAction['kind'], { title: string; confirm: strin
   delete: { title: 'Eliminar comunicado', confirm: 'Eliminar definitivamente', tone: 'danger', success: 'Comunicado eliminado.' },
 };
 
-const SummaryTile: React.FC<{ label: string; value: number; suffix?: string; icon: React.ReactNode; tone: string; delay: number }> = ({
-  label,
-  value,
-  suffix = '',
-  icon,
-  tone,
-  delay,
-}) => {
+const SummaryTile: React.FC<{
+  label: string;
+  value: number;
+  suffix?: string;
+  icon: LucideIcon;
+  tone: KpiTone;
+  delay: number;
+}> = ({ label, value, suffix = '', icon, tone, delay }) => {
   const animated = useAnimatedNumber(value);
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.3 }}
-      className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm flex items-center gap-3"
     >
-      <span className={`w-10 h-10 rounded-xl flex items-center justify-center ${tone}`}>{icon}</span>
-      <div>
-        <p className="text-2xl font-bold text-slate-900 tabular-nums leading-none">
-          {Math.round(animated)}
-          {suffix}
-        </p>
-        <p className="text-xs text-slate-500 mt-1">{label}</p>
-      </div>
+      <KpiCard
+        icon={icon}
+        label={label}
+        tone={tone}
+        value={`${Math.round(animated)}${suffix}`}
+      />
     </motion.div>
   );
 };
@@ -233,16 +231,16 @@ export const CommunicationsAdminPage: React.FC = () => {
             <button
               type="button"
               onClick={() => navigate(portalPathForSession('/admin/communications'))}
-              className="text-xs font-semibold text-slate-500 hover:text-[#0d2346] flex items-center gap-1 mb-2 transition-colors"
+              className="text-xs font-semibold text-slate-500 hover:text-brand-primary flex items-center gap-1 mb-2 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               Ir al muro de avisos
             </button>
             <div className="flex items-center gap-2 mb-1">
-              <span className="p-1.5 rounded-lg bg-[#0d2346]/10 text-[#0d2346]">
+              <span className="p-1.5 rounded-lg bg-brand-primary/10 text-brand-primary">
                 <Megaphone className="w-4 h-4" />
               </span>
-              <span className="text-[11px] font-semibold text-[#0d2346] uppercase tracking-[0.16em]">
+              <span className="text-[11px] font-semibold text-brand-primary tracking-normal">
                 Gestión administrativa
               </span>
             </div>
@@ -260,7 +258,7 @@ export const CommunicationsAdminPage: React.FC = () => {
               whileHover={{ y: -1 }}
               whileTap={{ scale: 0.97 }}
               onClick={openCreate}
-              className="bg-[#0d2346] hover:bg-[#133261] text-white font-medium text-sm px-4 py-2.5 rounded-xl shadow-sm transition-colors flex items-center gap-2"
+              className="bg-brand-primary hover:bg-brand-primary-hover text-white font-medium text-sm px-4 py-2.5 rounded-xl shadow-sm transition-colors flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
               Redactar comunicado
@@ -272,7 +270,7 @@ export const CommunicationsAdminPage: React.FC = () => {
               disabled={isFetching}
               aria-label="Actualizar"
               title="Actualizar"
-              className="p-2.5 rounded-xl border border-slate-300 bg-white text-slate-600 hover:text-[#0d2346] hover:bg-slate-50 transition-colors"
+              className="p-2.5 rounded-xl border border-slate-300 bg-white text-slate-600 hover:text-brand-primary hover:bg-slate-50 transition-colors"
             >
               <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
             </motion.button>
@@ -280,12 +278,12 @@ export const CommunicationsAdminPage: React.FC = () => {
         </motion.div>
 
         {/* Resumen */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <SummaryTile label="Publicados" value={counts.PUBLISHED} icon={<Send className="w-5 h-5" />} tone="bg-emerald-50 text-emerald-700" delay={0} />
-          <SummaryTile label="Borradores" value={counts.DRAFT} icon={<FileText className="w-5 h-5" />} tone="bg-slate-100 text-slate-600" delay={0.05} />
-          <SummaryTile label="Archivados" value={counts.ARCHIVED} icon={<Archive className="w-5 h-5" />} tone="bg-amber-50 text-amber-700" delay={0.1} />
-          <SummaryTile label="Lectura promedio (publicados)" value={averageReadRate} suffix="%" icon={<BarChart3 className="w-5 h-5" />} tone="bg-[#0d2346]/[0.07] text-[#0d2346]" delay={0.15} />
-        </div>
+        <KpiGrid columns={4}>
+          <SummaryTile label="Publicados" value={counts.PUBLISHED} icon={Send} tone="green" delay={0} />
+          <SummaryTile label="Borradores" value={counts.DRAFT} icon={FileText} tone="muted" delay={0.05} />
+          <SummaryTile label="Archivados" value={counts.ARCHIVED} icon={Archive} tone="warning" delay={0.1} />
+          <SummaryTile label="Lectura promedio (publicados)" value={averageReadRate} suffix="%" icon={BarChart3} tone="navy" delay={0.15} />
+        </KpiGrid>
 
         {/* Filtros */}
         <div className="bg-white border border-slate-200/80 rounded-2xl p-3 shadow-sm">
@@ -335,14 +333,14 @@ export const CommunicationsAdminPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => refetch()}
-                className="mt-3 bg-[#0d2346] hover:bg-[#133261] text-white font-medium text-sm px-4 py-2 rounded-lg"
+                className="mt-3 bg-brand-primary hover:bg-brand-primary-hover text-white font-medium text-sm px-4 py-2 rounded-lg"
               >
                 Reintentar
               </button>
             </div>
           ) : items.length === 0 ? (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-16 px-6 text-center">
-              <div className="w-14 h-14 rounded-2xl bg-[#0d2346]/[0.06] text-[#0d2346] flex items-center justify-center mx-auto mb-3">
+              <div className="w-14 h-14 rounded-2xl bg-brand-primary/[0.06] text-brand-primary flex items-center justify-center mx-auto mb-3">
                 {debouncedSearch ? <SearchX className="w-7 h-7" /> : <Megaphone className="w-7 h-7" />}
               </div>
               <p className="text-sm text-slate-600">{emptyText}</p>
@@ -350,7 +348,7 @@ export const CommunicationsAdminPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={openCreate}
-                  className="mt-4 bg-[#0d2346] hover:bg-[#133261] text-white font-medium text-sm px-4 py-2 rounded-lg shadow-sm inline-flex items-center gap-2"
+                  className="mt-4 bg-brand-primary hover:bg-brand-primary-hover text-white font-medium text-sm px-4 py-2 rounded-lg shadow-sm inline-flex items-center gap-2"
                 >
                   <Plus className="w-4 h-4" />
                   Redactar comunicado
@@ -384,7 +382,7 @@ export const CommunicationsAdminPage: React.FC = () => {
                               <span className="text-[11px] font-medium text-slate-500">· Con acuse</span>
                             )}
                           </div>
-                          <p className="font-semibold text-slate-900 text-[15px] truncate group-hover:text-[#0d2346] transition-colors">
+                          <p className="font-semibold text-slate-900 text-[15px] truncate group-hover:text-brand-primary transition-colors">
                             {comm.title}
                           </p>
                           <p className="text-xs text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5">
@@ -414,7 +412,7 @@ export const CommunicationsAdminPage: React.FC = () => {
                               </div>
                               <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                                 <motion.div
-                                  className="h-full bg-gradient-to-r from-[#0d2346] to-[#164687] rounded-full"
+                                  className="h-full bg-gradient-to-r from-brand-primary to-brand-primary-hover rounded-full"
                                   initial={{ width: 0 }}
                                   animate={{ width: `${rate}%` }}
                                   transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.1 + Math.min(index, 10) * 0.03 }}
@@ -431,16 +429,16 @@ export const CommunicationsAdminPage: React.FC = () => {
 
                         {/* Acciones */}
                         <div className="flex items-center gap-0.5 shrink-0 lg:opacity-70 lg:group-hover:opacity-100 transition-opacity">
-                          <IconAction label="Ver comunicado" onClick={() => setPreviewing(comm)} className="text-slate-500 hover:text-[#0d2346] hover:bg-slate-100">
+                          <IconAction label="Ver comunicado" onClick={() => setPreviewing(comm)} className="text-slate-500 hover:text-brand-primary hover:bg-slate-100">
                             <Eye className="w-4 h-4" />
                           </IconAction>
                           {comm.status !== 'DRAFT' && (
-                            <IconAction label="Seguimiento de lectura" onClick={() => setStatsId(comm.id)} className="text-slate-500 hover:text-[#0d2346] hover:bg-slate-100">
+                            <IconAction label="Seguimiento de lectura" onClick={() => setStatsId(comm.id)} className="text-slate-500 hover:text-brand-primary hover:bg-slate-100">
                               <BarChart3 className="w-4 h-4" />
                             </IconAction>
                           )}
                           {comm.status === 'DRAFT' && sessionHasPermission('communications.publish') && (
-                            <IconAction label="Publicar" onClick={() => setPendingAction({ kind: 'publish', communication: comm })} className="text-emerald-600 hover:bg-emerald-50">
+                            <IconAction label="Publicar" onClick={() => setPendingAction({ kind: 'publish', communication: comm })} className="text-brand-green hover:bg-brand-green-light">
                               <Send className="w-4 h-4" />
                             </IconAction>
                           )}
@@ -450,7 +448,7 @@ export const CommunicationsAdminPage: React.FC = () => {
                             </IconAction>
                           )}
                           {comm.status === 'ARCHIVED' && sessionHasPermission('communications.publish') && (
-                            <IconAction label="Volver a publicar" onClick={() => setPendingAction({ kind: 'restore', communication: comm })} className="text-emerald-600 hover:bg-emerald-50">
+                            <IconAction label="Volver a publicar" onClick={() => setPendingAction({ kind: 'restore', communication: comm })} className="text-brand-green hover:bg-brand-green-light">
                               <ArchiveRestore className="w-4 h-4" />
                             </IconAction>
                           )}

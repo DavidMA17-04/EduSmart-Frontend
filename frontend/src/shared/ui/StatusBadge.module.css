@@ -28,7 +28,7 @@
 .closed {
   background: #f1f5f9;
   color: #475569;
-  border-color: color-mix(in srgb, #94a3b8 30%, transparent);
+  border-color: color-mix(in srgb, var(--brand-muted) 30%, transparent);
 }
 
 .pending,
@@ -40,6 +40,6 @@
 
 .danger {
   background: #fff1f2;
-  color: #e11d48;
+  color: var(--brand-danger);
   border-color: color-mix(in srgb, #fb7185 35%, transparent);
 }

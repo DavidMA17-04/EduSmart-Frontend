@@ -14,7 +14,7 @@ import {
   filterGroupsForManualEnrollment,
   roleIsStudent,
 } from '@/features/manage-user/model/sectionEnrollmentForm';
-import { Card, FeedbackCard, PageHeader, useToast } from '@/shared/ui';
+import { FeedbackCard, PageHeader, useToast } from '@/shared/ui';
 import { HttpError } from '@/shared/api';
 import styles from './UserPages.module.css';
 
@@ -45,6 +45,8 @@ export const UserCreatePage = () => {
   const toast = useToast();
   const form = useUserForm();
   const [roles, setRoles] = useState<Role[]>([]);
+  const [rolesError, setRolesError] = useState<string | null>(null);
+  const [rolesReloadKey, setRolesReloadKey] = useState(0);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [groups, setGroups] = useState<AcademicGroup[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,20 +55,37 @@ export const UserCreatePage = () => {
 
   useEffect(() => {
     let active = true;
+    setRolesError(null);
     Promise.all([
-      roleApi.list().catch(() => [] as Role[]),
+      roleApi.list().then(
+        (items) => ({ items, error: null as string | null }),
+        (error: unknown) => ({
+          items: [] as Role[],
+          error:
+            error instanceof HttpError
+              ? error.message
+              : 'No se pudieron cargar los roles. Verifique la conexión con el servidor.',
+        }),
+      ),
       departmentApi.listActive().catch(() => [] as Department[]),
       groupApi.list().catch(() => [] as AcademicGroup[]),
-    ]).then(([roleItems, departmentItems, groupItems]) => {
+    ]).then(([roleResult, departmentItems, groupItems]) => {
       if (!active) return;
-      setRoles(roleItems.filter((role) => role.status === 'ACTIVE'));
+      const activeRoles = roleResult.items.filter((role) => role.status === 'ACTIVE');
+      setRoles(activeRoles);
+      setRolesError(
+        roleResult.error ??
+          (activeRoles.length === 0
+            ? 'La API no devolvió roles activos. Revise Roles y permisos.'
+            : null),
+      );
       setDepartments(departmentItems);
       setGroups(filterGroupsForManualEnrollment(groupItems));
     });
     return () => {
       active = false;
     };
-  }, []);
+  }, [rolesReloadKey]);
 
   const requiresDepartment = roles.some(
     (role) =>
@@ -185,62 +204,44 @@ export const UserCreatePage = () => {
         title="Registro manual de usuario"
       />
 
-      <div className={styles.layout}>
-        <Card className={styles.formCard} padded={false}>
-          <div className={styles.formTitle}>
-            <h2>Datos del usuario</h2>
-          </div>
-          <div className={styles.formBody}>
-            <UserForm
-              values={form.values}
-              errors={form.errors}
-              roles={roles}
-              departments={departments}
-              groups={groups}
-              isSubmitting={isSubmitting}
-              mode="create"
-              submitLabel="Guardar usuario"
-              secondarySubmitLabel="Guardar y crear otro"
-              formError={formError}
-              onChange={form.onChange}
-              onSubmit={onSubmit}
-              onCancel={() => navigate('/admin/users')}
-            />
-          </div>
-        </Card>
+      <div className={styles.createLayout}>
+        <details className={styles.helpBanner}>
+          <summary>Notas para el registro</summary>
+          <ul>
+            <li>La cédula y el correo institucional deben ser únicos.</li>
+            <li>Debe asignar al menos un rol (solo se listan roles activos).</li>
+            <li>
+              Estudiante + estado Activa: indique sección; el alumno queda matriculado al
+              guardar.
+            </li>
+            <li>
+              <strong>Activa</strong>: puede iniciar sesión de inmediato.{' '}
+              <strong>Pendiente</strong>: requiere código por correo (5 min).
+            </li>
+            <li>
+              Contraseña temporal obligatoria; se cambia en el primer inicio. El acceso es con
+              la cédula, no con el correo.
+            </li>
+          </ul>
+        </details>
 
-        <aside className={styles.sidebar}>
-          <Card className={styles.infoCard}>
-            <h2>Información</h2>
-            <p>Use este formulario para incorporar un usuario de forma individual.</p>
-            <ul>
-              <li>La cédula y el correo institucional deben ser únicos.</li>
-              <li>
-                Roles disponibles en el sistema: Administrador, Docente y Estudiante (solo se
-                listan roles activos).
-              </li>
-              <li>Debe asignar al menos un rol institucional.</li>
-              <li>
-                Si el rol es Estudiante y el estado es Activa, debe indicar la sección. El alumno
-                queda matriculado en esa sección al guardar.
-              </li>
-              <li>
-                Estado <strong>Activa</strong>: la cuenta puede iniciar sesión de inmediato (sin
-                verificación por correo).
-              </li>
-              <li>
-                Estado <strong>Pendiente</strong>: la cuenta no puede iniciar sesión hasta verificar
-                el código enviado por correo (válido 5 minutos). Si el correo no se envía, la cuenta
-                permanece pendiente y puede reenviar el código desde la pantalla de verificación.
-              </li>
-              <li>
-                La contraseña temporal es obligatoria. El usuario deberá cambiarla al iniciar
-                sesión por primera vez.
-              </li>
-              <li>El acceso al sistema se realiza con la cédula (no con el correo).</li>
-            </ul>
-          </Card>
-        </aside>
+        <UserForm
+          values={form.values}
+          errors={form.errors}
+          roles={roles}
+          rolesError={rolesError}
+          onRetryRoles={() => setRolesReloadKey((key) => key + 1)}
+          departments={departments}
+          groups={groups}
+          isSubmitting={isSubmitting}
+          mode="create"
+          submitLabel="Guardar usuario"
+          secondarySubmitLabel="Guardar y crear otro"
+          formError={formError}
+          onChange={form.onChange}
+          onSubmit={onSubmit}
+          onCancel={() => navigate('/admin/users')}
+        />
       </div>
     </section>
   );

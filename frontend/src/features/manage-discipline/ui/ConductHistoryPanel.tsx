@@ -254,11 +254,13 @@ export function ConductHistoryPanel({
       ) : null}
       {!rosterReady || loading ? <p className={styles.muted}>Cargando historial…</p> : null}
       {rosterReady && !blocked && studentId == null ? (
-        <EmptyState
-          description="Elija un estudiante para ver su nota de conducta y sus expedientes."
-          icon={GraduationCap}
-          title="Historial disciplinario"
-        />
+        <div className={styles.emptyWrap}>
+          <EmptyState
+            description="Elija un estudiante para ver su nota de conducta y sus expedientes."
+            icon={GraduationCap}
+            title="Historial disciplinario"
+          />
+        </div>
       ) : null}
       {history && !loading ? (
         <div className={styles.stack}>

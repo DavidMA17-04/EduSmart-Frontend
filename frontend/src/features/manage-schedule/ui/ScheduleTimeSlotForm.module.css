@@ -7,7 +7,7 @@
   display: grid;
   gap: 6px;
   font-size: 13px;
-  color: var(--admin-muted, #667085);
+  color: var(--admin-muted, var(--brand-muted));
 }
 
 .row {
@@ -19,7 +19,7 @@
 .hint {
   margin: 0;
   font-size: 13px;
-  color: var(--admin-muted, #667085);
+  color: var(--admin-muted, var(--brand-muted));
 }
 
 .check {

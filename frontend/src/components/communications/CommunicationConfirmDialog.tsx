@@ -15,12 +15,12 @@ interface Props {
 }
 
 const TONE_CLASS: Record<NonNullable<Props['tone']>, string> = {
-  primary: 'bg-[#0d2346] hover:bg-[#133261]',
-  danger: 'bg-rose-600 hover:bg-rose-700',
-  warning: 'bg-amber-600 hover:bg-amber-700',
+  primary: 'bg-brand-primary hover:bg-brand-primary-hover',
+  danger: 'bg-brand-danger hover:bg-red-700',
+  warning: 'bg-brand-warning hover:bg-amber-700',
 };
 
-/** Confirmación con el mismo lenguaje visual del módulo (afirmación a la izquierda). */
+/** Confirmación alineada a FormActions: afirmación luego Cancelar (derecha). */
 export const CommunicationConfirmDialog: React.FC<Props> = ({
   isOpen,
   title,
@@ -40,7 +40,7 @@ export const CommunicationConfirmDialog: React.FC<Props> = ({
     title={title}
     icon={icon}
     footer={
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-end gap-3">
         <button
           type="button"
           onClick={onConfirm}

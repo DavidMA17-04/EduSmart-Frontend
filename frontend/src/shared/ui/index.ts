@@ -1,7 +1,9 @@
 export { Button, Card } from './Button';
 export { Checkbox, Input } from './Input';
 export { Alert, Badge } from './Feedback';
-export type { BadgeTone } from './Feedback';
+export type { AlertTone, BadgeTone } from './Feedback';
+export { KpiCard, KpiGrid } from './KpiCard';
+export type { KpiCardProps, KpiTone } from './KpiCard';
 export { Pagination, Table, Tabs } from './DataDisplay';
 export type { TabItem } from './DataDisplay';
 export { Select, Textarea } from './FormControls';

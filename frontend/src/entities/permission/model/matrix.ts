@@ -4,7 +4,16 @@ export type PermissionMatrix = Record<PermissionModule, Partial<Record<Permissio
 
 export function buildPermissionMatrix(permissions: Permission[]): PermissionMatrix {
   const matrix = Object.fromEntries(PERMISSION_MODULES.map((module) => [module, {}])) as PermissionMatrix;
-  permissions.forEach((permission) => { matrix[permission.module][permission.action] = permission; });
+  const knownModules = new Set<string>(PERMISSION_MODULES);
+  const knownActions = new Set<string>(PERMISSION_ACTIONS);
+
+  permissions.forEach((permission) => {
+    if (!knownModules.has(permission.module) || !knownActions.has(permission.action)) {
+      return;
+    }
+    matrix[permission.module][permission.action] = permission;
+  });
+
   return matrix;
 }
 

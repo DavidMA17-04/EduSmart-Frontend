@@ -14,18 +14,18 @@
   display: grid;
   gap: 6px;
   font-size: 13px;
-  color: var(--admin-muted, #667085);
+  color: var(--admin-muted, var(--brand-muted));
 }
 
 .hint {
   margin: 0;
   font-size: 13px;
-  color: var(--admin-muted, #667085);
+  color: var(--admin-muted, var(--brand-muted));
   line-height: 1.4;
 }
 
 .hint a {
-  color: var(--admin-primary, #2563eb);
+  color: var(--admin-primary, var(--brand-primary));
 }
 
 .actions {

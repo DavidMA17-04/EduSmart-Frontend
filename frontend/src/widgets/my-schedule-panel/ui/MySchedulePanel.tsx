@@ -283,12 +283,12 @@ export const MySchedulePanel = ({
             <table className={styles.matrix}>
               <thead>
                 <tr>
-                  <th className={styles.timeCol} scope="col">
+                  <th className={`${styles.timeCol} ${styles.timeHead}`} scope="col">
                     Hora
                   </th>
                   {SCHEDULE_WEEKDAYS.map((day) => (
                     <th
-                      className={styles.slotHead}
+                      className={`${styles.slotHead} ${styles[`day${day.dayOfWeek}`]}`}
                       key={day.dayOfWeek}
                       scope="col"
                     >

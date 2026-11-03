@@ -29,6 +29,11 @@ export {
   teachingAssignmentOptionLabel,
 } from './model/scheduleLabels';
 export {
+  downloadScheduleExcel,
+  printSchedule,
+} from './model/scheduleExport';
+export type { ScheduleExportContext } from './model/scheduleExport';
+export {
   cellKey,
   isAssignableSlotType,
   sortTimeSlotsByDisplayOrder,

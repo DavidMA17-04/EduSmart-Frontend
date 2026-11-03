@@ -67,10 +67,11 @@ describe('permission catalog / matrix (D1.1 VIEW_OWN)', () => {
     expect(buildPermissionCode('SCHEDULES', 'VIEW')).toBe('schedules.view');
   });
 
-  it('sync catalog no espera VIEW_OWN ni inventar SCHEDULES', () => {
+  it('sync catalog no espera VIEW_OWN ni inventar SCHEDULES/DEPARTURES', () => {
     const pairs = listExpectedPermissionPairs();
     expect(pairs.some((p) => p.action === 'VIEW_OWN')).toBe(false);
     expect(pairs.some((p) => p.module === 'SCHEDULES')).toBe(false);
+    expect(pairs.some((p) => p.module === 'DEPARTURES')).toBe(false);
     expect(pairs.some((p) => p.module === 'ATTENDANCE' && p.action === 'VIEW')).toBe(true);
   });
   it('representa las acciones de comunicados sin inventarlas para otros módulos', () => {
@@ -81,6 +82,31 @@ describe('permission catalog / matrix (D1.1 VIEW_OWN)', () => {
       expect(matrix.COMMUNICATIONS[action]?.code).toBe('communications.' + action.toLowerCase());
       expect(listExpectedPermissionPairs().some(p => p.action === action)).toBe(false);
     }
+  });
+
+  it('reconoce DEPARTURES y VALIDATE sin tumbar la matriz', () => {
+    expect(PERMISSION_MODULES).toContain('DEPARTURES');
+    expect(PERMISSION_ACTIONS).toContain('VALIDATE');
+    expect(PERMISSION_MODULE_LABELS.DEPARTURES).toBe('Salidas');
+    expect(PERMISSION_ACTION_LABELS.VALIDATE).toBe('Validar');
+
+    const matrix = buildPermissionMatrix([
+      stubPermission({
+        id: 1,
+        code: 'departures.validate',
+        module: 'DEPARTURES',
+        action: 'VALIDATE',
+      }),
+      stubPermission({
+        id: 2,
+        code: 'departures.create',
+        module: 'DEPARTURES',
+        action: 'CREATE',
+      }),
+    ]);
+
+    expect(matrix.DEPARTURES.VALIDATE?.id).toBe(1);
+    expect(matrix.DEPARTURES.CREATE?.id).toBe(2);
   });
 
 });

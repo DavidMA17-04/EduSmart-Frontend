@@ -37,7 +37,7 @@ export function CommunicationTabs<T extends string>({ id, value, options, onChan
             {selected && (
               <motion.span
                 layoutId={`${id}-tab-pill`}
-                className="absolute inset-0 bg-[#0d2346] rounded-lg shadow-sm"
+                className="absolute inset-0 bg-brand-primary rounded-lg shadow-sm"
                 transition={{ type: 'spring', stiffness: 420, damping: 34 }}
               />
             )}
@@ -50,7 +50,7 @@ export function CommunicationTabs<T extends string>({ id, value, options, onChan
                   initial={{ scale: 0.6, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   className={`min-w-[1.25rem] text-center text-[10px] font-bold px-1.5 py-px rounded-full ${
-                    selected ? 'bg-[#cfac65] text-[#0d2346]' : 'bg-white text-slate-700 border border-slate-200'
+                    selected ? 'bg-brand-gold text-brand-primary' : 'bg-white text-slate-700 border border-slate-200'
                   }`}
                 >
                   {option.count}
@@ -75,7 +75,7 @@ export const CommunicationSearch: React.FC<SearchProps> = ({ value, onChange, pl
   <div className="relative w-full md:w-80">
     <Search
       className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${
-        isSearching ? 'text-[#0d2346]' : 'text-slate-400'
+        isSearching ? 'text-brand-primary' : 'text-slate-400'
       }`}
     />
     <input
@@ -84,7 +84,7 @@ export const CommunicationSearch: React.FC<SearchProps> = ({ value, onChange, pl
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       aria-label={placeholder}
-      className="w-full bg-white border border-slate-300 rounded-lg pl-9 pr-9 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0d2346]/20 focus:border-[#0d2346] transition-colors [&::-webkit-search-cancel-button]:hidden"
+      className="w-full bg-white border border-slate-300 rounded-lg pl-9 pr-9 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-colors [&::-webkit-search-cancel-button]:hidden"
     />
     <AnimatePresence>
       {value && (

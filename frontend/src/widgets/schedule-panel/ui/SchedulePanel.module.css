@@ -35,6 +35,14 @@
   font-weight: 600;
 }
 
+.toolbarActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-end;
+}
+
 .status {
   margin: 0;
   color: var(--admin-muted, #6b7280);
@@ -121,9 +129,32 @@
 .slotHead,
 .slotHeadNeutral {
   text-align: center;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   background: #f8fafc;
   color: #0f172a;
+}
+
+.timeHead {
+  z-index: 2;
+  background: linear-gradient(160deg, #021a53 0%, #002e7a 100%);
+  color: #fff;
+  border-bottom: 3px solid #cfac65;
+}
+
+.day1,
+.day3,
+.day5 {
+  background: linear-gradient(180deg, #1a4a9c 0%, #002e7a 100%);
+  color: #fff;
+  border-bottom: 3px solid #cfac65;
+}
+
+.day2,
+.day4 {
+  background: linear-gradient(180deg, #0a2f6e 0%, #021a53 100%);
+  color: #fff;
+  border-bottom: 3px solid #cfac65;
 }
 
 .slotHeadNeutral {

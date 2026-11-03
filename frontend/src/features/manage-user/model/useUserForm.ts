@@ -67,7 +67,8 @@ export function validateUserForm(
     if (!values.password.trim()) {
       errors.password = 'La contraseña temporal es requerida.';
     } else if (!isValidInitialPassword(values.password)) {
-      errors.password = 'La contraseña temporal debe tener entre 8 y 72 caracteres.';
+      errors.password =
+        'La contraseña temporal debe tener 8–72 caracteres, mayúscula, minúscula, número y un carácter especial.';
     }
 
     if (!values.confirmPassword.trim()) {
@@ -76,7 +77,8 @@ export function validateUserForm(
       errors.confirmPassword = 'Las contraseñas no coinciden.';
     }
   } else if (values.password.trim() && !isValidInitialPassword(values.password)) {
-    errors.password = 'La nueva contraseña debe tener entre 8 y 72 caracteres.';
+    errors.password =
+      'La nueva contraseña debe tener 8–72 caracteres, mayúscula, minúscula, número y un carácter especial.';
   }
 
   if (values.roleIds.length === 0) {

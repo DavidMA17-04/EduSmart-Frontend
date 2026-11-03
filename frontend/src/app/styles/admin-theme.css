@@ -21,16 +21,39 @@
   background: var(--admin-background);
 }
 
-/* Títulos en oración: primera letra en mayúscula, el resto en minúscula.
-   Marcas con data-preserve-case (p. ej. EduSmart) no se transforman. */
-:is(h1, h2, h3, h4):not([data-preserve-case]),
-.admin-shell th {
+/*
+  Títulos en oración: escribirlos así en el código (primera mayúscula, resto minúscula).
+  No forzar text-transform en h1–h4: lowercase + ::first-letter falla con iconos SVG
+  o headings en display:flex. Encabezados de tabla sí usan oración por CSS.
+*/
+.admin-shell th:not([data-preserve-case]) {
   text-transform: lowercase !important;
 }
 
-:is(h1, h2, h3, h4):not([data-preserve-case])::first-letter,
-.admin-shell th::first-letter {
+.admin-shell th:not([data-preserve-case])::first-letter {
   text-transform: uppercase !important;
+}
+
+/* Densidad: página que llena el alto útil; paneles que crecen */
+.admin-shell .pageStack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: calc(100vh - 112px);
+  width: 100%;
+}
+
+.admin-shell .fillPanel {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.admin-shell .fillPanel > .table-scroll,
+.admin-shell .fillPanel .table-scroll {
+  flex: 1 1 auto;
+  min-height: 12rem;
 }
 
 .table-scroll {
@@ -44,5 +67,9 @@
     display: grid;
     grid-template-columns: 1fr;
     align-items: stretch;
+  }
+
+  .admin-shell .pageStack {
+    min-height: 0;
   }
 }

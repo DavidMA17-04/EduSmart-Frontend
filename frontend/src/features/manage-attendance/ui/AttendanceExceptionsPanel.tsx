@@ -1,7 +1,9 @@
 import { CalendarRange, Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import {
   Alert,
   Button,
+  ConfirmDialog,
   EmptyState,
   Input,
   ModalCrud,
@@ -19,22 +21,20 @@ const TYPE_LABELS = {
 export const AttendanceExceptionsPanel = () => {
   const toast = useToast();
   const model = useAttendanceCalendarExceptions();
+  const [pendingDelete, setPendingDelete] = useState<{ id: number; title: string } | null>(
+    null,
+  );
 
   const onSubmit = async () => {
     const result = await model.submit();
     toast.push(result.message, result.ok ? 'success' : 'error');
   };
 
-  const onDelete = async (id: number, title: string) => {
-    const row = model.rows.find((r) => r.id === id);
+  const onConfirmDelete = async () => {
+    if (!pendingDelete) return;
+    const row = model.rows.find((r) => r.id === pendingDelete.id);
+    setPendingDelete(null);
     if (!row) return;
-    if (
-      !window.confirm(
-        `¿Eliminar la excepción «${title}»? Esta acción no se puede deshacer.`,
-      )
-    ) {
-      return;
-    }
     const result = await model.remove(row);
     toast.push(result.message, result.ok ? 'success' : 'error');
   };
@@ -127,7 +127,7 @@ export const AttendanceExceptionsPanel = () => {
                     <Button
                       aria-label={`Eliminar ${row.title}`}
                       disabled={model.saving}
-                      onClick={() => void onDelete(row.id, row.title)}
+                      onClick={() => setPendingDelete({ id: row.id, title: row.title })}
                       type="button"
                       variant="secondary"
                     >
@@ -240,6 +240,23 @@ export const AttendanceExceptionsPanel = () => {
           </div>
         </div>
       </ModalCrud>
+
+      <ConfirmDialog
+        cancelLabel="Cancelar"
+        confirmLabel="Eliminar"
+        icon={Trash2}
+        isOpen={pendingDelete != null}
+        isSubmitting={model.saving}
+        message={
+          pendingDelete
+            ? `¿Eliminar la excepción «${pendingDelete.title}»? Esta acción no se puede deshacer.`
+            : ''
+        }
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={() => void onConfirmDelete()}
+        title="Eliminar excepción"
+        tone="danger"
+      />
     </div>
   );
 };

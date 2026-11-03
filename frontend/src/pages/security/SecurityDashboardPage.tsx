@@ -38,13 +38,13 @@ export function SecurityDashboardPage() {
 
         {canView && <SecurityKpiRow />}
 
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,7fr)_minmax(0,3fr)] items-start">
-          <div className="space-y-5 min-w-0">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,7fr)_minmax(0,3fr)] items-stretch">
+          <div className="space-y-4 min-w-0 flex flex-col">
             {canValidate && <SecurityTerminalCard prefill={prefill} />}
-            {canView && <TodayDeparturesTable />}
+            {canView && <div className="flex-1 min-h-0"><TodayDeparturesTable /></div>}
           </div>
           {canView && (
-            <aside className="space-y-5 min-w-0">
+            <aside className="space-y-4 min-w-0 flex flex-col">
               <ScheduledPermitsList
                 selectedId={prefill?.scheduledPermitId ?? null}
                 onSelect={
@@ -58,7 +58,9 @@ export function SecurityDashboardPage() {
                     : undefined
                 }
               />
-              <SecurityLiveFeed />
+              <div className="flex-1 min-h-0">
+                <SecurityLiveFeed />
+              </div>
             </aside>
           )}
         </div>

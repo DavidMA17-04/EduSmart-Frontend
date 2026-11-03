@@ -1,16 +1,10 @@
-import {
-  FileSpreadsheet,
-  FileText,
-  Loader2,
-  Pencil,
-  Plus,
-  Power,
-  ShieldAlert,
-} from 'lucide-react';
+import { FileSpreadsheet, FileText, Loader2, Plus, Power, ShieldAlert } from 'lucide-react';
+import { useState } from 'react';
 import {
   Alert,
   Badge,
   Button,
+  ConfirmDialog,
   EmptyState,
   Input,
   ModalCrud,
@@ -19,7 +13,7 @@ import {
   useToast,
 } from '@/shared/ui';
 import { SEVERITY_LABELS, SEVERITY_ORDER, SEVERITY_TONES, TRACK_LABELS } from '../model/severity';
-import type { InfractionSeverity } from '../model/types';
+import type { InfractionSeverity, InfractionType } from '../model/types';
 import { useInfractionCatalog } from '../model/useInfractionCatalog';
 import { ConductSimulator } from './ConductSimulator';
 import styles from './InfractionCatalogPanel.module.css';
@@ -35,6 +29,8 @@ const SEVERITY_TILE_CLASS: Record<InfractionSeverity, string> = {
 export const InfractionCatalogPanel = () => {
   const toast = useToast();
   const model = useInfractionCatalog();
+  const [pendingDeactivate, setPendingDeactivate] = useState<InfractionType | null>(null);
+  const [deactivating, setDeactivating] = useState(false);
 
   const onSubmit = async () => {
     const result = await model.submit();
@@ -46,19 +42,25 @@ export const InfractionCatalogPanel = () => {
     toast.push(result.message, result.ok ? 'success' : 'error');
   };
 
-  const onToggle = async (id: number) => {
-    const row = model.rows.find((r) => r.id === id);
-    if (!row) return;
-    if (
-      row.isActive &&
-      !window.confirm(
-        `¿Desactivar «${row.name}»? No aparecerá en registros nuevos; los expedientes existentes lo conservan.`,
-      )
-    ) {
+  const onToggle = async (row: InfractionType) => {
+    if (row.isActive) {
+      setPendingDeactivate(row);
       return;
     }
     const result = await model.toggleActive(row);
     toast.push(result.message, result.ok ? 'success' : 'error');
+  };
+
+  const confirmDeactivate = async () => {
+    if (!pendingDeactivate) return;
+    setDeactivating(true);
+    try {
+      const result = await model.toggleActive(pendingDeactivate);
+      toast.push(result.message, result.ok ? 'success' : 'error');
+      if (result.ok) setPendingDeactivate(null);
+    } finally {
+      setDeactivating(false);
+    }
   };
 
   return (
@@ -218,22 +220,20 @@ export const InfractionCatalogPanel = () => {
                   {model.canConfigure ? (
                     <td className={styles.actions}>
                       <Button
-                        aria-label={`Editar ${row.name}`}
-                        disabled={model.saving}
+                        disabled={model.saving || deactivating}
                         onClick={() => model.openEdit(row)}
                         type="button"
-                        variant="secondary"
+                        variant="primary"
                       >
-                        <Pencil aria-hidden="true" size={14} />
+                        Editar
                       </Button>
                       <Button
-                        aria-label={`${row.isActive ? 'Desactivar' : 'Reactivar'} ${row.name}`}
-                        disabled={model.saving}
-                        onClick={() => void onToggle(row.id)}
+                        disabled={model.saving || deactivating}
+                        onClick={() => void onToggle(row)}
                         type="button"
-                        variant="secondary"
+                        variant={row.isActive ? 'danger' : 'primary'}
                       >
-                        <Power aria-hidden="true" size={14} />
+                        {row.isActive ? 'Desactivar' : 'Reactivar'}
                       </Button>
                     </td>
                   ) : null}
@@ -243,6 +243,22 @@ export const InfractionCatalogPanel = () => {
           </table>
         </div>
       )}
+
+      <ConfirmDialog
+        cancelLabel="Cancelar"
+        confirmLabel="Desactivar"
+        icon={Power}
+        isOpen={pendingDeactivate != null}
+        isSubmitting={deactivating}
+        message={`¿Desactivar «${pendingDeactivate?.name ?? ''}»?`}
+        onCancel={() => {
+          if (!deactivating) setPendingDeactivate(null);
+        }}
+        onConfirm={() => void confirmDeactivate()}
+        secondary="No aparecerá en registros nuevos; los expedientes existentes lo conservan."
+        title="Desactivar tipo de falta"
+        tone="warning"
+      />
 
       <ModalCrud
         isOpen={model.modalOpen}
@@ -303,6 +319,9 @@ export const InfractionCatalogPanel = () => {
             />
           </label>
           <div className={styles.formActions}>
+            <Button disabled={model.saving} onClick={() => void onSubmit()} type="button">
+              {model.saving ? 'Guardando…' : 'Guardar'}
+            </Button>
             <Button
               disabled={model.saving}
               onClick={model.closeModal}
@@ -310,9 +329,6 @@ export const InfractionCatalogPanel = () => {
               variant="secondary"
             >
               Cancelar
-            </Button>
-            <Button disabled={model.saving} onClick={() => void onSubmit()} type="button">
-              {model.saving ? 'Guardando…' : 'Guardar'}
             </Button>
           </div>
         </div>

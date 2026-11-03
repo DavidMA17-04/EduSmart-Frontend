@@ -21,7 +21,8 @@ import {
 } from 'recharts';
 import { ATTENDANCE_REPORTS_PATH, useAttendanceDashboardKpis } from '@/features/manage-attendance';
 import { brandColors } from '@/styles/brandColors';
-import { Alert, Button } from '@/shared/ui';
+import { chartTheme } from '@/styles/chartTheme';
+import { Alert, Button, KpiCard, KpiGrid } from '@/shared/ui';
 import { Link } from 'react-router-dom';
 import { staffPathForSession } from '@/widgets/app-shell/model/adminNavigation';
 import styles from './AttendanceDashboardPanel.module.css';
@@ -81,34 +82,36 @@ export const AttendanceDashboardPanel = ({
 
       {error ? <Alert>{error}</Alert> : null}
 
-      <div className={styles.kpis}>
-        <article className={styles.kpi}>
-          <Percent aria-hidden="true" size={16} />
-          <span className={styles.kpiValue}>{data.kpis.todayRate.toFixed(1)}%</span>
-          <span className={styles.kpiLabel}>Asistencia de hoy</span>
-          <span className={styles.kpiSub}>
-            {data.today.registeredStudents} registrados / {data.today.expectedStudents} esperados
-          </span>
-        </article>
-        <article className={styles.kpi}>
-          <UserCheck aria-hidden="true" size={16} />
-          <span className={styles.kpiValue}>{data.kpis.presentCount}</span>
-          <span className={styles.kpiLabel}>Estudiantes presentes</span>
-          <span className={styles.kpiSub}>Incluye tardías del día</span>
-        </article>
-        <article className={styles.kpi}>
-          <AlertTriangle aria-hidden="true" size={16} />
-          <span className={styles.kpiValue}>{data.kpis.criticalAbsences}</span>
-          <span className={styles.kpiLabel}>Ausencias críticas</span>
-          <span className={styles.kpiSub}>Umbral {data.criticalAbsenceRate}%</span>
-        </article>
-        <article className={styles.kpi}>
-          <CalendarCheck aria-hidden="true" size={16} />
-          <span className={styles.kpiValue}>{data.kpis.openSessions}</span>
-          <span className={styles.kpiLabel}>Sesiones abiertas</span>
-          <span className={styles.kpiSub}>Clases en curso</span>
-        </article>
-      </div>
+      <KpiGrid columns={4}>
+        <KpiCard
+          icon={Percent}
+          label="Asistencia de hoy"
+          tone="navy"
+          value={`${data.kpis.todayRate.toFixed(1)}%`}
+          hint={`${data.today.registeredStudents} registrados / ${data.today.expectedStudents} esperados`}
+        />
+        <KpiCard
+          icon={UserCheck}
+          label="Estudiantes presentes"
+          tone="green"
+          value={data.kpis.presentCount}
+          hint="Incluye tardías del día"
+        />
+        <KpiCard
+          icon={AlertTriangle}
+          label="Ausencias críticas"
+          tone="danger"
+          value={data.kpis.criticalAbsences}
+          hint={`Umbral ${data.criticalAbsenceRate}%`}
+        />
+        <KpiCard
+          icon={CalendarCheck}
+          label="Sesiones abiertas"
+          tone="gold"
+          value={data.kpis.openSessions}
+          hint="Clases en curso"
+        />
+      </KpiGrid>
 
       {compact ? null : (
         <>
@@ -121,17 +124,17 @@ export const AttendanceDashboardPanel = ({
               {data.trend.length === 0 ? (
                 <p className={styles.muted}>Aún no hay marcas en el período seleccionado.</p>
               ) : (
-                <ResponsiveContainer height={240} width="100%">
+                <ResponsiveContainer height={180} width="100%">
                   <AreaChart data={data.trend}>
-                    <CartesianGrid stroke={brandColors.border} strokeDasharray="3 3" />
-                    <XAxis dataKey="period" tick={{ fontSize: 11 }} />
-                    <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
-                    <Tooltip />
+                    <CartesianGrid {...chartTheme.grid} />
+                    <XAxis dataKey="period" tick={chartTheme.axis.tick} />
+                    <YAxis domain={[0, 100]} tick={chartTheme.axis.tick} />
+                    <Tooltip contentStyle={chartTheme.tooltip.contentStyle} />
                     <Area
                       dataKey="attendanceRate"
-                      fill={brandColors.primaryLight}
+                      fill={chartTheme.area.fill}
                       name="% presentismo"
-                      stroke={brandColors.primary}
+                      stroke={chartTheme.area.stroke}
                       type="monotone"
                     />
                   </AreaChart>
@@ -146,26 +149,34 @@ export const AttendanceDashboardPanel = ({
               {data.distribution.total === 0 ? (
                 <p className={styles.muted}>Sin registros para graficar.</p>
               ) : (
-                <>
-                  <ResponsiveContainer height={180} width="100%">
-                    <PieChart>
-                      <Pie
-                        cx="50%"
-                        cy="50%"
-                        data={slices}
-                        dataKey="value"
-                        innerRadius={48}
-                        nameKey="name"
-                        outerRadius={72}
-                        paddingAngle={2}
-                        stroke="none"
-                      >
-                        {slices.map((slice) => (
-                          <Cell fill={slice.color} key={slice.key} />
-                        ))}
-                      </Pie>
-                    </PieChart>
-                  </ResponsiveContainer>
+                <div className={styles.donutRow}>
+                  <div className={styles.donutWrap}>
+                    <ResponsiveContainer height={168} width="100%">
+                      <PieChart>
+                        <Pie
+                          cx="50%"
+                          cy="50%"
+                          data={slices.filter((s) => s.value > 0)}
+                          dataKey="value"
+                          innerRadius={50}
+                          nameKey="name"
+                          outerRadius={72}
+                          paddingAngle={2}
+                          stroke="none"
+                        >
+                          {slices
+                            .filter((s) => s.value > 0)
+                            .map((slice) => (
+                              <Cell fill={slice.color} key={slice.key} />
+                            ))}
+                        </Pie>
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className={styles.donutCenter} aria-hidden="true">
+                      <span className={styles.donutTotal}>{data.distribution.total}</span>
+                      <span className={styles.donutTotalLabel}>Total</span>
+                    </div>
+                  </div>
                   <ul className={styles.legend}>
                     {slices.map((slice) => (
                       <li key={slice.key}>
@@ -174,7 +185,7 @@ export const AttendanceDashboardPanel = ({
                       </li>
                     ))}
                   </ul>
-                </>
+                </div>
               )}
             </article>
           </div>

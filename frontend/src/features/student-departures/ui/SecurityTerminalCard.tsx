@@ -185,7 +185,7 @@ export function SecurityTerminalCard({ prefill, large = false }: { prefill?: Ter
     <section className={`${CARD} relative overflow-hidden`} aria-labelledby="terminal-title">
       <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="w-10 h-10 rounded-xl bg-[#0d2346] text-white flex items-center justify-center">
+          <span className="w-10 h-10 rounded-xl bg-brand-primary text-white flex items-center justify-center">
             <ScanLine className="w-5 h-5" />
           </span>
           <div>
@@ -258,7 +258,7 @@ export function SecurityTerminalCard({ prefill, large = false }: { prefill?: Ter
           Validar encargado
         </button>
         {permitId && !result && (
-          <p className="sm:col-span-3 text-xs text-purple-700 flex items-center gap-1.5">
+          <p className="sm:col-span-3 text-xs text-brand-primary flex items-center gap-1.5">
             <CalendarCheck className="w-3.5 h-3.5" />
             Estudiante precargado desde un permiso programado. Solicite la cédula de quien lo retira.
           </p>
@@ -288,7 +288,7 @@ export function SecurityTerminalCard({ prefill, large = false }: { prefill?: Ter
             exit={{ opacity: 0, y: -8 }}
             transition={{ type: 'spring', stiffness: 380, damping: 30 }}
             className={`mx-5 mb-5 rounded-xl border-2 p-4 sm:p-5 ${
-              authorized ? 'border-emerald-300 bg-emerald-50/40' : 'border-rose-300 bg-rose-50/40'
+              authorized ? 'border-brand-green/40 bg-brand-green-light/40' : 'border-rose-300 bg-rose-50/40'
             }`}
           >
             {/* Estudiante */}
@@ -296,7 +296,7 @@ export function SecurityTerminalCard({ prefill, large = false }: { prefill?: Ter
               <div className="flex items-center gap-3 min-w-0">
                 <span
                   className={`w-12 h-12 rounded-full flex items-center justify-center text-base font-bold shrink-0 ${
-                    authorized ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'
+                    authorized ? 'bg-brand-green text-white' : 'bg-rose-600 text-white'
                   }`}
                 >
                   {initials(result.student.fullName)}
@@ -307,7 +307,7 @@ export function SecurityTerminalCard({ prefill, large = false }: { prefill?: Ter
                   </h3>
                   <p className="text-xs text-slate-500 flex flex-wrap items-center gap-x-2">
                     <span className="tabular">Cédula {result.student.nationalId}</span>
-                    <span className="px-1.5 py-0.5 rounded-md bg-[#0d2346]/[0.07] text-[#0d2346] font-semibold">
+                    <span className="px-1.5 py-0.5 rounded-md bg-brand-primary/[0.07] text-brand-primary font-semibold">
                       {sectionLabel(result.student)}
                     </span>
                   </p>
@@ -319,10 +319,10 @@ export function SecurityTerminalCard({ prefill, large = false }: { prefill?: Ter
             {/* Comparativa */}
             <div className="mt-4 grid md:grid-cols-2 gap-3">
               <div className="rounded-lg bg-white border border-slate-200/80 p-3">
-                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Encargado presente</p>
+                <p className="text-[11px] font-semibold text-slate-500 tracking-normal mb-1.5">Encargado presente</p>
                 {authorized && result.guardian ? (
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-brand-green shrink-0" />
                     <div>
                       <p data-preserve-case className="text-sm font-semibold text-slate-900">{result.guardian.fullName}</p>
                       <p className="text-xs text-slate-500">
@@ -340,7 +340,7 @@ export function SecurityTerminalCard({ prefill, large = false }: { prefill?: Ter
                 )}
               </div>
               <div className="rounded-lg bg-white border border-slate-200/80 p-3">
-                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-1.5 flex items-center gap-1">
+                <p className="text-[11px] font-semibold text-slate-500 tracking-normal mb-1.5 flex items-center gap-1">
                   <Users className="w-3.5 h-3.5" />
                   Tutores registrados
                 </p>
@@ -352,7 +352,7 @@ export function SecurityTerminalCard({ prefill, large = false }: { prefill?: Ter
                       const isMatch = authorized && g.id === result.guardian?.id;
                       return (
                         <li key={g.id} className="flex items-center justify-between gap-2 text-sm">
-                          <span className={`flex items-center gap-1.5 min-w-0 ${isMatch ? 'text-emerald-800 font-semibold' : 'text-slate-700'}`}>
+                          <span className={`flex items-center gap-1.5 min-w-0 ${isMatch ? 'text-brand-green font-semibold' : 'text-slate-700'}`}>
                             {isMatch && <Check className="w-3.5 h-3.5 shrink-0" />}
                             <span data-preserve-case className="truncate">{g.fullName}</span>
                             {!g.active && <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 rounded">Inactivo</span>}
@@ -378,7 +378,7 @@ export function SecurityTerminalCard({ prefill, large = false }: { prefill?: Ter
             {authorized ? (
               <div className="mt-4 space-y-3">
                 {result.pendingPermit && (
-                  <label className="flex items-start gap-3 rounded-lg border border-purple-200 bg-purple-50/60 p-3 cursor-pointer">
+                  <label className="flex items-start gap-3 rounded-lg border border-brand-primary/25 bg-brand-primary-light/60 p-3 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={usePermit}
@@ -414,7 +414,7 @@ export function SecurityTerminalCard({ prefill, large = false }: { prefill?: Ter
                         }`}
                       >
                         {departureType === type && (
-                          <motion.span layoutId="departure-type-pill" className="absolute inset-0 rounded-md bg-[#0d2346]" />
+                          <motion.span layoutId="departure-type-pill" className="absolute inset-0 rounded-md bg-brand-primary" />
                         )}
                         <span className="relative">{TYPE_SHORT_LABEL[type]}</span>
                       </button>
@@ -515,7 +515,7 @@ export function SecurityTerminalCard({ prefill, large = false }: { prefill?: Ter
               animate={{ scale: 1, rotate: 0 }}
               transition={{ type: 'spring', stiffness: 420, damping: 16 }}
               className={`w-16 h-16 rounded-full flex items-center justify-center text-white ${
-                done === 'AUTHORIZED' ? 'bg-emerald-600' : 'bg-rose-600'
+                done === 'AUTHORIZED' ? 'bg-brand-green' : 'bg-rose-600'
               }`}
             >
               {done === 'AUTHORIZED' ? <Check className="w-8 h-8" strokeWidth={3} /> : <ShieldX className="w-8 h-8" />}

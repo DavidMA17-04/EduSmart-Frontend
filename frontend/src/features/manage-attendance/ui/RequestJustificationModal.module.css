@@ -63,8 +63,8 @@
 }
 
 .dropzoneActive {
-  border-color: #2563eb;
-  background: #eff6ff;
+  border-color: var(--brand-primary);
+  background: var(--brand-primary-light);
 }
 
 .dropzone input[type='file'] {

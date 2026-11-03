@@ -44,11 +44,11 @@
 }
 
 .tileVeryMinor {
-  color: #2f855a;
+  color: var(--brand-green);
 }
 
 .tileMinor {
-  color: #2b6cb0;
+  color: var(--brand-primary-hover);
 }
 
 .tileSerious {
@@ -185,9 +185,16 @@
 
 .actions {
   display: flex;
-  gap: 0.35rem;
+  flex-wrap: wrap;
+  gap: 0.4rem;
   justify-content: flex-end;
   white-space: nowrap;
+}
+
+.actions :global(button) {
+  min-height: 2rem;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.82rem;
 }
 
 .form {
