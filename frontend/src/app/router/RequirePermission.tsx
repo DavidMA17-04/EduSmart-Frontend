@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { getSessionUser, sessionHasPermission } from '@/shared/auth';
+import { NotFoundPage } from '@/pages/errors';
 import { houseHomeOrLogin } from '@/widgets/app-shell/model/territory';
 
 export const RequirePermission = ({
@@ -13,7 +14,6 @@ export const RequirePermission = ({
   /** When set, access is denied if the session also has this permission. */
   withoutPermission?: string;
 }) => {
-  const bounce = houseHomeOrLogin(getSessionUser()?.roles);
   const allowed = anyOf?.length
     ? anyOf.some((code) => sessionHasPermission(code))
     : permission
@@ -21,10 +21,13 @@ export const RequirePermission = ({
       : false;
 
   if (!allowed) {
-    return <Navigate replace to={bounce} />;
+    // Sin permiso se responde igual que una dirección inexistente: no se
+    // confirma que la sección exista para roles que no la tienen.
+    return <NotFoundPage />;
   }
   if (withoutPermission && sessionHasPermission(withoutPermission)) {
-    return <Navigate replace to={bounce} />;
+    // Ruta alternativa (p. ej. "Mi horario" vs. "Horarios"): vuelve al inicio.
+    return <Navigate replace to={houseHomeOrLogin(getSessionUser()?.roles)} />;
   }
   return <Outlet />;
 };

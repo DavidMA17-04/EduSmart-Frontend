@@ -94,7 +94,7 @@ async function fetchAttendanceBlob(
     response = await fetch(`${apiBaseUrl}${path}`, { headers });
   } catch {
     throw new Error(
-      `No se pudo conectar con la API en ${apiBaseUrl}. Verifique que el backend esté activo.`,
+      'No se pudo conectar con el servidor. Revise su conexión a internet e intente de nuevo.',
     );
   }
 

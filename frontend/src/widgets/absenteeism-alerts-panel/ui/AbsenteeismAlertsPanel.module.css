@@ -1,6 +1,8 @@
 .layout {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
+  min-width: 0;
 }
 
 .loading {
@@ -94,6 +96,7 @@
 }
 
 .card {
+  min-width: 0;
   border-radius: 12px;
   border: 1px solid color-mix(in srgb, var(--brand-primary, #002e7a) 12%, #fff);
   background: #fff;
@@ -424,7 +427,7 @@
 
   .chartsRow,
   .alertsRow {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .rulesList {
@@ -434,10 +437,10 @@
 
 @media (max-width: 640px) {
   .kpiRow {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .rulesList {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }

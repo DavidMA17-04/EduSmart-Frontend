@@ -414,7 +414,7 @@ function DeliveryFields({
       </label>
       <label>
         Acuse (opcional)
-        <input
+        <Input
           type="file"
           accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
           onChange={(event) => onFile(event.target.files?.[0] ?? null)}
@@ -464,7 +464,7 @@ function WrittenDefenseForm({
       </label>
       <label>
         Documento
-        <input
+        <Input
           type="file"
           required
           accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"

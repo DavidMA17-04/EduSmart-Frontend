@@ -1,34 +1,31 @@
-import { roleModuleRoutes } from './RoleModuleRoutes';
-import { Navigate, Route, Routes } from 'react-router-dom';
-import { ForgotPasswordPage } from '@/pages/forgot-password';
-import { LoginPage } from '@/pages/login';
-import { VerifyAccountPage } from '@/pages/verify-account';
 import {
   AttendanceHistoryPage,
   AttendanceJustificationsPage,
   AttendanceRedeemPage,
-} from '@/pages/attendance';
-import { ATTENDANCE_PERMISSIONS } from '@/features/manage-attendance';
-import {
   DisciplineHistoryPage,
   DisciplineNotificationsPage,
-} from '@/pages/discipline';
-import { DISCIPLINE_PERMISSIONS } from '@/features/manage-discipline';
-import { SCHEDULE_PERMISSIONS } from '@/features/manage-schedule';
-import { MySchedulePage } from '@/pages/my-schedule';
-import { ProfileSettingsPage } from '@/pages/profile-settings';
-import { ResetPasswordPage } from '@/pages/reset-password';
-import { GuardianHomePage } from '@/pages/guardian-home';
-import { StudentHomePage } from '@/pages/student-home';
-import {
+  ForgotPasswordPage,
+  GuardianHomePage,
+  LoginPage,
+  MySchedulePage,
+  ProfileSettingsPage,
+  ResetPasswordPage,
   SecurityCheckOutPage,
   SecurityDashboardPage,
   SecurityHistoryPage,
   SecurityPermitsPage,
-} from '@/pages/security';
-import { DEPARTURE_PERMISSIONS } from '@/features/student-departures';
+  StudentHomePage,
+  VerifyAccountPage,
+} from './pages';
+import { roleModuleRoutes } from './RoleModuleRoutes';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { ATTENDANCE_PERMISSIONS } from '@/features/manage-attendance/model/attendanceRouting';
+import { DISCIPLINE_PERMISSIONS } from '@/features/manage-discipline/model/disciplineRouting';
+import { SCHEDULE_PERMISSIONS } from '@/features/manage-schedule/model/schedulePermissions';
+import { DEPARTURE_PERMISSIONS } from '@/features/student-departures/model/permissions';
+import { PageSuspense } from '@/shared/ui';
 import { RoleShell } from '@/widgets/app-shell';
-import { HouseHomeRedirect } from './HouseHomeRedirect';
+import { NotFoundPage } from '@/pages/errors';
 import { RequireAuth } from './RequireAuth';
 import { RequirePermission } from './RequirePermission';
 import { RootRedirect } from './RootRedirect';
@@ -36,6 +33,7 @@ import { staffHouseRoutes } from './StaffHouseRoutes';
 import { TerritoryGuard } from './TerritoryGuard';
 
 export const AppRouter = () => (
+  <PageSuspense fullscreen>
   <Routes>
     <Route element={<LoginPage />} path="/login" />
     <Route element={<ForgotPasswordPage />} path="/forgot-password" />
@@ -70,7 +68,7 @@ export const AppRouter = () => (
           <Route element={<ProfileSettingsPage />} path="settings" />
           <Route element={<ProfileSettingsPage />} path="profile" />
           {roleModuleRoutes()}
-          <Route element={<HouseHomeRedirect />} path="*" />
+          <Route element={<NotFoundPage />} path="*" />
         </Route>
 
         <Route element={<RoleShell />} path="/student">
@@ -125,7 +123,7 @@ export const AppRouter = () => (
           <Route element={<ProfileSettingsPage />} path="settings" />
           <Route element={<ProfileSettingsPage />} path="profile" />
           {roleModuleRoutes()}
-          <Route element={<HouseHomeRedirect />} path="*" />
+          <Route element={<NotFoundPage />} path="*" />
         </Route>
 
         <Route element={<RoleShell />} path="/guardian">
@@ -153,7 +151,7 @@ export const AppRouter = () => (
           <Route element={<ProfileSettingsPage />} path="settings" />
           <Route element={<ProfileSettingsPage />} path="profile" />
           {roleModuleRoutes()}
-          <Route element={<HouseHomeRedirect />} path="*" />
+          <Route element={<NotFoundPage />} path="*" />
         </Route>
       </Route>
     </Route>
@@ -171,8 +169,9 @@ export const AppRouter = () => (
 
     <Route element={<Navigate replace to="/admin/users" />} path="/onboarding" />
     <Route element={<RootRedirect />} path="/" />
-    <Route element={<RootRedirect />} path="*" />
+    <Route element={<NotFoundPage standalone />} path="*" />
   </Routes>
+  </PageSuspense>
 );
 
 export default AppRouter;

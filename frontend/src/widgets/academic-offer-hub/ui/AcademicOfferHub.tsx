@@ -149,7 +149,9 @@ export const AcademicOfferHub = () => {
       {error ? <Alert>{error}</Alert> : null}
       <div className={styles.grid}>
         <article className={styles.card}>
-          <div className={styles.overlay} />
+          {/* Portada fija de Materias (imagen ilustrativa en /public/brand). */}
+          <img alt="" className={styles.cardImage} src="/brand/hub-materias.jpg" />
+          <div className={`${styles.overlay} ${styles.overlayPhoto}`} />
           <div className={styles.cardBody}>
             <span className={styles.cardIcon}>
               <BookOpen size={22} />

@@ -2,7 +2,7 @@ import { portalPathForSession } from '@/shared/auth/portalPaths';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Inbox } from 'lucide-react';
-import { Alert, Badge, Button, EmptyState, Textarea } from '@/shared/ui';
+import { Alert, Badge, Button, EmptyState, Input, Textarea } from '@/shared/ui';
 import { disciplineApi, DisciplineApiError } from '../api/disciplineApi';
 import { formatShortDate } from '../model/businessDays';
 import { disciplineCasePath } from '../model/disciplineRouting';
@@ -188,7 +188,7 @@ function Reading({
           {composer === 'defense' ? (
             <label>
               Adjuntos del descargo, hasta 3
-              <input
+              <Input
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
                 multiple

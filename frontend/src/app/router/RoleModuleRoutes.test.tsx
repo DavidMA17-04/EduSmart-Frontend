@@ -13,7 +13,10 @@ vi.mock('@/shared/auth', () => ({
   sessionHasPermission: (p: string) => session.permissions.includes(p),
 }));
 vi.mock('@/shared/auth/session', () => ({ getSessionUser: () => session }));
-vi.mock('@/pages/discipline', () => ({
+// Sin permiso se muestra la misma pantalla que una dirección inexistente.
+vi.mock('@/pages/errors', () => ({ NotFoundPage: () => <div>not-found-page</div> }));
+// Las rutas importan sus páginas (cargadas bajo demanda) desde './pages'.
+vi.mock('./pages', () => ({
   DisciplineAppealsPage: () => <div>center-page</div>,
   DisciplineAppealNewPage: () => <div>new-page</div>,
   DisciplineAppealTrackingPage: () => <div>tracking-page</div>,
@@ -21,9 +24,9 @@ vi.mock('@/pages/discipline', () => ({
   DisciplineAppealsReviewPage: () => <div>review-page</div>,
   DisciplineAppealsReportsPage: () => <div>report-page</div>,
   DisciplineCasePage: () => <div>case-page</div>,
+  CommunicationsFeedPage: () => <div>feed-page</div>,
+  CommunicationsAdminPage: () => <div>manager-page</div>,
 }));
-vi.mock('@/pages/communications/CommunicationsFeedPage', () => ({ CommunicationsFeedPage: () => <div>feed-page</div> }));
-vi.mock('@/pages/communications/CommunicationsAdminPage', () => ({ CommunicationsAdminPage: () => <div>manager-page</div> }));
 
 const houses = [
   ['Administrador','admin',true], ['Docente','teacher',true], ['Orientador','counselor',true],
@@ -80,12 +83,12 @@ describe('rutas de módulos integradas', () => {
     ['Encargado', 'guardian', 'discipline/appeals/review/42'],
     ['Estudiante', 'student', 'discipline/appeals/reports'],
     ['Encargado', 'guardian', 'communications/manage'],
-  ])('%s en /%s/%s vuelve a su home sin tratarlo como id de recurso', async (role, house, path) => {
+  ])('%s en /%s/%s muestra "página no encontrada" sin tratarlo como id de recurso', async (role, house, path) => {
     session.roles = [role]; session.permissions = ['disciplinary.view_own', 'communications.view'];
     const router = await render(`/${house}/${path}`);
-    expect(host.textContent).toContain('home-page');
+    expect(host.textContent).toContain('not-found-page');
     expect(host.textContent).not.toContain('tracking-page');
-    expect(router.state.location.pathname).toBe(`/${house}`);
+    expect(router.state.location.pathname).toBe(`/${house}/${path}`);
   });
   it('review se reconoce como ruta estática y la revisión vuelve al portal docente', async () => {
     session.roles = ['Docente']; session.permissions = ['disciplinary.resolve'];
@@ -96,11 +99,12 @@ describe('rutas de módulos integradas', () => {
     expect(host.textContent).toContain('review-detail-page');
     expect(router.state.location.pathname).toBe('/teacher/discipline/appeals/review/42');
   });
-  it('Orientador sin permiso de comunicados o resolución vuelve a su home', async () => {
+  it('Orientador sin permiso de comunicados ve "página no encontrada"', async () => {
     session.roles = ['Orientador']; session.permissions = ['disciplinary.view'];
     const router = await render('/counselor/communications');
-    expect(host.textContent).toContain('home-page');
-    expect(router.state.location.pathname).toBe('/counselor');
+    expect(host.textContent).toContain('not-found-page');
+    expect(host.textContent).not.toContain('feed-page');
+    expect(router.state.location.pathname).toBe('/counselor/communications');
   });
   it('un rol desconocido no renderiza el feed', async () => {
     session.roles = ['Desconocido']; session.permissions = ['communications.view'];

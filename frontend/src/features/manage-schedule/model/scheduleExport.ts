@@ -1,5 +1,5 @@
-import * as XLSX from 'xlsx';
-import type { ScheduleEntry, ScheduleTimeSlot } from '@/entities/schedule';
+import type { ScheduleEntry, ScheduleSlotType, ScheduleTimeSlot } from '@/entities/schedule';
+import { scheduleApi } from '../api/scheduleApi';
 import {
   SCHEDULE_WEEKDAYS,
   formatSlotRange,
@@ -91,19 +91,52 @@ export function scheduleExportFileBase(ctx: ScheduleExportContext): string {
   return `horario-${slugPart(ctx.periodLabel)}-${slugPart(focus)}-${stamp}`;
 }
 
-export function downloadScheduleExcel(ctx: ScheduleExportContext): void {
-  const rows = buildScheduleSheetRows(ctx);
-  const worksheet = XLSX.utils.aoa_to_sheet(rows);
-  worksheet['!cols'] = [
-    { wch: 18 },
-    ...SCHEDULE_WEEKDAYS.map(() => ({ wch: 28 })),
-  ];
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Horario');
-  const output = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-  const blob = new Blob([output], {
-    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  });
+export type ScheduleExportPayload = {
+  periodLabel: string;
+  teacherLabel: string;
+  groupLabel: string;
+  rows: Array<{
+    time: string;
+    label?: string;
+    kind: ScheduleSlotType;
+    days: Array<{ entries: Array<{ title: string; detail?: string }> }>;
+  }>;
+};
+
+/** Cuadrícula visible (mismos filtros) para el Excel institucional del servidor. */
+export function buildScheduleExportPayload(ctx: ScheduleExportContext): ScheduleExportPayload {
+  return {
+    periodLabel: ctx.periodLabel,
+    teacherLabel: ctx.teacherLabel,
+    groupLabel: ctx.groupLabel,
+    rows: ctx.slots.map((slot) => {
+      const isClass = slot.slotType === 'CLASS';
+      const label = isClass ? slot.name?.trim() : nonClassSlotLabel(slot.slotType, slot.name);
+      return {
+        time: formatSlotRange(slot.startTime, slot.endTime),
+        ...(label ? { label } : {}),
+        kind: slot.slotType,
+        days: SCHEDULE_WEEKDAYS.map((day) => ({
+          entries: isClass
+            ? (ctx.entriesByCell.get(`${day.dayOfWeek}:${slot.id}`) ?? []).map((entry) => {
+                const ta = entry.teachingAssignment;
+                const detail = [
+                  ctx.showGroup ? ta.group.name : null,
+                  ctx.showTeacher ? ta.teacher.name : null,
+                ]
+                  .filter(Boolean)
+                  .join(' · ');
+                return detail ? { title: ta.offering.name, detail } : { title: ta.offering.name };
+              })
+            : [],
+        })),
+      };
+    }),
+  };
+}
+
+export async function downloadScheduleExcel(ctx: ScheduleExportContext): Promise<void> {
+  const blob = await scheduleApi.exportExcel(buildScheduleExportPayload(ctx));
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;

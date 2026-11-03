@@ -24,6 +24,21 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // React, el enrutador y React Query cambian poco: en su propio archivo el
+        // navegador los conserva en caché entre despliegues. El resto (gráficos,
+        // Excel, animaciones y cada página) lo separa Vite y se carga bajo demanda.
+        manualChunks(id) {
+          if (/[\\/]node_modules[\\/](react|react-dom|scheduler|react-router|react-router-dom|@tanstack[\\/]react-query|@tanstack[\\/]query-core|zustand)[\\/]/.test(id)) {
+            return 'vendor-react';
+          }
+          return undefined;
+        },
+      },
+    },
+  },
   preview: {
     proxy: {
       '/api': {

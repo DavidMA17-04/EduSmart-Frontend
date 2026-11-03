@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect, useMemo } from 'react';
 import { useAuthStore } from '@/features/auth';
 import { AppRouter } from '@/app/router/AppRouter';
-import { ToastProvider } from '@/shared/ui';
+import { ConnectionStatus, ToastProvider } from '@/shared/ui';
 import '@/styles/brand-tokens.css';
 import '@/shared/styles/index.css';
 import '@/app/styles/admin-theme.css';
@@ -26,6 +26,7 @@ export const App = () => {
     <QueryClientProvider key={token ?? 'anonymous'} client={queryClient}>
       <ToastProvider>
         <AppRouter />
+        <ConnectionStatus />
       </ToastProvider>
     </QueryClientProvider>
   </BrowserRouter>

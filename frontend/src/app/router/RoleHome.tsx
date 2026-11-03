@@ -1,5 +1,7 @@
-import { AdminHomePage } from '@/pages/admin-home';
-import { StaffRoleHomePage } from '@/pages/role-home';
+import {
+  AdminHomePage,
+  StaffRoleHomePage,
+} from './pages';
 import { getSessionUser } from '@/shared/auth';
 import { RoleGate } from '@/widgets/app-shell';
 import { resolveHouse } from '@/widgets/app-shell/model/territory';

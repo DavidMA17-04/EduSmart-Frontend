@@ -11,7 +11,9 @@
   display: grid;
   gap: 10px;
   min-width: 0;
-  flex: 1;
+  /* Base de 320 px: en pantallas angostas el enlace «Volver» pasa a su propia línea
+     en lugar de dejar el título en una columna de una palabra por línea. */
+  flex: 1 1 320px;
 }
 
 .breadcrumb {
@@ -91,7 +93,18 @@
 
 .primarySlot {
   margin-left: auto;
-  flex-shrink: 0;
+  /* Puede encogerse hasta el ancho disponible para que sus botones bajen de línea
+     en vez de salirse de la pantalla. */
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 640px) {
+  .primarySlot {
+    flex-basis: 100%;
+    margin-left: 0;
+  }
 }
 
 .back,
@@ -112,6 +125,13 @@
 
 .back {
   margin-top: 2px;
+}
+
+@media (max-width: 640px) {
+  .back {
+    order: -1;
+    margin: 0 0 -8px -0.85rem;
+  }
 }
 
 .backInline {

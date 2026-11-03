@@ -1,5 +1,8 @@
 .page {
   display: grid;
+  /* Una columna que no crece más que la pantalla: las tablas anchas se desplazan dentro de su tarjeta. */
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   gap: 24px;
 }
 
@@ -8,4 +11,16 @@
   flex-wrap: wrap;
   gap: 8px;
   justify-content: flex-end;
+}
+
+@media (max-width: 640px) {
+  /* En celular los botones ocupan el ancho y bajan de línea; «Nueva clase» queda completa. */
+  .headerActions {
+    justify-content: stretch;
+  }
+
+  .headerActions > * {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
 }

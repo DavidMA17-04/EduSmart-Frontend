@@ -73,7 +73,7 @@ export const AppealsReportsPanel = () => {
       <div className={styles.card}>
         <h2>{APPEAL_REPORTS_COPY.title}</h2>
         <p className={styles.muted}>{APPEAL_REPORTS_COPY.filtersHint}</p>
-        <div className={styles.actions}>
+        <div className={styles.reportFilters}>
           <label className={styles.field}>
             Recurso
             <Select value={kind} onChange={(event) => setKind(event.target.value as '' | AppealKind)}>
@@ -105,14 +105,14 @@ export const AppealsReportsPanel = () => {
             </Select>
           </label>
           {canExport ? (
-            <>
+            <div className={styles.reportExports}>
               <Button type="button" variant="secondary" disabled={exporting != null} onClick={() => void download('excel')}>
                 <FileSpreadsheet aria-hidden size={16} /> {APPEAL_REPORTS_COPY.exportExcel}
               </Button>
               <Button type="button" variant="secondary" disabled={exporting != null} onClick={() => void download('pdf')}>
                 <FileText aria-hidden size={16} /> {APPEAL_REPORTS_COPY.exportPdf}
               </Button>
-            </>
+            </div>
           ) : null}
         </div>
         {canExport ? <p className={styles.muted}>{APPEAL_REPORTS_COPY.noCsv}</p> : null}

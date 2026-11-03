@@ -205,17 +205,25 @@ export const SchedulePanel = () => {
     }
   };
 
-  const onExportExcel = () => {
+  const [exportingExcel, setExportingExcel] = useState(false);
+
+  const onExportExcel = async () => {
     const ctx = buildExportContext();
     if (!ctx) {
       toast.push('Seleccione un curso lectivo con bloques para exportar.', 'error');
       return;
     }
+    setExportingExcel(true);
     try {
-      downloadScheduleExcel(ctx);
+      await downloadScheduleExcel(ctx);
       toast.push('Excel del horario generado.', 'success');
-    } catch {
-      toast.push('No se pudo exportar el horario.', 'error');
+    } catch (reason) {
+      toast.push(
+        reason instanceof Error ? reason.message : 'No se pudo exportar el horario.',
+        'error',
+      );
+    } finally {
+      setExportingExcel(false);
     }
   };
 
@@ -276,13 +284,13 @@ export const SchedulePanel = () => {
             Imprimir
           </Button>
           <Button
-            disabled={!canShareMatrix}
-            onClick={onExportExcel}
+            disabled={!canShareMatrix || exportingExcel}
+            onClick={() => void onExportExcel()}
             type="button"
             variant="secondary"
           >
             <Download aria-hidden size={16} />
-            Exportar Excel
+            {exportingExcel ? 'Exportando…' : 'Exportar Excel'}
           </Button>
           {model.canEdit ? (
             <Button

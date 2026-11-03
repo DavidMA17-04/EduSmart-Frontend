@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import type { PropsWithChildren, ReactNode } from 'react';
+import type { CSSProperties, PropsWithChildren, ReactNode } from 'react';
 import styles from './KpiCard.module.css';
 
 export type KpiTone = 'navy' | 'gold' | 'green' | 'warning' | 'danger' | 'muted';
@@ -53,8 +53,8 @@ export const KpiGrid = ({
   columns,
 }: PropsWithChildren<{ className?: string; columns?: number }>) => (
   <div
-    className={`${styles.grid} ${className}`.trim()}
-    style={columns ? { gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` } : undefined}
+    className={`${styles.grid} ${columns ? styles.fixed : ''} ${className}`.replace(/\s+/g, ' ').trim()}
+    style={columns ? ({ '--kpi-columns': columns } as CSSProperties) : undefined}
   >
     {children}
   </div>

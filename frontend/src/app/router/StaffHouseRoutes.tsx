@@ -1,25 +1,15 @@
-import { roleModuleRoutes } from './RoleModuleRoutes';
-import { Route } from 'react-router-dom';
-import { UserMethodSelectionPage } from '@/pages/Admin/Users/UserMethodSelectionPage/UserMethodSelectionPage';
-import { UserBulkImportPage } from '@/pages/Admin/Users/UserBulkImportPage/UserBulkImportPage';
-import { UserImportPreviewPage } from '@/pages/Admin/Users/UserImportPreviewPage/UserImportPreviewPage';
-import { RolesPermissionsPage } from '@/pages/roles-permissions';
-import { SpecialtiesPage } from '@/pages/specialties';
-import { SpecialtyKindPage } from '@/pages/specialty-kind';
-import { AcademicPeriodsPage } from '@/pages/academic-periods';
-import { AcademicStructureWizardPage } from '@/pages/academic-structure-wizard';
 import {
   AbsenteeismAlertsPage,
+  AcademicPeriodsPage,
+  AcademicStructureWizardPage,
+  AdministrativeReportsPage,
+  AttendanceExceptionsPage,
   AttendanceHistoryPage,
   AttendanceHomePage,
-  AttendanceExceptionsPage,
   AttendanceJustificationsPage,
   AttendanceNewPage,
   AttendanceReportsPage,
   AttendanceSessionPage,
-} from '@/pages/attendance';
-import { ATTENDANCE_PERMISSIONS } from '@/features/manage-attendance';
-import {
   DisciplineCalendarPage,
   DisciplineCasePage,
   DisciplineCasesPage,
@@ -29,35 +19,41 @@ import {
   DisciplineNotificationsPage,
   DisciplineProcessPage,
   DisciplineRegisterPage,
-} from '@/pages/discipline';
-import { DISCIPLINE_PERMISSIONS } from '@/features/manage-discipline';
-import { SectionsGroupsPage } from '@/pages/sections-groups';
-import { SubjectsPage } from '@/pages/subjects';
-import { TeachingAssignmentsPage } from '@/pages/teaching-assignments';
-import { SchedulePage } from '@/pages/schedule';
-import { MySchedulePage } from '@/pages/my-schedule';
-import { UserCreatePage } from '@/pages/user-create';
-import { UserDetailPage } from '@/pages/user-detail';
-import { UsersDirectoryPage } from '@/pages/users-directory';
-import { AdministrativeReportsPage } from '@/pages/administrative-reports';
-import { ProfileSettingsPage } from '@/pages/profile-settings';
-import { ImportResultPage } from '@/pages/import-result';
+  ImportResultPage,
+  MySchedulePage,
+  ProfileSettingsPage,
+  RolesPermissionsPage,
+  SchedulePage,
+  SectionsGroupsPage,
+  SecurityCheckOutPage,
+  SecurityDashboardPage,
+  SecurityHistoryPage,
+  SecurityPermitsPage,
+  SpecialtiesPage,
+  SpecialtyKindPage,
+  SubjectsPage,
+  TeachingAssignmentsPage,
+  UserBulkImportPage,
+  UserCreatePage,
+  UserDetailPage,
+  UserImportPreviewPage,
+  UserMethodSelectionPage,
+  UsersDirectoryPage,
+} from './pages';
+import { roleModuleRoutes } from './RoleModuleRoutes';
+import { Route } from 'react-router-dom';
+import { ATTENDANCE_PERMISSIONS } from '@/features/manage-attendance/model/attendanceRouting';
+import { DISCIPLINE_PERMISSIONS } from '@/features/manage-discipline/model/disciplineRouting';
 import { StaffOnly } from '@/widgets/app-shell';
-import { SCHEDULE_PERMISSIONS } from '@/features/manage-schedule';
+import { SCHEDULE_PERMISSIONS } from '@/features/manage-schedule/model/schedulePermissions';
 import {
   ACADEMIC_PERIODS_MANAGE,
   ACADEMIC_SECTIONS_MANAGE,
   ACADEMIC_SPECIALTIES_MANAGE,
   ACADEMIC_SUBJECTS_MANAGE,
 } from '@/widgets/app-shell/model/academicCatalogAccess';
-import {
-  SecurityCheckOutPage,
-  SecurityDashboardPage,
-  SecurityHistoryPage,
-  SecurityPermitsPage,
-} from '@/pages/security';
-import { DEPARTURE_PERMISSIONS } from '@/features/student-departures';
-import { HouseHomeRedirect } from './HouseHomeRedirect';
+import { DEPARTURE_PERMISSIONS } from '@/features/student-departures/model/permissions';
+import { NotFoundPage } from '@/pages/errors';
 import { RequirePermission } from './RequirePermission';
 import { RoleHome } from './RoleHome';
 
@@ -263,6 +259,6 @@ export const staffHouseRoutes = (
     {roleModuleRoutes(true)}
     <Route element={<ProfileSettingsPage />} path="settings" />
     <Route element={<ProfileSettingsPage />} path="profile" />
-    <Route element={<HouseHomeRedirect />} path="*" />
+    <Route element={<NotFoundPage />} path="*" />
   </>
 );

@@ -4,6 +4,14 @@
   gap: 10px;
 }
 
+/* `columns` fija las columnas solo en pantallas anchas; en celular y tableta
+   manda la regla adaptable de arriba (2 columnas en un celular). */
+@media (min-width: 900px) {
+  .fixed {
+    grid-template-columns: repeat(var(--kpi-columns), minmax(0, 1fr));
+  }
+}
+
 .card {
   display: flex;
   align-items: flex-start;

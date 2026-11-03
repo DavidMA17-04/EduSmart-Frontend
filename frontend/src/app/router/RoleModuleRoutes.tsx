@@ -1,5 +1,6 @@
-import { Route } from 'react-router-dom';
 import {
+  CommunicationsAdminPage,
+  CommunicationsFeedPage,
   DisciplineAppealNewPage,
   DisciplineAppealReviewPage,
   DisciplineAppealTrackingPage,
@@ -7,10 +8,9 @@ import {
   DisciplineAppealsReportsPage,
   DisciplineAppealsReviewPage,
   DisciplineCasePage,
-} from '@/pages/discipline';
-import { CommunicationsFeedPage } from '@/pages/communications/CommunicationsFeedPage';
-import { CommunicationsAdminPage } from '@/pages/communications/CommunicationsAdminPage';
-import { HouseHomeRedirect } from './HouseHomeRedirect';
+} from './pages';
+import { Route } from 'react-router-dom';
+import { NotFoundPage } from '@/pages/errors';
 import { RequirePermission } from './RequirePermission';
 
 /** Route elements, composed inside each house; the API also enforces actor scope. */
@@ -28,9 +28,9 @@ export const roleModuleRoutes = (staff = false) => (
     {!staff && (
       <>
         {/* Static staff-only paths must not fall through to :appealId. */}
-        <Route element={<HouseHomeRedirect />} path="communications/manage" />
-        <Route element={<HouseHomeRedirect />} path="discipline/appeals/review/*" />
-        <Route element={<HouseHomeRedirect />} path="discipline/appeals/reports" />
+        <Route element={<NotFoundPage />} path="communications/manage" />
+        <Route element={<NotFoundPage />} path="discipline/appeals/review/*" />
+        <Route element={<NotFoundPage />} path="discipline/appeals/reports" />
       </>
     )}
     {staff && (

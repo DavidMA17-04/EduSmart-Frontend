@@ -6,11 +6,13 @@ import { getSessionUser } from '@/shared/auth';
 import { coerceReturnPath } from '@/widgets/app-shell/model/territory';
 import { InstitutionStatsCard } from './InstitutionStatsCard';
 import { LoginFlow } from './LoginFlow';
+import { SessionExpiredNotice } from './SessionExpiredNotice';
 import styles from './LoginPage.module.css';
 
 export const LoginPage = () => {
   const location = useLocation();
   const resetDone = Boolean((location.state as { resetDone?: boolean } | null)?.resetDone);
+  const sessionExpired = new URLSearchParams(location.search).get('reason') === 'expired';
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const wasAuthenticatedOnMount = useRef(useAuthStore.getState().isAuthenticated);
 
@@ -53,6 +55,7 @@ export const LoginPage = () => {
       </aside>
 
       <section className={styles.panel}>
+        {sessionExpired ? <SessionExpiredNotice /> : null}
         <div className={styles.card}>
           <LoginFlow resetDone={resetDone} />
         </div>

@@ -80,6 +80,20 @@
   color: var(--brand-primary);
 }
 
+/* `.kpi span` (etiqueta del indicador) también alcanza al círculo, que es un span:
+   se restablece aquí para que el ícono quede centrado. */
+.kpi .kpiIcon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  margin: 0;
+  line-height: 0;
+}
+
+.kpi .kpiIcon svg {
+  display: block;
+}
+
 .kpiTotal .kpiIcon { background: color-mix(in srgb, var(--brand-primary) 10%, transparent); color: var(--brand-primary); }
 .kpiSoon .kpiIcon { background: color-mix(in srgb, var(--brand-gold) 15%, transparent); color: var(--brand-gold-dark); }
 .kpiLate .kpiIcon { background: color-mix(in srgb, var(--brand-danger) 10%, transparent); color: var(--brand-danger); }
@@ -202,5 +216,18 @@
   .split,
   .filters {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Pantallas angostas: filtros a todo el ancho y botones de exportación en su propia fila. */
+@media (max-width: 900px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .exports > * {
+    flex: 1 1 0;
+    justify-content: center;
   }
 }

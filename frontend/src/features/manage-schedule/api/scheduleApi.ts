@@ -7,7 +7,10 @@ import type {
   UpdateScheduleEntryPayload,
   UpdateScheduleTimeSlotPayload,
 } from '@/entities/schedule';
-import { httpClient } from '@/shared/api';
+import { useAuthStore } from '@/features/auth';
+import { getAccessToken } from '@/shared/auth';
+import { HttpError, httpClient } from '@/shared/api';
+import type { ScheduleExportPayload } from '../model/scheduleExport';
 
 type ApiEnvelope<T> = { success: boolean; data: T };
 
@@ -25,7 +28,41 @@ function toSearchParams(filters: ScheduleEntryListFilters): string {
   return qs ? `?${qs}` : '';
 }
 
+const apiBaseUrl = (import.meta.env.VITE_API_URL ?? '/api/v1').replace(/\/$/, '');
+
+/** Excel del horario con formato institucional (el servidor solo da formato a la cuadrícula visible). */
+async function exportScheduleExcel(payload: ScheduleExportPayload): Promise<Blob> {
+  const headers = new Headers({ 'Content-Type': 'application/json' });
+  const token = getAccessToken();
+  if (token) headers.set('Authorization', `Bearer ${token}`);
+
+  let response: Response;
+  try {
+    response = await fetch(`${apiBaseUrl}/schedule/export/excel`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    throw new Error('No se pudo conectar con el servidor. Revise su conexión a internet e intente de nuevo.');
+  }
+  if (response.status === 401) {
+    useAuthStore.getState().logout();
+    if (window.location.pathname !== '/login') window.location.assign('/login');
+    throw new HttpError(401, 'No autorizado.');
+  }
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as { message?: string | string[] } | null;
+    const raw = body?.message;
+    const message = Array.isArray(raw) ? raw.filter(Boolean).join(' ') : raw;
+    throw new HttpError(response.status, message ?? 'No se pudo exportar el horario.');
+  }
+  return response.blob();
+}
+
 export const scheduleApi = {
+  exportExcel: exportScheduleExcel,
+
   listTimeSlots: () => request<ScheduleTimeSlot[]>('/schedule/time-slots'),
 
   getTimeSlot: (id: number) =>

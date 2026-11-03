@@ -117,6 +117,30 @@
   gap: 0.35rem;
 }
 
+/* Barra de filtros de reportes: botones alineados con los selectores, no con la etiqueta. */
+.reportFilters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1rem;
+  margin-top: 0.85rem;
+}
+
+.reportFilters .field {
+  flex: 1 1 11rem;
+  min-width: 0;
+}
+
+.reportExports {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.reportFilters + .muted {
+  margin-top: 0.6rem;
+}
+
 .check {
   display: flex;
   gap: 0.55rem;

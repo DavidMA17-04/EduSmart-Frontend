@@ -6,7 +6,7 @@ import { NotificationBell } from '@/features/in-app-inbox';
 import { useGuardianUnreadCount } from '@/features/manage-discipline/model/useGuardianUnreadCount';
 import { sessionHasPermission } from '@/shared/auth';
 import { runAppEnterTransition } from '@/shared/motion/runAppEnterTransition';
-import { Button, Modal } from '@/shared/ui';
+import { Button, Modal, PageSuspense } from '@/shared/ui';
 import {
   adminNavigationItems,
   filterAdminNavigation,
@@ -287,7 +287,9 @@ export const AdminShell = () => {
           </button>
         </header>
         <main className={styles.content}>
-          <Outlet />
+          <PageSuspense resetKey={location.pathname}>
+            <Outlet />
+          </PageSuspense>
         </main>
       </section>
 

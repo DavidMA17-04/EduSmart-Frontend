@@ -1,4 +1,7 @@
 .page {
   display: grid;
+  /* Una columna que no crece más que la pantalla: las tablas anchas se desplazan dentro de su tarjeta. */
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   gap: 16px;
 }

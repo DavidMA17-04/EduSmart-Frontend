@@ -84,6 +84,26 @@
   transition: background 0.28s ease;
 }
 
+/* Portada con fotografía (Materias): sombra neutra, sin tinte azul; solo oscurece
+   lo necesario detrás del texto para que se lea. */
+.overlayPhoto {
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 65%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.2) 45%, rgba(0, 0, 0, 0.62) 100%);
+}
+
+.card:hover .overlayPhoto {
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0) 65%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.25) 45%, rgba(0, 0, 0, 0.68) 100%);
+}
+
+.overlayPhoto + * h2,
+.overlayPhoto + * p,
+.overlayPhoto + * small {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65), 0 0 12px rgba(0, 0, 0, 0.35);
+}
+
 .cardIcon {
   display: grid;
   place-items: center;

@@ -1,5 +1,8 @@
 .shell {
   display: grid;
+  /* La tarjeta nunca crece más que su contenedor; la tabla se desplaza dentro de .body. */
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   gap: 0;
   overflow: hidden;
   border-radius: 16px;
@@ -15,6 +18,8 @@
 .body {
   padding: 0 8px 4px;
   min-height: 120px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .body :global(th) {

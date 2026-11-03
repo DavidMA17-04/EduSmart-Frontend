@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ScheduleEntry, ScheduleTimeSlot } from '@/entities/schedule';
-import { buildScheduleSheetRows, scheduleCellText } from './scheduleExport';
+import { buildScheduleExportPayload, buildScheduleSheetRows, scheduleCellText } from './scheduleExport';
 
 function slot(partial: Partial<ScheduleTimeSlot> & Pick<ScheduleTimeSlot, 'id'>): ScheduleTimeSlot {
   return {
@@ -65,5 +65,26 @@ describe('scheduleExport', () => {
     expect(rows[1][0]).toContain('07:00');
     expect(rows[1][1]).toBe('Matemáticas · Ana Pérez');
     expect(rows[1][2]).toBe('—');
+  });
+
+  it('builds the export payload: subject on top, group/teacher as detail, breaks without entries', () => {
+    const classSlot = slot({ id: 1, name: 'Lección 1' });
+    const breakSlot = slot({ id: 2, slotType: 'BREAK', name: '', startTime: '08:20:00', endTime: '08:35:00' });
+    const payload = buildScheduleExportPayload({
+      periodLabel: '2026',
+      teacherLabel: 'Todos',
+      groupLabel: '10-A',
+      showTeacher: true,
+      showGroup: false,
+      slots: [classSlot, breakSlot],
+      entriesByCell: new Map([['3:1', [entry('Matemáticas', '10-A', 'Ana Pérez')]]]),
+    });
+    expect(payload.rows).toHaveLength(2);
+    expect(payload.rows[0]).toMatchObject({ time: '07:00–07:40', label: 'Lección 1', kind: 'CLASS' });
+    expect(payload.rows[0].days).toHaveLength(5);
+    expect(payload.rows[0].days[2].entries).toEqual([{ title: 'Matemáticas', detail: 'Ana Pérez' }]);
+    expect(payload.rows[0].days[0].entries).toEqual([]);
+    expect(payload.rows[1]).toMatchObject({ time: '08:20–08:35', label: 'Receso', kind: 'BREAK' });
+    expect(payload.rows[1].days.every((day) => day.entries.length === 0)).toBe(true);
   });
 });

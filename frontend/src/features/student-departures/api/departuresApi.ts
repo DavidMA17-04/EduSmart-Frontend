@@ -44,7 +44,7 @@ async function download(path: string, fallbackName: string): Promise<void> {
   try {
     response = await fetch(`${apiBaseUrl}${path}`, { headers });
   } catch {
-    throw new Error(`No se pudo conectar con la API en ${apiBaseUrl}. Verifique que el backend esté activo.`);
+    throw new Error('No se pudo conectar con el servidor. Revise su conexión a internet e intente de nuevo.');
   }
   if (response.status === 401) {
     useAuthStore.getState().logout();
