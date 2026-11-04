@@ -1,1 +1,27 @@
-export { clearAccessToken, ensureAccessToken, getAccessToken, loginWithDevCredentials, setAccessToken } from './session';
+export {
+  AUTH_LOGIN_REASON,
+  AuthLoginError,
+  clearAccessToken,
+  clearRememberedIdentifier,
+  getAccessToken,
+  getRefreshToken,
+  getRememberedIdentifier,
+  getRememberMePreference,
+  getSessionUser,
+  getStoredSessionUser,
+  loginWithCredentials,
+  persistRememberPreference,
+  refreshSessionTokens,
+  sessionHasPermission,
+  setAccessToken,
+  setRefreshToken,
+  setRememberedIdentifier,
+  setSessionTokens,
+  setStoredSessionUser,
+} from './session';
+export type { AuthUser, LoginResult, SessionUser } from './session';
+export {
+  canBrowseAcademicYearHistory,
+  filterPeriodsForSessionRole,
+  isTeacherWithoutAdminAccess,
+} from './academicVisibility';

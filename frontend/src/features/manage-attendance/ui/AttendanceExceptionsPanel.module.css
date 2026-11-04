@@ -1,0 +1,114 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1rem;
+  justify-content: space-between;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: min(100%, 16rem);
+}
+
+.fieldLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted, #5b6472);
+}
+
+.loadingRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text-muted, #5b6472);
+}
+
+.spinner {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-border, #d8dee8);
+  border-radius: 0.5rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.table th,
+.table td {
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border, #e6ebf2);
+  vertical-align: top;
+}
+
+.table th {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted, #5b6472);
+  background: var(--color-surface-muted, #f5f7fb);
+}
+
+.titleCell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.muted {
+  color: var(--color-text-muted, #5b6472);
+  font-size: 0.85rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.35rem;
+  justify-content: flex-end;
+  white-space: nowrap;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.dateRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+@media (max-width: 640px) {
+  .dateRow {
+    grid-template-columns: 1fr;
+  }
+}

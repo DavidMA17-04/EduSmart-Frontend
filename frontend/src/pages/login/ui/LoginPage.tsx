@@ -1,0 +1,71 @@
+import { useRef } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { CircleHelp } from 'lucide-react';
+import { useAuthStore } from '@/features/auth';
+import { getSessionUser } from '@/shared/auth';
+import { coerceReturnPath } from '@/widgets/app-shell/model/territory';
+import { InstitutionStatsCard } from './InstitutionStatsCard';
+import { LoginFlow } from './LoginFlow';
+import { SessionExpiredNotice } from './SessionExpiredNotice';
+import styles from './LoginPage.module.css';
+
+export const LoginPage = () => {
+  const location = useLocation();
+  const resetDone = Boolean((location.state as { resetDone?: boolean } | null)?.resetDone);
+  const sessionExpired = new URLSearchParams(location.search).get('reason') === 'expired';
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const wasAuthenticatedOnMount = useRef(useAuthStore.getState().isAuthenticated);
+
+  if (isAuthenticated && wasAuthenticatedOnMount.current) {
+    const session = getSessionUser();
+    const fromPath =
+      (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ??
+      new URLSearchParams(location.search).get('from');
+    const dest = coerceReturnPath(session, fromPath);
+    if (dest !== '/login' && dest !== location.pathname) {
+      return <Navigate replace to={dest} />;
+    }
+  }
+
+  return (
+    <div className={`admin-shell ${styles.layout}`}>
+      <aside className={styles.hero}>
+        <div className={styles.heroAura} aria-hidden="true" />
+        <div className={styles.heroGlow} aria-hidden="true" />
+        <div className={styles.heroGlowSecondary} aria-hidden="true" />
+        <div className={styles.heroPattern} aria-hidden="true" />
+
+        <div className={styles.heroTop}>
+          <img
+            alt="Escudo C.T.P. de Hojancha"
+            className={styles.heroCrest}
+            src="/brand/ctp-hojancha-logo.jpeg"
+          />
+          <p className={styles.heroSchool}>C.T.P. de Hojancha</p>
+          <h1 className={styles.heroTitle} data-preserve-case>
+            EduSmart
+          </h1>
+          <p className={styles.heroMotto}>Ciencia · Cultura · 1972</p>
+          <p className={styles.heroCopy}>
+            Panel institucional para usuarios, estructura académica y la gestión diaria del colegio.
+          </p>
+        </div>
+
+        <InstitutionStatsCard />
+      </aside>
+
+      <section className={styles.panel}>
+        {sessionExpired ? <SessionExpiredNotice /> : null}
+        <div className={styles.card}>
+          <LoginFlow resetDone={resetDone} />
+        </div>
+
+        <p className={styles.help}>
+          <CircleHelp aria-hidden="true" size={14} />
+          ¿Necesitas ayuda? Contacta al administrador.
+        </p>
+        <p className={styles.copyright}>© 2026 EduSmart · CTP Hojancha</p>
+      </section>
+    </div>
+  );
+};

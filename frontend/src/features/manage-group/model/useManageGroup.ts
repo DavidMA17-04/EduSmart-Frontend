@@ -25,10 +25,10 @@ export function useManageGroup(onSuccess?: () => void | Promise<void>) {
 
   return {
     create: (payload: CreateGroupPayload) => execute(() => groupApi.create(payload)),
-    update: (id: string, payload: UpdateGroupPayload) => execute(() => groupApi.update(id, payload)),
-    assignGuideTeacher: (id: string, payload: AssignGuideTeacherPayload) =>
+    update: (id: number, payload: UpdateGroupPayload) => execute(() => groupApi.update(id, payload)),
+    assignGuideTeacher: (id: number, payload: AssignGuideTeacherPayload) =>
       execute(() => groupApi.assignGuideTeacher(id, payload)),
-    remove: (id: string) => execute(() => groupApi.remove(id)),
+    remove: (id: number) => execute(() => groupApi.remove(id)),
     isSubmitting,
     error,
   };

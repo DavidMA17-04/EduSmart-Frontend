@@ -1,8 +1,7 @@
 import { Edit3, Plus, Trash2 } from 'lucide-react';
-import { Alert, Button, Table } from '@/shared/ui';
+import { Alert, Button, RowActionButton, RowActions, Table } from '@/shared/ui';
 import { GroupTableRow } from '@/entities/group';
-import { GroupForm } from '@/features/manage-group';
-import { SectionForm } from '@/features/manage-section';
+import { sessionHasPermission } from '@/shared/auth';
 import type { SectionsGroupsPanelModel } from '../model/useSectionsGroupsPanel';
 import styles from './SectionDetailPanel.module.css';
 
@@ -12,111 +11,92 @@ interface SectionDetailPanelProps {
 }
 
 export const SectionDetailPanel = ({ model, onGoToTeachersTab }: SectionDetailPanelProps) => {
-  const sectionTitle = model.sectionFormMode === 'create' ? 'Nuevo nivel' : 'Información del nivel';
-  const groupTitle = model.groupFormMode === 'create' ? 'Nuevo grupo' : 'Editar grupo';
-  const showSectionForm = model.sectionFormMode === 'create' || Boolean(model.selectedSection);
-
-  if (!showSectionForm) {
-    return <div className={styles.placeholder}>Seleccione un nivel para ver su información y grupos.</div>;
+  const canCreate = sessionHasPermission('sections.create');
+  const canEdit = sessionHasPermission('sections.edit');
+  if (!model.selectedSection) {
+    return (
+      <div className={styles.placeholder}>
+        Seleccione un nivel para ver sus secciones asociadas.
+      </div>
+    );
   }
 
   return (
     <div className={styles.detailPanel}>
-      <SectionForm
-        isSubmitting={model.isSectionSubmitting}
-        onCancel={model.cancelSectionForm}
-        onChange={model.sectionForm.setField}
-        onSubmit={model.sectionForm.submit}
-        title={sectionTitle}
-        values={model.sectionForm.values}
-      />
-
-      {model.selectedSection && (
-        <section className={styles.groupsCard}>
-          <div className={styles.groupsHeader}>
-            <div>
-              <h3>Grupos del nivel</h3>
-              <p>Administre los grupos asociados al nivel seleccionado.</p>
-            </div>
+      <section className={styles.groupsCard}>
+        <div className={styles.groupsHeader}>
+          <div>
+            <h3>Secciones de {model.selectedSection.name}</h3>
+            <p>Administre las secciones asociadas al nivel seleccionado.</p>
+          </div>
+          {canCreate ? (
             <Button
               onClick={() => model.createGroupMode(model.selectedSectionId ?? undefined)}
               type="button"
             >
-              <Plus size={14} /> Agregar grupo
+              <Plus size={14} /> Agregar sección
             </Button>
-          </div>
+          ) : null}
+        </div>
 
-          {model.groupFormMode && (
-            <div className={styles.embeddedForm}>
-              <GroupForm
-                guideTeachers={model.guideTeachers}
-                isSubmitting={model.isGroupSubmitting}
-                onCancel={model.cancelGroupForm}
-                onChange={model.groupForm.setField}
-                onSubmit={model.groupForm.submit}
-                sections={model.sections}
-                title={groupTitle}
-                values={model.groupForm.values}
+        <Table>
+          <thead>
+            <tr>
+              <th>Sección</th>
+              <th>Especialidad</th>
+              <th>Inscritos / cupo</th>
+              <th>Docente guía</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {model.groupsForSelectedSection.map((group) => (
+              <GroupTableRow
+                actions={
+                  canEdit ? (
+                  <RowActions>
+                    <RowActionButton
+                      aria-label={`Editar ${group.name}`}
+                      onClick={() => model.openEditGroupDialog(group.id)}
+                      title="Editar"
+                      tone="primary"
+                    >
+                      <Edit3 size={16} />
+                    </RowActionButton>
+                    <RowActionButton
+                      aria-label={`Eliminar ${group.name}`}
+                      onClick={() => model.removeSelectedGroup(group)}
+                      title="Eliminar"
+                      tone="danger"
+                    >
+                      <Trash2 size={16} />
+                    </RowActionButton>
+                  </RowActions>
+                  ) : undefined
+                }
+                group={group}
+                isSelected={group.id === model.selectedGroupId}
+                key={group.id}
+                onSelect={model.selectGroup}
               />
-            </div>
-          )}
-
-          <Table>
-            <thead>
+            ))}
+            {model.groupsForSelectedSection.length === 0 && (
               <tr>
-                <th>Grupo</th>
-                <th>Cantidad de estudiantes</th>
-                <th>Docente guía</th>
-                <th>Acciones</th>
+                <td className={styles.empty} colSpan={5}>
+                  Este nivel no tiene secciones registradas.
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {model.groupsForSelectedSection.map((group) => (
-                <GroupTableRow
-                  actions={
-                    <span className={styles.rowActions}>
-                      <Button
-                        aria-label={`Editar ${group.name}`}
-                        onClick={() => model.selectGroup(group.id)}
-                        type="button"
-                        variant="secondary"
-                      >
-                        <Edit3 size={14} />
-                      </Button>
-                      <Button
-                        aria-label={`Eliminar ${group.name}`}
-                        onClick={() => void model.removeSelectedGroup(group)}
-                        type="button"
-                        variant="danger"
-                      >
-                        <Trash2 size={14} />
-                      </Button>
-                    </span>
-                  }
-                  group={group}
-                  isSelected={group.id === model.selectedGroupId}
-                  key={group.id}
-                  onSelect={model.selectGroup}
-                />
-              ))}
-              {model.groupsForSelectedSection.length === 0 && (
-                <tr>
-                  <td className={styles.empty} colSpan={4}>
-                    Este nivel no tiene grupos registrados.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </Table>
-        </section>
-      )}
+            )}
+          </tbody>
+        </Table>
+      </section>
 
       <Alert>
-        Los docentes guía se asignan desde la pestaña{' '}
+        Los docentes guía se crean en la pestaña{' '}
         <button className={styles.alertLink} onClick={onGoToTeachersTab} type="button">
-          Asignación de docentes guía
+          Docentes guía
         </button>
-        .
+        {' '}y se asignan al crear o editar una sección.
       </Alert>
     </div>
   );

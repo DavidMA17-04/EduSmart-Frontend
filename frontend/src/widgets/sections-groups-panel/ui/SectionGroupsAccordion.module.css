@@ -4,7 +4,7 @@
 .header p { margin-top: 3px; color: var(--admin-muted); font-size: 13px; }
 .item { border: 1px solid var(--admin-border); border-radius: 7px; background: #fff; overflow: hidden; }
 .trigger { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 11px 12px; border: 0; background: transparent; color: var(--admin-text); cursor: pointer; font-size: 14px; text-align: left; }
-.trigger:hover { background: #f7faff; }
+.trigger:hover { background: var(--admin-background); }
 .triggerLeft { display: flex; align-items: center; gap: 8px; }
 .badge { padding: 2px 8px; border-radius: 999px; background: #eef3ff; color: var(--admin-primary); font-size: 12px; font-weight: 600; }
 .chevron { color: var(--admin-muted); transition: transform 0.15s ease; }

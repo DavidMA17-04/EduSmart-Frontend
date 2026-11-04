@@ -1,17 +1,94 @@
 .admin-shell {
-  --admin-primary: #0b5eea;
-  --admin-primary-hover: #084fc5;
-  --admin-sidebar: #062a61;
-  --admin-sidebar-hover: #0b438d;
-  --admin-background: #f6f8fc;
-  --admin-surface: #ffffff;
-  --admin-border: #e4e9f2;
-  --admin-text: #17233c;
-  --admin-muted: #66738a;
-  --admin-success: #168750;
-  --admin-warning: #b86800;
-  --admin-danger: #d32f2f;
+  --bp-narrow: 640px;
+  --bp-medium: 1024px;
+  --admin-primary: var(--brand-primary);
+  --admin-primary-hover: var(--brand-primary-hover);
+  --admin-sidebar: var(--brand-navy);
+  --admin-sidebar-hover: var(--brand-primary-hover);
+  --admin-accent: var(--brand-gold);
+  --admin-background: var(--brand-background);
+  --admin-surface: var(--brand-surface);
+  --admin-border: var(--brand-border);
+  --admin-text: var(--brand-navy);
+  --admin-muted: var(--brand-muted);
+  --admin-success: var(--brand-green);
+  --admin-warning: var(--brand-warning);
+  --admin-danger: var(--brand-danger);
+  --font-heading: var(--brand-font-serif);
+  --font-sans: var(--brand-font-sans);
   min-height: 100vh;
   color: var(--admin-text);
   background: var(--admin-background);
+}
+
+/*
+  Títulos en oración: escribirlos así en el código (primera mayúscula, resto minúscula).
+  No forzar text-transform en h1–h4: lowercase + ::first-letter falla con iconos SVG
+  o headings en display:flex. Encabezados de tabla sí usan oración por CSS.
+*/
+.admin-shell th:not([data-preserve-case]) {
+  text-transform: lowercase !important;
+}
+
+.admin-shell th:not([data-preserve-case])::first-letter {
+  text-transform: uppercase !important;
+}
+
+.admin-shell input[type='file']::file-selector-button {
+  margin-right: 12px;
+  padding: 5px 12px;
+  border: 1px solid var(--admin-primary, var(--brand-primary));
+  border-radius: 6px;
+  background: var(--admin-primary, var(--brand-primary));
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.admin-shell input[type='file']:hover:not(:disabled)::file-selector-button {
+  background: var(--admin-primary-hover, var(--brand-primary-hover));
+  border-color: var(--admin-primary-hover, var(--brand-primary-hover));
+}
+
+/* Densidad: página que llena el alto útil; paneles que crecen */
+.admin-shell .pageStack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: calc(100vh - 112px);
+  width: 100%;
+}
+
+.admin-shell .fillPanel {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.admin-shell .fillPanel > .table-scroll,
+.admin-shell .fillPanel .table-scroll {
+  flex: 1 1 auto;
+  min-height: 12rem;
+}
+
+.table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+@media (max-width: 1024px) {
+  .admin-shell .form-stack,
+  .stack-medium {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .admin-shell .pageStack {
+    min-height: 0;
+  }
 }

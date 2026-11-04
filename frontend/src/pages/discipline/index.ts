@@ -1,0 +1,15 @@
+export { DisciplineAppealNewPage } from './ui/DisciplineAppealNewPage';
+export { DisciplineAppealReviewPage } from './ui/DisciplineAppealReviewPage';
+export { DisciplineAppealTrackingPage } from './ui/DisciplineAppealTrackingPage';
+export { DisciplineAppealsReportsPage } from './ui/DisciplineAppealsReportsPage';
+export { DisciplineAppealsPage } from './ui/DisciplineAppealsPage';
+export { DisciplineAppealsReviewPage } from './ui/DisciplineAppealsReviewPage';
+export { DisciplineCalendarPage } from './ui/DisciplineCalendarPage';
+export { DisciplineCasePage } from './ui/DisciplineCasePage';
+export { DisciplineCasesPage } from './ui/DisciplineCasesPage';
+export { DisciplineCatalogPage } from './ui/DisciplineCatalogPage';
+export { DisciplineDashboardPage } from './ui/DisciplineDashboardPage';
+export { DisciplineHistoryPage } from './ui/DisciplineHistoryPage';
+export { DisciplineNotificationsPage } from './ui/DisciplineNotificationsPage';
+export { DisciplineProcessPage } from './ui/DisciplineProcessPage';
+export { DisciplineRegisterPage } from './ui/DisciplineRegisterPage';

@@ -1,0 +1,542 @@
+import { useCallback, useState } from 'react';
+import {
+  CalendarClock,
+  Download,
+  Link2,
+  Pencil,
+  Plus,
+  Printer,
+  Settings2,
+  Trash2,
+  Users,
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import type { ScheduleEntry, ScheduleTimeSlot } from '@/entities/schedule';
+import {
+  downloadScheduleExcel,
+  formatSlotRange,
+  nonClassSlotLabel,
+  printSchedule,
+  SCHEDULE_WEEKDAYS,
+  ScheduleEntryForm,
+  useSchedulePanel,
+  type ScheduleExportContext,
+} from '@/features/manage-schedule';
+import { ScheduleTimeSlotsPanel } from '@/widgets/schedule-time-slots-panel';
+import {
+  Alert,
+  Badge,
+  Button,
+  ConfirmDialog,
+  EmptyState,
+  ModalCrud,
+  SegmentedTabs,
+  Select,
+  useToast,
+} from '@/shared/ui';
+import styles from './SchedulePanel.module.css';
+
+function EntryCard({
+  entry,
+  canEdit,
+  showTeacher,
+  showGroup,
+  onEdit,
+  onRemove,
+}: {
+  entry: ScheduleEntry;
+  canEdit: boolean;
+  showTeacher: boolean;
+  showGroup: boolean;
+  onEdit: () => void;
+  onRemove: () => void;
+}) {
+  const ta = entry.teachingAssignment;
+  return (
+    <article className={styles.entryCard}>
+      <div className={styles.entryMain}>
+        <strong className={styles.offeringName}>{ta.offering.name}</strong>
+        <Badge tone="neutral">{ta.offering.labelKind}</Badge>
+        {showGroup ? (
+          <span className={styles.meta}>
+            <Users aria-hidden="true" className={styles.metaIcon} size={12} />
+            {ta.group.name}
+          </span>
+        ) : null}
+        {showTeacher ? (
+          <span className={styles.meta}>
+            <CalendarClock
+              aria-hidden="true"
+              className={styles.metaIcon}
+              size={12}
+            />
+            {ta.teacher.name}
+          </span>
+        ) : null}
+      </div>
+      {canEdit ? (
+        <div className={styles.entryActions}>
+          <button className={styles.iconBtn} onClick={onEdit} type="button">
+            <Pencil aria-hidden="true" size={13} />
+            Editar
+          </button>
+          <button
+            className={styles.iconBtnDanger}
+            onClick={onRemove}
+            type="button"
+          >
+            <Trash2 aria-hidden="true" size={13} />
+            Quitar
+          </button>
+        </div>
+      ) : null}
+    </article>
+  );
+}
+
+function ClassCellBody({
+  entries,
+  canEdit,
+  canAssign,
+  filterTeacherId,
+  filterGroupId,
+  onAssign,
+  onEdit,
+  onRemove,
+}: {
+  entries: ScheduleEntry[];
+  canEdit: boolean;
+  canAssign: boolean;
+  filterTeacherId: string;
+  filterGroupId: string;
+  onAssign: () => void;
+  onEdit: (entry: ScheduleEntry) => void;
+  onRemove: (entryId: number) => void;
+}) {
+  const showTeacher = !filterTeacherId;
+  const showGroup = !filterGroupId;
+
+  if (entries.length === 0) {
+    if (!canAssign) return <span className={styles.emptyCell}>—</span>;
+    return (
+      <button className={styles.assignBtn} onClick={onAssign} type="button">
+        <Plus aria-hidden="true" size={14} />
+        Asignar clase
+      </button>
+    );
+  }
+
+  return (
+    <div className={styles.entryStack}>
+      {entries.map((entry) => (
+        <EntryCard
+          key={entry.entryId}
+          canEdit={canEdit}
+          entry={entry}
+          onEdit={() => onEdit(entry)}
+          onRemove={() => onRemove(entry.entryId)}
+          showGroup={showGroup}
+          showTeacher={showTeacher}
+        />
+      ))}
+      {canAssign ? (
+        <button className={styles.assignBtn} onClick={onAssign} type="button">
+          <Plus aria-hidden="true" size={14} />
+          Asignar clase
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+function slotSecondaryLabel(slot: ScheduleTimeSlot): string | null {
+  if (slot.slotType === 'BREAK' || slot.slotType === 'LUNCH') {
+    return nonClassSlotLabel(slot.slotType, slot.name);
+  }
+  if (slot.name) {
+    return `${slot.name}${!slot.isActive ? ' (inactivo)' : ''}`;
+  }
+  return !slot.isActive ? '(inactivo)' : null;
+}
+
+export const SchedulePanel = () => {
+  const model = useSchedulePanel();
+  const navigate = useNavigate();
+  const toast = useToast();
+  const [configOpen, setConfigOpen] = useState(false);
+  const dayTabs = SCHEDULE_WEEKDAYS.map((d) => ({
+    id: String(d.dayOfWeek),
+    label: d.label,
+  }));
+
+  const blockingError = model.catalogError || model.slotsError || null;
+  const matrixSlots = model.matrixSlots;
+  const canShareMatrix = !model.slotsLoading && matrixSlots.length > 0 && Boolean(model.filterPeriodId);
+
+  const buildExportContext = useCallback((): ScheduleExportContext | null => {
+    if (!model.filterPeriodId || matrixSlots.length === 0) return null;
+    const period = model.periods.find((item) => String(item.id) === model.filterPeriodId);
+    const teacher = model.teachers.find((item) => String(item.id) === model.filterTeacherId);
+    const group = model.groups.find((item) => String(item.id) === model.filterGroupId);
+    return {
+      periodLabel: period?.name ?? `Curso ${model.filterPeriodId}`,
+      teacherLabel: teacher ? model.teacherDisplayName(teacher) : 'Todos',
+      groupLabel: group?.name ?? 'Todas',
+      slots: matrixSlots,
+      entriesByCell: model.entriesByCell,
+      showTeacher: !model.filterTeacherId,
+      showGroup: !model.filterGroupId,
+    };
+  }, [matrixSlots, model]);
+
+  const onPrint = () => {
+    const ctx = buildExportContext();
+    if (!ctx) {
+      toast.push('Seleccione un curso lectivo con bloques para imprimir.', 'error');
+      return;
+    }
+    try {
+      printSchedule(ctx);
+    } catch (reason) {
+      toast.push(
+        reason instanceof Error ? reason.message : 'No se pudo abrir la impresión.',
+        'error',
+      );
+    }
+  };
+
+  const [exportingExcel, setExportingExcel] = useState(false);
+
+  const onExportExcel = async () => {
+    const ctx = buildExportContext();
+    if (!ctx) {
+      toast.push('Seleccione un curso lectivo con bloques para exportar.', 'error');
+      return;
+    }
+    setExportingExcel(true);
+    try {
+      await downloadScheduleExcel(ctx);
+      toast.push('Excel del horario generado.', 'success');
+    } catch (reason) {
+      toast.push(
+        reason instanceof Error ? reason.message : 'No se pudo exportar el horario.',
+        'error',
+      );
+    } finally {
+      setExportingExcel(false);
+    }
+  };
+
+  const handleSlotsChanged = useCallback(async () => {
+    await model.reloadSlots();
+  }, [model.reloadSlots]);
+
+  return (
+    <section className={styles.layout}>
+      <div className={styles.toolbar}>
+        <div className={styles.filters}>
+          <Select
+            aria-label="Curso lectivo"
+            onChange={(e) => model.setFilterPeriodId(e.target.value)}
+            value={model.filterPeriodId}
+          >
+            <option value="">Curso lectivo: seleccionar…</option>
+            {model.periods.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+                {p.status === 'ACTIVE' ? ' (activo)' : ''}
+              </option>
+            ))}
+          </Select>
+          <Select
+            aria-label="Filtrar por docente"
+            onChange={(e) => model.setFilterTeacherId(e.target.value)}
+            value={model.filterTeacherId}
+          >
+            <option value="">Vista: General / Docente: Todos</option>
+            {model.teachers.map((t) => (
+              <option key={t.id} value={t.id}>
+                Docente: {model.teacherDisplayName(t)}
+              </option>
+            ))}
+          </Select>
+          <Select
+            aria-label="Filtrar por sección"
+            onChange={(e) => model.setFilterGroupId(e.target.value)}
+            value={model.filterGroupId}
+          >
+            <option value="">Sección: Todas</option>
+            {model.groups.map((g) => (
+              <option key={g.id} value={g.id}>
+                Sección: {g.name}
+              </option>
+            ))}
+          </Select>
+        </div>
+        <div className={styles.toolbarActions}>
+          <Button
+            disabled={!canShareMatrix}
+            onClick={onPrint}
+            type="button"
+            variant="secondary"
+          >
+            <Printer aria-hidden size={16} />
+            Imprimir
+          </Button>
+          <Button
+            disabled={!canShareMatrix || exportingExcel}
+            onClick={() => void onExportExcel()}
+            type="button"
+            variant="secondary"
+          >
+            <Download aria-hidden size={16} />
+            {exportingExcel ? 'Exportando…' : 'Exportar Excel'}
+          </Button>
+          {model.canEdit ? (
+            <Button
+              onClick={() => setConfigOpen((open) => !open)}
+              type="button"
+              variant="secondary"
+            >
+              <Settings2 aria-hidden size={16} />
+              {configOpen ? 'Ocultar bloques' : 'Configurar bloques'}
+            </Button>
+          ) : null}
+        </div>
+      </div>
+
+      {configOpen && model.canEdit ? (
+        <ScheduleTimeSlotsPanel
+          onClose={() => setConfigOpen(false)}
+          onSlotsChanged={handleSlotsChanged}
+        />
+      ) : null}
+
+      {blockingError ? <Alert>{blockingError}</Alert> : null}
+      {model.entriesError ? <Alert>{model.entriesError}</Alert> : null}
+
+      {model.slotsLoading || model.catalogLoading ? (
+        <p className={styles.status}>Cargando bloques horarios…</p>
+      ) : null}
+
+      {!model.slotsLoading &&
+      !model.slotsError &&
+      matrixSlots.length === 0 ? (
+        <EmptyState
+          description={
+            model.canEdit
+              ? 'Use “Configurar bloques” para definir la jornada.'
+              : 'Aún no hay bloques horarios activos para mostrar.'
+          }
+          icon={CalendarClock}
+          title="No hay bloques horarios"
+        />
+      ) : null}
+
+      {!model.slotsLoading && matrixSlots.length > 0 ? (
+        <>
+          <div className={styles.mobileDayBar}>
+            <SegmentedTabs
+              aria-label="Día de la semana"
+              items={dayTabs}
+              onChange={(id) => model.setMobileDay(Number(id))}
+              value={String(model.mobileDay)}
+            />
+          </div>
+
+          <div className={styles.desktopMatrixWrap}>
+            <table className={styles.matrix}>
+              <thead>
+                <tr>
+                  <th className={`${styles.timeCol} ${styles.timeHead}`} scope="col">
+                    Hora
+                  </th>
+                  {SCHEDULE_WEEKDAYS.map((day) => (
+                    <th
+                      className={`${styles.slotHead} ${styles[`day${day.dayOfWeek}`]}`}
+                      key={day.dayOfWeek}
+                      scope="col"
+                    >
+                      {day.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {matrixSlots.map((slot) => {
+                  const secondary = slotSecondaryLabel(slot);
+                  return (
+                    <tr key={slot.id}>
+                      <th className={styles.timeCol} scope="row">
+                        <span className={styles.slotHeadPrimary}>
+                          {formatSlotRange(slot.startTime, slot.endTime)}
+                        </span>
+                        {secondary ? (
+                          <span className={styles.slotHeadSecondary}>
+                            {secondary}
+                          </span>
+                        ) : null}
+                      </th>
+                      {SCHEDULE_WEEKDAYS.map((day) => {
+                        if (slot.slotType !== 'CLASS') {
+                          return (
+                            <td
+                              className={styles.neutralCell}
+                              key={day.dayOfWeek}
+                            >
+                              {nonClassSlotLabel(slot.slotType, slot.name)}
+                            </td>
+                          );
+                        }
+                        const cellEntries =
+                          model.entriesByCell.get(
+                            `${day.dayOfWeek}:${slot.id}`,
+                          ) ?? [];
+                        const canAssign = model.canEdit && slot.isActive;
+                        return (
+                          <td className={styles.classCell} key={day.dayOfWeek}>
+                            <ClassCellBody
+                              canAssign={canAssign}
+                              canEdit={model.canEdit}
+                              entries={cellEntries}
+                              filterGroupId={model.filterGroupId}
+                              filterTeacherId={model.filterTeacherId}
+                              onAssign={() =>
+                                model.openAssign(day.dayOfWeek, slot.id)
+                              }
+                              onEdit={model.openEdit}
+                              onRemove={model.requestDelete}
+                            />
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <div className={styles.mobileDayList}>
+            {model.entriesLoading ? (
+              <p className={styles.status}>Cargando clases…</p>
+            ) : null}
+            <ul className={styles.slotList}>
+              {matrixSlots.map((slot) => {
+                if (slot.slotType !== 'CLASS') {
+                  return (
+                    <li className={styles.slotListNeutral} key={slot.id}>
+                      <span className={styles.slotListTime}>
+                        {nonClassSlotLabel(slot.slotType, slot.name)}
+                      </span>
+                      <span className={styles.meta}>
+                        {formatSlotRange(slot.startTime, slot.endTime)}
+                      </span>
+                    </li>
+                  );
+                }
+                const cellEntries =
+                  model.entriesByCell.get(
+                    `${model.mobileDay}:${slot.id}`,
+                  ) ?? [];
+                const canAssign = model.canEdit && slot.isActive;
+                return (
+                  <li className={styles.slotListItem} key={slot.id}>
+                    <div className={styles.slotListTime}>
+                      {formatSlotRange(slot.startTime, slot.endTime)}
+                      {slot.name ? (
+                        <span className={styles.meta}> · {slot.name}</span>
+                      ) : null}
+                      {!slot.isActive ? (
+                        <span className={styles.meta}> · inactivo</span>
+                      ) : null}
+                    </div>
+                    <ClassCellBody
+                      canAssign={canAssign}
+                      canEdit={model.canEdit}
+                      entries={cellEntries}
+                      filterGroupId={model.filterGroupId}
+                      filterTeacherId={model.filterTeacherId}
+                      onAssign={() =>
+                        model.openAssign(model.mobileDay, slot.id)
+                      }
+                      onEdit={model.openEdit}
+                      onRemove={model.requestDelete}
+                    />
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+
+          {!model.entriesLoading &&
+          !model.entriesError &&
+          model.entries.length === 0 ? (
+            <p className={styles.emptyHint}>
+              No hay clases asignadas para estos filtros.
+            </p>
+          ) : null}
+
+          {!model.tasLoading &&
+          !model.tasError &&
+          model.filterPeriodId &&
+          model.taOptions.length === 0 &&
+          model.entries.length === 0 ? (
+            <EmptyState
+              action={
+                model.canViewTeachingAssignments
+                  ? {
+                      label: 'Ir a asignaciones académicas',
+                      onClick: () =>
+                        navigate('/admin/teaching-assignments'),
+                    }
+                  : undefined
+              }
+              description="Cree asignaciones impartibles (materia / taller / especialidad) para poder colocarlas en el horario."
+              icon={Link2}
+              title="No hay asignaciones académicas disponibles."
+            />
+          ) : null}
+        </>
+      ) : null}
+
+      <ModalCrud
+        isOpen={model.dialogOpen}
+        onClose={model.closeDialog}
+        title={
+          model.dialogMode === 'create' ? 'Asignar clase' : 'Editar clase'
+        }
+      >
+        <ScheduleEntryForm
+          canLinkTeachingAssignments={model.canViewTeachingAssignments}
+          contextDayLabel={model.contextDayLabel}
+          contextSlotLabel={model.contextSlotLabel}
+          dialogMode={model.dialogMode}
+          form={model.form}
+          isSaving={model.isSaving}
+          mutationError={model.mutationError}
+          onCancel={model.closeDialog}
+          onChange={model.patchForm}
+          onSubmit={model.submit}
+          optionLabel={model.teachingAssignmentOptionLabel}
+          tasError={model.tasError}
+          tasLoading={model.tasLoading}
+          teachingAssignments={model.taOptions}
+        />
+      </ModalCrud>
+
+      <ConfirmDialog
+        cancelLabel="Cancelar"
+        confirmLabel="Quitar"
+        isOpen={model.confirmOpen}
+        isSubmitting={model.isDeleting}
+        message="¿Quitar esta clase del horario?"
+        onCancel={model.cancelDelete}
+        onConfirm={model.confirmDelete}
+        secondary="No se eliminará la asignación académica del docente."
+        title="Quitar del horario"
+        tone="danger"
+      />
+    </section>
+  );
+};

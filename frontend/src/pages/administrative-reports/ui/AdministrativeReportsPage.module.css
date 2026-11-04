@@ -1,0 +1,162 @@
+.page {
+  display: grid;
+  gap: 24px;
+}
+
+.breadcrumb {
+  color: var(--admin-muted);
+  font-size: 13px;
+}
+
+.breadcrumb span {
+  margin: 0 6px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  background: var(--admin-surface);
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(0, 46, 122, 0.08);
+  color: var(--admin-primary);
+}
+
+.header h1 {
+  font-size: 20px;
+}
+
+.header p {
+  margin-top: 2px;
+  color: var(--admin-muted);
+  font-size: 13px;
+}
+
+.tableCard {
+  display: grid;
+  gap: 18px;
+}
+
+.toolbar {
+  display: grid;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  align-items: end;
+}
+
+.search {
+  position: relative;
+  flex: 1 1 220px;
+  min-width: 220px;
+  color: var(--admin-muted);
+}
+
+.search svg {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  width: 16px;
+  height: 16px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.search input {
+  padding-left: 36px;
+}
+
+.filterControl {
+  flex: 1 1 160px;
+  min-width: 160px;
+}
+
+.filterField {
+  display: grid;
+  gap: 6px;
+  flex: 1 1 160px;
+  min-width: 160px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.actionRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--admin-border);
+}
+
+.filterActions,
+.exportActions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filterActions button,
+.exportActions button {
+  white-space: nowrap;
+}
+
+.muted {
+  color: var(--admin-muted);
+  font-size: 14px;
+}
+
+.resultCount {
+  color: var(--admin-muted);
+  font-size: 13px;
+}
+
+.empty {
+  color: var(--admin-muted);
+  text-align: center;
+}
+
+.tableCard :global(th) {
+  white-space: nowrap;
+}
+
+@media (max-width: 680px) {
+  .search,
+  .filterControl,
+  .filterField {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .actionRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filterActions,
+  .exportActions {
+    justify-content: stretch;
+  }
+
+  .filterActions button,
+  .exportActions button {
+    flex: 1;
+  }
+}

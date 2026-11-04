@@ -1,0 +1,472 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  font-family: var(--font-family-sans);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--color-text-main);
+  padding-bottom: 0.75rem;
+}
+
+.cycleBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 9999px;
+  background: var(--status-valid-bg);
+  border: 1px solid var(--status-valid-border);
+  color: var(--status-valid-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cycleDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-primary-green);
+  animation: cyclePulse 1.6s ease-in-out infinite;
+}
+
+@keyframes cyclePulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.heroCard {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.templateBar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--color-border-card);
+  flex-wrap: wrap;
+}
+
+.templateInfo {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.templateIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-green-light);
+  color: var(--color-primary-green);
+  border: 1px solid var(--status-valid-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.templateTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.templateTitle {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.formatBadge {
+  display: inline-flex;
+  padding: 0.12rem 0.45rem;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--color-primary-blue-light);
+  color: var(--color-primary-blue);
+  border: 1px solid var(--color-border-card);
+}
+
+.templateSub {
+  margin: 0.15rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.templateActions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.btnGreen {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--color-primary-green);
+  color: var(--color-text-white);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btnGreen:hover:not(:disabled) {
+  background: var(--color-primary-green-hover);
+}
+
+.btnOutline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-card);
+  background: var(--color-bg-card);
+  color: var(--color-primary-dark);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btnOutline:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+}
+
+.btnGreen:disabled,
+.btnOutline:disabled,
+.btnBlue:disabled,
+.validateBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.errorBanner {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.65rem 0.85rem;
+  background: var(--status-error-bg);
+  border: 1px solid var(--status-error-border);
+  border-radius: var(--radius-md);
+  color: var(--status-error-text);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.dropzone {
+  border: 2px dashed color-mix(in srgb, var(--color-primary-blue) 35%, transparent);
+  background: var(--color-primary-blue-light);
+  border-radius: var(--radius-lg);
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.dropzone:hover,
+.dropzoneActive {
+  border-color: var(--color-primary-blue);
+  background: color-mix(in srgb, var(--color-primary-blue-light) 80%, white);
+}
+
+.dropzoneIcon {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-card);
+  color: var(--color-primary-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.4rem;
+  box-shadow: var(--shadow-subtle);
+}
+
+.dropzoneMain {
+  margin: 0 0 0.15rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.dropzoneSub {
+  margin: 0 0 0.55rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  max-width: 32rem;
+  line-height: 1.4;
+}
+
+.btnBlue {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--color-primary-blue);
+  color: var(--color-text-white);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btnBlue:hover:not(:disabled) {
+  background: var(--color-primary-blue-hover);
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.fileBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-green-light);
+  border: 1px solid var(--status-valid-border);
+}
+
+.fileName {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-primary-green);
+}
+
+.fileSize {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.validateBtn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--color-primary-blue);
+  color: var(--color-text-white);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 6px -1px color-mix(in srgb, var(--color-primary-blue) 25%, transparent);
+}
+
+.validateBtn:hover:not(:disabled) {
+  background: var(--color-primary-blue-hover);
+}
+
+.spin {
+  animation: bulkSpin 1s linear infinite;
+}
+
+@keyframes bulkSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.heroFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  padding-top: 0.15rem;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.lastImport {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.lastImportIcon {
+  color: var(--color-primary-green);
+  flex-shrink: 0;
+}
+
+.heroHint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.guideCard {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  transition: border-color 0.15s ease;
+}
+
+.guideCard:hover {
+  border-color: color-mix(in srgb, var(--color-primary-blue) 40%, var(--color-border-card));
+}
+
+.guideInfo {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.guideIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-blue-light);
+  color: var(--color-primary-blue);
+  border: 1px solid var(--color-border-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.guideTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.1rem;
+}
+
+.guideTitle {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.fieldsBadge {
+  display: inline-flex;
+  padding: 0.12rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--status-valid-bg);
+  color: var(--status-valid-text);
+  border: 1px solid var(--status-valid-border);
+}
+
+.guideSub {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.btnNavy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--color-primary-dark);
+  color: var(--color-text-white);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.btnNavy:hover {
+  filter: brightness(1.08);
+}
+
+.dashboardWrap {
+  display: flex;
+  justify-content: center;
+  padding: 0.35rem 0 0.15rem;
+}
+
+.dashboardBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1.25rem;
+  border-radius: 9999px;
+  border: none;
+  background: var(--color-primary-dark);
+  color: var(--color-text-white);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.dashboardBtn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+@media (max-width: 720px) {
+  .templateBar,
+  .guideCard,
+  .heroFooter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btnNavy,
+  .validateBtn {
+    width: 100%;
+  }
+}

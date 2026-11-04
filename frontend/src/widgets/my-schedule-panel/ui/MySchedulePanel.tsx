@@ -1,0 +1,391 @@
+import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { CalendarClock, RefreshCw } from 'lucide-react';
+import type { AttendanceScheduleOccurrence } from '@/entities/attendance';
+import type { ScheduleEntry, ScheduleTimeSlot } from '@/entities/schedule';
+import {
+  ATTENDANCE_SESSION_PATH,
+  attendanceApi,
+  resolveSessionPathAfterCreate,
+} from '@/features/manage-attendance';
+import {
+  formatSlotRange,
+  nonClassSlotLabel,
+  SCHEDULE_WEEKDAYS,
+} from '@/features/manage-schedule';
+import { staffPathForSession } from '@/widgets/app-shell/model/adminNavigation';
+import {
+  buildFromSchedulePayload,
+  humanizeFromScheduleError,
+  MY_SCHEDULE_ATTENDANCE_COPY,
+  MY_SCHEDULE_COPY,
+  resolveMyScheduleAttendanceCta,
+  resolveMyScheduleEmptyCopy,
+  resolveMyScheduleEntrySecondaryLabel,
+  useMySchedulePanel,
+  type MyScheduleAttendanceCta,
+  type MyScheduleCardVariant,
+  type MyScheduleEmptyKind,
+} from '@/features/view-my-schedule';
+import { useToast, Alert, Badge, EmptyState, SegmentedTabs, Select } from '@/shared/ui';
+import styles from '@/widgets/schedule-panel/ui/SchedulePanel.module.css';
+
+function slotSecondaryLabel(slot: ScheduleTimeSlot): string | null {
+  if (slot.slotType === 'BREAK' || slot.slotType === 'LUNCH') {
+    return nonClassSlotLabel(slot.slotType, slot.name);
+  }
+  if (slot.name) {
+    return `${slot.name}${!slot.isActive ? ' (inactivo)' : ''}`;
+  }
+  return !slot.isActive ? '(inactivo)' : null;
+}
+
+function ReadonlyEntryCard({
+  entry,
+  variant,
+  cta,
+  starting,
+  onCta,
+}: {
+  entry: ScheduleEntry;
+  variant: MyScheduleCardVariant;
+  cta: MyScheduleAttendanceCta | null;
+  starting: boolean;
+  onCta: (cta: MyScheduleAttendanceCta) => void;
+}) {
+  const ta = entry.teachingAssignment;
+  const secondaryLabel = resolveMyScheduleEntrySecondaryLabel(entry, variant);
+  return (
+    <article
+      className={styles.entryCard}
+      data-card-variant={variant}
+      data-testid="my-schedule-entry-card"
+      data-entry-id={entry.entryId}
+    >
+      <div className={styles.entryMain}>
+        <strong className={styles.offeringName}>{ta.offering.name}</strong>
+        <Badge tone="neutral">{ta.offering.labelKind}</Badge>
+        <span className={styles.meta}>{secondaryLabel}</span>
+        {cta?.badgeLabel ? (
+          <span className={styles.meta} data-testid="my-schedule-attendance-badge">
+            {cta.badgeLabel}
+          </span>
+        ) : null}
+        {cta ? (
+          <button
+            className={styles.linkBtn}
+            data-testid={`my-schedule-attendance-cta-${cta.kind}`}
+            disabled={starting}
+            onClick={() => onCta(cta)}
+            type="button"
+          >
+            {starting && cta.kind === 'take' ? 'Iniciando…' : cta.label}
+          </button>
+        ) : null}
+      </div>
+    </article>
+  );
+}
+
+function ReadonlyClassCell({
+  entries,
+  variant,
+  occurrenceByEntryId,
+  canViewAttendance,
+  canCreateAttendance,
+  startingEntryId,
+  onCta,
+}: {
+  entries: ScheduleEntry[];
+  variant: MyScheduleCardVariant;
+  occurrenceByEntryId: Map<number, AttendanceScheduleOccurrence>;
+  canViewAttendance: boolean;
+  canCreateAttendance: boolean;
+  startingEntryId: number | null;
+  onCta: (cta: MyScheduleAttendanceCta) => void;
+}) {
+  if (entries.length === 0) {
+    return <span className={styles.emptyCell}>—</span>;
+  }
+  return (
+    <div className={styles.entryStack}>
+      {entries.map((entry) => {
+        const cta = resolveMyScheduleAttendanceCta({
+          entryId: entry.entryId,
+          variant,
+          canViewAttendance,
+          canCreateAttendance,
+          occurrence: occurrenceByEntryId.get(entry.entryId),
+        });
+        return (
+          <ReadonlyEntryCard
+            cta={cta}
+            entry={entry}
+            key={entry.entryId}
+            onCta={onCta}
+            starting={startingEntryId === entry.entryId}
+            variant={variant}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+export const MySchedulePanel = ({
+  emptyKind,
+  sectionLabel,
+}: {
+  emptyKind?: MyScheduleEmptyKind;
+  sectionLabel?: string | null;
+} = {}) => {
+  const model = useMySchedulePanel();
+  const navigate = useNavigate();
+  const toast = useToast();
+  const [startingEntryId, setStartingEntryId] = useState<number | null>(null);
+  const emptyCopy = resolveMyScheduleEmptyCopy(
+    model.cardVariant,
+    emptyKind ?? 'no-schedule',
+    sectionLabel,
+  );
+
+  const dayTabs = SCHEDULE_WEEKDAYS.map((d) => ({
+    id: String(d.dayOfWeek),
+    label: d.label,
+  }));
+
+  const blockingError = model.scheduleError;
+
+  const cellProps = useMemo(
+    () => ({
+      variant: model.cardVariant,
+      occurrenceByEntryId: model.occurrenceByEntryId,
+      canViewAttendance: model.canViewAttendance,
+      canCreateAttendance: model.canCreateAttendance,
+      startingEntryId,
+    }),
+    [
+      model.cardVariant,
+      model.occurrenceByEntryId,
+      model.canViewAttendance,
+      model.canCreateAttendance,
+      startingEntryId,
+    ],
+  );
+
+  const handleCta = async (cta: MyScheduleAttendanceCta) => {
+    if (cta.kind === 'continue' || cta.kind === 'view') {
+      if (cta.sessionId != null) {
+        navigate(staffPathForSession(ATTENDANCE_SESSION_PATH(cta.sessionId)));
+      }
+      return;
+    }
+
+    if (cta.kind !== 'take' || cta.scheduleEntryId == null) return;
+    const entryId = cta.scheduleEntryId;
+    setStartingEntryId(entryId);
+    try {
+      const result = await attendanceApi.createAttendanceSessionFromSchedule(
+        buildFromSchedulePayload(entryId),
+      );
+      navigate(staffPathForSession(resolveSessionPathAfterCreate(result)));
+      void model.reloadAttendanceContext();
+    } catch (error) {
+      toast.push(humanizeFromScheduleError(error), 'error');
+    } finally {
+      setStartingEntryId(null);
+    }
+  };
+
+  return (
+    <section className={styles.layout} data-testid="my-schedule-panel">
+      {model.canChoosePeriod ? (
+        <div className={styles.toolbar}>
+          <div className={styles.filters}>
+            <Select
+              aria-label="Curso lectivo"
+              onChange={(e) => model.setPeriodId(e.target.value)}
+              value={model.periodId}
+            >
+              <option value="">Curso lectivo: seleccionar…</option>
+              {model.periods.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                  {p.status === 'ACTIVE' ? ' (activo)' : ''}
+                </option>
+              ))}
+            </Select>
+          </div>
+        </div>
+      ) : model.cycleLabel ? (
+        <p className={styles.cycleLabel} data-testid="my-schedule-cycle-label">
+          {model.cycleLabel}
+        </p>
+      ) : null}
+
+      {model.catalogError ? (
+        <Alert>
+          <span>{model.catalogError}</span>
+        </Alert>
+      ) : null}
+
+      {blockingError ? (
+        <Alert>
+          <div className={styles.toolbar}>
+            <span>{blockingError}</span>
+            <button
+              className={styles.linkBtn}
+              onClick={() => model.retry()}
+              type="button"
+            >
+              <RefreshCw aria-hidden size={14} /> {MY_SCHEDULE_COPY.retryLabel}
+            </button>
+          </div>
+        </Alert>
+      ) : null}
+
+      {!blockingError && model.attendanceContextError ? (
+        <p className={styles.status} data-testid="my-schedule-attendance-context-error">
+          {MY_SCHEDULE_ATTENDANCE_COPY.contextFailed}
+        </p>
+      ) : null}
+
+      {model.catalogLoading || model.scheduleLoading ? (
+        <p className={styles.status}>Cargando tu horario…</p>
+      ) : null}
+
+      {!model.catalogLoading &&
+      !model.scheduleLoading &&
+      !blockingError &&
+      model.isEmptySuccess ? (
+        <EmptyState
+          description={emptyCopy.description}
+          icon={CalendarClock}
+          title={emptyCopy.title}
+        />
+      ) : null}
+
+      {!model.scheduleLoading &&
+      !blockingError &&
+      !model.isEmptySuccess &&
+      model.matrixSlots.length > 0 ? (
+        <>
+          <div className={styles.mobileDayBar}>
+            <SegmentedTabs
+              aria-label="Día de la semana"
+              items={dayTabs}
+              onChange={(id) => model.setMobileDay(Number(id))}
+              value={String(model.mobileDay)}
+            />
+          </div>
+
+          <div className={styles.desktopMatrixWrap}>
+            <table className={styles.matrix}>
+              <thead>
+                <tr>
+                  <th className={`${styles.timeCol} ${styles.timeHead}`} scope="col">
+                    Hora
+                  </th>
+                  {SCHEDULE_WEEKDAYS.map((day) => (
+                    <th
+                      className={`${styles.slotHead} ${styles[`day${day.dayOfWeek}`]}`}
+                      key={day.dayOfWeek}
+                      scope="col"
+                    >
+                      {day.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {model.matrixSlots.map((slot) => {
+                  const secondary = slotSecondaryLabel(slot);
+                  return (
+                    <tr key={slot.id}>
+                      <th className={styles.timeCol} scope="row">
+                        <span className={styles.slotHeadPrimary}>
+                          {formatSlotRange(slot.startTime, slot.endTime)}
+                        </span>
+                        {secondary ? (
+                          <span className={styles.slotHeadSecondary}>
+                            {secondary}
+                          </span>
+                        ) : null}
+                      </th>
+                      {SCHEDULE_WEEKDAYS.map((day) => {
+                        if (slot.slotType !== 'CLASS') {
+                          return (
+                            <td
+                              className={styles.neutralCell}
+                              key={day.dayOfWeek}
+                            >
+                              {nonClassSlotLabel(slot.slotType, slot.name)}
+                            </td>
+                          );
+                        }
+                        const cellEntries =
+                          model.entriesByCell.get(
+                            `${day.dayOfWeek}:${slot.id}`,
+                          ) ?? [];
+                        return (
+                          <td className={styles.classCell} key={day.dayOfWeek}>
+                            <ReadonlyClassCell
+                              {...cellProps}
+                              entries={cellEntries}
+                              onCta={handleCta}
+                            />
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <div className={styles.mobileDayList}>
+            <ul className={styles.slotList}>
+              {model.matrixSlots.map((slot) => {
+                if (slot.slotType !== 'CLASS') {
+                  return (
+                    <li className={styles.slotListNeutral} key={slot.id}>
+                      <span className={styles.slotListTime}>
+                        {nonClassSlotLabel(slot.slotType, slot.name)}
+                      </span>
+                      <span className={styles.meta}>
+                        {formatSlotRange(slot.startTime, slot.endTime)}
+                      </span>
+                    </li>
+                  );
+                }
+                const cellEntries =
+                  model.entriesByCell.get(
+                    `${model.mobileDay}:${slot.id}`,
+                  ) ?? [];
+                return (
+                  <li className={styles.slotListItem} key={slot.id}>
+                    <div className={styles.slotListTime}>
+                      {formatSlotRange(slot.startTime, slot.endTime)}
+                      {slot.name ? (
+                        <span className={styles.meta}> · {slot.name}</span>
+                      ) : null}
+                      {!slot.isActive ? (
+                        <span className={styles.meta}> · inactivo</span>
+                      ) : null}
+                    </div>
+                    <ReadonlyClassCell
+                      {...cellProps}
+                      entries={cellEntries}
+                      onCta={handleCta}
+                    />
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </>
+      ) : null}
+    </section>
+  );
+};

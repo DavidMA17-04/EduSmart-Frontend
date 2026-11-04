@@ -14,8 +14,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         <div className={styles.brand}>
           <div className={styles.brandLogo}>E</div>
           <div>
-            <div className={styles.brandTitle}>EduSmart</div>
-            <div className={styles.brandSub}>CTP de Hojancha</div>
+            <div className={styles.brandTitle}>C.T.P. de Hojancha</div>
+            <div className={styles.brandSub}>Colegio Técnico Profesional</div>
           </div>
         </div>
 

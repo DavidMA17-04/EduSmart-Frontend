@@ -1,30 +1,83 @@
-import type { FormEventHandler } from 'react';
+import type { FormEventHandler, RefObject } from 'react';
 import type { SpecialtyStatus } from '@/entities/specialty';
-import { Button, Input, Select, Textarea } from '@/shared/ui';
+import { FormActions, Input, Select, Textarea } from '@/shared/ui';
 import type { SpecialtyFormValues } from '../model/useSpecialtyForm';
 import styles from './SpecialtyFormPanel.module.css';
 
 interface SpecialtyFormPanelProps {
-  title: string;
+  title?: string;
   values: SpecialtyFormValues;
-  areaOptions: string[];
   isSubmitting?: boolean;
+  submitLabel: string;
+  cancelLabel?: string;
+  nameInputRef?: RefObject<HTMLInputElement>;
+  nameFieldLabel?: string;
+  embedded?: boolean;
   onChange: <K extends keyof SpecialtyFormValues>(field: K, value: SpecialtyFormValues[K]) => void;
   onSubmit: FormEventHandler<HTMLFormElement>;
   onCancel: () => void;
 }
 
-export const SpecialtyFormPanel = ({ title, values, areaOptions, isSubmitting = false, onChange, onSubmit, onCancel }: SpecialtyFormPanelProps) => (
-  <aside className={styles.panel}>
-    <h2>{title}</h2>
-    <form onSubmit={onSubmit}>
-      <label>Código<Input required maxLength={20} onChange={(event) => onChange('code', event.target.value)} placeholder="INF-01" value={values.code} /></label>
-      <label>Nombre de la especialidad<Input required maxLength={150} onChange={(event) => onChange('name', event.target.value)} value={values.name} /></label>
-      <label>Área<Select required onChange={(event) => onChange('area', event.target.value)} value={values.area}><option value="" disabled>Seleccione un área</option>{areaOptions.map((area) => <option key={area} value={area}>{area}</option>)}</Select></label>
-      <label>Descripción<Textarea maxLength={2000} onChange={(event) => onChange('description', event.target.value)} value={values.description} /></label>
-      <label>Duración (períodos)<Input min={1} max={20} onChange={(event) => onChange('duration', Number(event.target.value))} required type="number" value={values.duration} /></label>
-      <label>Estado<Select onChange={(event) => onChange('status', event.target.value as SpecialtyStatus)} value={values.status}><option value="ACTIVE">Activa</option><option value="INACTIVE">Inactiva</option><option value="UNDER_REVIEW">En revisión</option></Select></label>
-      <div className={styles.actions}><Button onClick={onCancel} type="button" variant="secondary">Cancelar</Button><Button disabled={isSubmitting} type="submit">{isSubmitting ? 'Guardando…' : 'Guardar cambios'}</Button></div>
+export const SpecialtyFormPanel = ({
+  title,
+  values,
+  isSubmitting = false,
+  submitLabel,
+  cancelLabel = 'Cancelar',
+  nameInputRef,
+  nameFieldLabel = 'Nombre',
+  embedded = false,
+  onChange,
+  onSubmit,
+  onCancel,
+}: SpecialtyFormPanelProps) => {
+  const body = (
+    <form className={styles.form} onSubmit={onSubmit}>
+      <label>
+        {nameFieldLabel}
+        <Input
+          ref={nameInputRef}
+          maxLength={150}
+          onChange={(event) => onChange('name', event.target.value)}
+          required
+          value={values.name}
+        />
+      </label>
+      <label>
+        Descripción
+        <Textarea
+          maxLength={2000}
+          onChange={(event) => onChange('description', event.target.value)}
+          value={values.description}
+        />
+      </label>
+      <label>
+        Estado
+        <Select
+          onChange={(event) => onChange('status', event.target.value as SpecialtyStatus)}
+          value={values.status}
+        >
+          <option value="ACTIVE">Activa</option>
+          <option value="INACTIVE">Inactiva</option>
+        </Select>
+      </label>
+      <FormActions
+        cancelLabel={cancelLabel}
+        isSubmitting={isSubmitting}
+        onCancel={onCancel}
+        submitLabel={submitLabel}
+      />
     </form>
-  </aside>
-);
+  );
+
+  if (embedded) {
+    return body;
+  }
+
+  return (
+    <aside className={styles.panel}>
+      {title ? <h2>{title}</h2> : null}
+      {body}
+    </aside>
+  );
+};

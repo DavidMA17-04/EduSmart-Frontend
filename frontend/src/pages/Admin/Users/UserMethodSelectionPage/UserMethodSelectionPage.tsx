@@ -1,0 +1,222 @@
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  FileSpreadsheet,
+  UserPlus,
+  CheckCircle2,
+  Upload,
+  Download,
+  Plus,
+  HelpCircle,
+  History,
+  FileCheck,
+  Users,
+  Eye,
+} from 'lucide-react';
+import { downloadOfficialTemplateCsv } from '@/features/manage-user-import';
+import { PageHeader } from '@/shared/ui';
+import { CEDULA_IMPORT_HINT, readRecentImports } from './recentImports';
+import styles from './UserMethodSelection.module.css';
+
+export const UserMethodSelectionPage: React.FC = () => {
+  const navigate = useNavigate();
+
+  const [recentImports] = React.useState(() => readRecentImports(window.localStorage));
+
+  const handleDownloadTemplate = () => {
+    downloadOfficialTemplateCsv();
+  };
+
+  return (
+    <div className={styles.container}>
+      <PageHeader
+        back={{ label: 'Volver al Dashboard', to: '/admin' }}
+        breadcrumbs={[
+          { label: 'Administrativo' },
+          { label: 'Usuarios' },
+          { label: 'Incorporación' },
+        ]}
+        icon={Users}
+        subtitle="Seleccione el método para incorporar nuevos usuarios a la plataforma del CTP de Hojancha."
+        title="Incorporación de usuarios"
+      />
+
+      {/* Grid de tarjetas (WF-13 + WF-18) */}
+      <section className={styles.cardsGrid}>
+        {/* Tarjeta de Importación Masiva (Verde / Recomendado) */}
+        <div className={styles.card}>
+          <span className={styles.recommendedBadge}>Recomendado</span>
+          <div className={styles.iconWrapperGreen}>
+            <FileSpreadsheet size={24} />
+          </div>
+          <h2 className={styles.cardTitle}>
+            Importación masiva desde archivo (Excel / CSV)
+          </h2>
+          <p className={styles.cardDesc}>
+            Cargue múltiples estudiantes, docentes y funcionarios simultáneamente utilizando la plantilla oficial estandarizada.
+          </p>
+
+          <ul className={styles.featuresList}>
+            <li>
+              <CheckCircle2 size={16} className={styles.checkGreen} />
+              Ideal para inicios de curso lectivo y matrículas masivas
+            </li>
+            <li>
+              <CheckCircle2 size={16} className={styles.checkGreen} />
+              Validación instantánea de formato de cédula y correos MEP
+            </li>
+            <li>
+              <CheckCircle2 size={16} className={styles.checkGreen} />
+              Pre-visualización interactiva y corrección de celdas con error
+            </li>
+          </ul>
+
+          <div className={styles.actionGroup}>
+            <button
+              type="button"
+              className={styles.btnGreen}
+              onClick={() => navigate('/admin/users/import/bulk')}
+            >
+              <Upload size={16} />
+              Importar usuarios
+            </button>
+            <button
+              type="button"
+              className={styles.btnOutlineGreen}
+              onClick={handleDownloadTemplate}
+            >
+              <Download size={16} />
+              Ver guía / Plantilla
+            </button>
+          </div>
+        </div>
+
+        {/* Tarjeta de Registro Manual (Azul) */}
+        <div className={styles.card}>
+          <div className={styles.iconWrapperBlue}>
+            <UserPlus size={24} />
+          </div>
+          <h2 className={styles.cardTitle}>
+            Agregar usuario manualmente
+          </h2>
+          <p className={styles.cardDesc}>
+            Registre un usuario de forma individual completando un formulario interactivo con asignación directa de rol y permisos.
+          </p>
+
+          <ul className={styles.featuresList}>
+            <li>
+              <CheckCircle2 size={16} className={styles.checkBlue} />
+              Apropiado para traslados extemporáneos y nuevos funcionarios
+            </li>
+            <li>
+              <CheckCircle2 size={16} className={styles.checkBlue} />
+              Datos personales, rol institucional, estado y acceso
+            </li>
+            <li>
+              <CheckCircle2 size={16} className={styles.checkBlue} />
+              Contraseña temporal y confirmación de registro exitoso
+            </li>
+          </ul>
+
+          <div className={styles.actionGroup}>
+            <button
+              type="button"
+              className={styles.btnBlue}
+              onClick={() => navigate('/admin/users/new')}
+            >
+              <Plus size={16} />
+              Agregar manualmente
+            </button>
+          </div>
+        </div>
+
+        {/* Tarjeta de Consulta y Edición (WF-18) */}
+        <div className={styles.card}>
+          <div className={styles.iconWrapperBlue}>
+            <Users size={24} />
+          </div>
+          <h2 className={styles.cardTitle}>
+            Consultar y editar usuarios
+          </h2>
+          <p className={styles.cardDesc}>
+            Acceda al directorio institucional, consulte la ficha de cada usuario y actualice sus datos con registro de auditoría.
+          </p>
+
+          <ul className={styles.featuresList}>
+            <li>
+              <CheckCircle2 size={16} className={styles.checkBlue} />
+              Búsqueda por nombre, cédula, correo o rol
+            </li>
+            <li>
+              <CheckCircle2 size={16} className={styles.checkBlue} />
+              Consulta de ficha institucional completa
+            </li>
+            <li>
+              <CheckCircle2 size={16} className={styles.checkBlue} />
+              Edición validada con historial de auditoría
+            </li>
+          </ul>
+
+          <div className={styles.actionGroup}>
+            <button
+              type="button"
+              className={styles.btnBlue}
+              onClick={() => navigate('/admin/users/directory')}
+            >
+              <Eye size={16} />
+              Abrir directorio
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Sección Inferior de Apoyo */}
+      <section className={styles.bottomGrid}>
+        {/* Antes de Importar */}
+        <div className={styles.infoCard}>
+          <div className={styles.infoCardHead}>
+            <HelpCircle size={20} color="var(--color-primary-blue)" aria-hidden="true" />
+            <h3 className={styles.infoCardTitle}>Antes de importar</h3>
+          </div>
+          <ul className={styles.infoList}>
+            <li className={styles.infoItem}>
+              <FileCheck size={16} color="var(--color-primary-green)" />
+              Asegúrese de usar la plantilla oficial con encabezados intactos.
+            </li>
+            <li className={styles.infoItem}>
+              <FileCheck size={16} color="var(--color-primary-green)" />
+              Formatos soportados: <strong>.xlsx, .xls y .csv</strong> (máximo 10 MB).
+            </li>
+            <li className={styles.infoItem}>
+              <FileCheck size={16} color="var(--color-primary-green)" />
+              {CEDULA_IMPORT_HINT}
+            </li>
+          </ul>
+        </div>
+
+        {/* Importaciones Recientes */}
+        <div className={styles.infoCard}>
+          <div className={styles.infoCardHead}>
+            <History size={20} color="var(--color-primary-blue)" aria-hidden="true" />
+            <h3 className={styles.infoCardTitle}>Importaciones recientes</h3>
+          </div>
+          {recentImports.length === 0 ? (
+            <p className={styles.emptyRecent}>Aún no hay importaciones recientes registradas en este equipo.</p>
+          ) : (
+            recentImports.map((item) => (
+              <div key={item.id} className={styles.recentImportItem}>
+                <div className={styles.recentImportInfo}>
+                  <span className={styles.recentImportName}>{item.name}</span>
+                  <span className={styles.recentImportDate}>{item.date}</span>
+                </div>
+                <span className={styles.statusSuccessBadge}>{item.status}</span>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
+    </div>
+  );
+};
+
+export default UserMethodSelectionPage;

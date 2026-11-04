@@ -1,8 +1,6 @@
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 360px);
   gap: 24px;
-  align-items: start;
 }
 
 .panelRoot {
@@ -33,9 +31,17 @@
   font-size: 13px;
 }
 
+.heading button {
+  white-space: nowrap;
+}
+
 .tableCard {
   display: grid;
   gap: 18px;
+}
+
+.tableCard h2 {
+  font-size: 16px;
 }
 
 .toolbar {
@@ -44,6 +50,10 @@
   flex-wrap: wrap;
   gap: 12px;
   font-size: 13px;
+}
+
+.toolbar h2 {
+  font-size: 16px;
 }
 
 .toolbar label {
@@ -59,11 +69,6 @@
 .rowActions {
   display: flex;
   gap: 6px;
-}
-
-.rowActions button {
-  min-height: 32px;
-  padding-inline: 10px;
 }
 
 .muted {
@@ -93,12 +98,6 @@
   align-self: start;
 }
 
-.detailPanel {
-  position: sticky;
-  top: 16px;
-  align-self: start;
-}
-
 .unassigned {
   background: #fff9f0;
 }
@@ -108,17 +107,11 @@
 }
 
 @media (max-width: 1000px) {
-  .layout,
   .groupsLayout {
     grid-template-columns: 1fr;
   }
 
-  .groupsLayout > :last-child,
-  .detailPanel {
+  .groupsLayout > :last-child {
     position: static;
   }
-}
-
-.heading button {
-  white-space: nowrap;
 }

@@ -1,52 +1,216 @@
 import type { FormEvent } from 'react';
 import { useCallback, useMemo, useState } from 'react';
-import type { Specialty } from '@/entities/specialty';
+import type { Specialty, SpecialtyKind } from '@/entities/specialty';
+import { HttpError } from '@/shared/api';
 import { useManageSpecialty, useSpecialties, useSpecialtyForm } from '@/features/manage-specialty';
+import { useToast } from '@/shared/ui';
 
-const DEFAULT_AREAS = ['Administración', 'Agropecuaria', 'Diseño', 'Electromecánica', 'Informática', 'Salud', 'Turismo'];
-type FormMode = 'create' | 'edit';
+type DialogMode = 'create' | 'edit' | null;
 
-export function useSpecialtiesPanel() {
-  const specialties = useSpecialties();
-  const [selectedSpecialtyId, setSelectedSpecialtyId] = useState<string | null>(null);
-  const [formMode, setFormMode] = useState<FormMode>('create');
-  const selectedSpecialty = useMemo(() => specialties.allSpecialties.find((specialty) => specialty.id === selectedSpecialtyId), [selectedSpecialtyId, specialties.allSpecialties]);
-  const formSpecialty = formMode === 'edit' ? selectedSpecialty : undefined;
-  const { values, setField, toPayload } = useSpecialtyForm(formSpecialty);
-  const { create, update, deactivate, error: mutationError, isSubmitting } = useManageSpecialty(() => { void specialties.reload(); });
-  const areaOptions = useMemo(() => [...new Set([...DEFAULT_AREAS, ...specialties.areas])].sort(), [specialties.areas]);
+const COPY: Record<
+  SpecialtyKind,
+  {
+    noun: string;
+    createTitle: string;
+    editTitle: string;
+    createCta: string;
+    empty: string;
+    loading: string;
+    alert: string;
+    successCreate: string;
+    duplicateError: string;
+    searchPlaceholder: string;
+  }
+> = {
+  EXPLORATORY_WORKSHOP: {
+    noun: 'taller',
+    createTitle: 'Añadir taller exploratorio',
+    editTitle: 'Editar taller',
+    createCta: 'Añadir taller',
+    empty: 'No se encontraron talleres exploratorios.',
+    loading: 'Cargando talleres…',
+    alert: 'Los talleres inactivos no estarán disponibles para la asignación en cursos lectivos.',
+    successCreate: 'Taller agregado.',
+    duplicateError: 'Nombre duplicado.',
+    searchPlaceholder: 'Buscar taller…',
+  },
+  TECHNICAL_SPECIALTY: {
+    noun: 'carrera técnica',
+    createTitle: 'Añadir carrera técnica',
+    editTitle: 'Editar carrera técnica',
+    createCta: 'Añadir carrera técnica',
+    empty: 'No se encontraron carreras técnicas.',
+    loading: 'Cargando carreras técnicas…',
+    alert: 'Las carreras técnicas inactivas no estarán disponibles para la asignación en cursos lectivos.',
+    successCreate: 'Carrera técnica agregada.',
+    duplicateError: 'Nombre duplicado.',
+    searchPlaceholder: 'Buscar carrera técnica…',
+  },
+};
 
-  const selectSpecialty = useCallback((id: string) => {
+export function useSpecialtiesPanel(kind: SpecialtyKind) {
+  const specialties = useSpecialties(kind);
+  const toast = useToast();
+  const [selectedSpecialtyId, setSelectedSpecialtyId] = useState<number | null>(null);
+  const [dialogMode, setDialogMode] = useState<DialogMode>(null);
+  const [resetToken, setResetToken] = useState(0);
+  const [pendingDeactivate, setPendingDeactivate] = useState<Specialty | null>(null);
+  const selectedSpecialty = useMemo(
+    () => specialties.allSpecialties.find((specialty) => specialty.id === selectedSpecialtyId),
+    [selectedSpecialtyId, specialties.allSpecialties],
+  );
+  const formSpecialty = dialogMode === 'edit' ? selectedSpecialty : undefined;
+  const { values, setField, toPayload, reset, nameInputRef } = useSpecialtyForm(
+    formSpecialty,
+    kind,
+    resetToken,
+  );
+  const { create, update, deactivate, error: mutationError, isSubmitting, clearError } =
+    useManageSpecialty(() => {
+      void specialties.reload(true);
+    });
+  const copy = COPY[kind];
+
+  const openEditDialog = useCallback(
+    (id: number) => {
+      clearError();
+      setSelectedSpecialtyId(id);
+      setDialogMode('edit');
+      setResetToken((token) => token + 1);
+    },
+    [clearError],
+  );
+
+  const selectSpecialty = useCallback((id: number) => {
     setSelectedSpecialtyId(id);
-    setFormMode('edit');
   }, []);
 
-  const createSpecialty = useCallback(() => {
+  const openCreateModal = useCallback(() => {
+    clearError();
     setSelectedSpecialtyId(null);
-    setFormMode('create');
+    reset();
+    setResetToken((token) => token + 1);
+    setDialogMode('create');
+    window.requestAnimationFrame(() => nameInputRef.current?.focus());
+  }, [clearError, nameInputRef, reset]);
+
+  const closeDialog = useCallback(() => {
+    if (isSubmitting) return;
+    setDialogMode(null);
+    clearError();
+    reset();
+    setResetToken((token) => token + 1);
+  }, [clearError, isSubmitting, reset]);
+
+  const mapCreateError = useCallback(
+    (reason: unknown) => {
+      if (reason instanceof HttpError && reason.status === 409) {
+        return copy.duplicateError;
+      }
+      if (reason instanceof Error && /already exists|ya existe|duplicate|Conflict/i.test(reason.message)) {
+        return copy.duplicateError;
+      }
+      if (reason instanceof Error && reason.message) return reason.message;
+      return `No se pudo agregar el ${copy.noun}.`;
+    },
+    [copy.duplicateError, copy.noun],
+  );
+
+  const submit = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const payload = toPayload();
+      if (!payload.name) return;
+
+      if (dialogMode === 'create') {
+        try {
+          await create(payload);
+          setDialogMode(null);
+          setSelectedSpecialtyId(null);
+          reset();
+          setResetToken((token) => token + 1);
+          clearError();
+          toast.push(copy.successCreate);
+        } catch (reason) {
+          toast.push(mapCreateError(reason), 'error');
+        }
+        return;
+      }
+
+      if (dialogMode === 'edit' && selectedSpecialty) {
+        try {
+          await update(selectedSpecialty.id, payload);
+          setDialogMode(null);
+          toast.push('Cambios guardados.');
+        } catch (reason) {
+          toast.push(mapCreateError(reason), 'error');
+        }
+      }
+    },
+    [
+      clearError,
+      copy.successCreate,
+      create,
+      dialogMode,
+      mapCreateError,
+      reset,
+      selectedSpecialty,
+      toPayload,
+      toast,
+      update,
+    ],
+  );
+
+  const requestDeactivate = useCallback((specialty: Specialty) => {
+    setPendingDeactivate(specialty);
   }, []);
 
-  const submit = useCallback(async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const payload = toPayload();
-    if (!payload.code || !payload.name || !payload.area) return;
+  const cancelDeactivate = useCallback(() => {
+    setPendingDeactivate(null);
+  }, []);
+
+  const confirmDeactivate = useCallback(async () => {
+    if (!pendingDeactivate) return;
+    const specialty = pendingDeactivate;
     try {
-      if (formMode === 'create') {
-        const created = await create(payload);
-        setSelectedSpecialtyId(created.id);
-        setFormMode('edit');
-      } else if (selectedSpecialty) {
-        await update(selectedSpecialty.id, payload);
+      await deactivate(specialty.id);
+      specialties.removeSpecialty(specialty.id);
+      if (selectedSpecialtyId === specialty.id) {
+        setSelectedSpecialtyId(null);
+        setDialogMode(null);
       }
-    } catch {
-      // El hook de mutaciones publica el error para la interfaz.
+      setPendingDeactivate(null);
+      toast.push('Inactivado.');
+    } catch (reason) {
+      setPendingDeactivate(null);
+      toast.push(mapCreateError(reason), 'error');
     }
-  }, [create, formMode, selectedSpecialty, toPayload, update]);
+  }, [
+    deactivate,
+    mapCreateError,
+    pendingDeactivate,
+    selectedSpecialtyId,
+    specialties,
+    toast,
+  ]);
 
-  const deactivateSpecialty = useCallback(async (specialty: Specialty) => {
-    if (!window.confirm(`¿Inactivar la especialidad ${specialty.name}?`)) return;
-    try { await deactivate(specialty.id); } catch { /* El error se expone desde el hook. */ }
-  }, [deactivate]);
-
-  return { ...specialties, selectedSpecialty, selectedSpecialtyId, selectSpecialty, createSpecialty, formMode, specialtyForm: { values, setField, submit }, areaOptions, mutationError, isSubmitting, deactivateSpecialty };
+  return {
+    ...specialties,
+    kind,
+    copy,
+    selectedSpecialty,
+    selectedSpecialtyId,
+    selectSpecialty,
+    openEditDialog,
+    dialogMode,
+    openCreateModal,
+    closeDialog,
+    specialtyForm: { values, setField, submit, nameInputRef },
+    mutationError,
+    isSubmitting,
+    requestDeactivate,
+    cancelDeactivate,
+    confirmDeactivate,
+    pendingDeactivate,
+  };
 }

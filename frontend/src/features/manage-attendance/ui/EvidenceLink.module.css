@@ -1,0 +1,29 @@
+.wrapper {
+  display: block;
+}
+
+.link {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--brand-primary);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.link:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.link:disabled {
+  color: var(--brand-muted);
+  cursor: progress;
+}
+
+.error {
+  display: block;
+  color: #be123c;
+  font-size: 0.75rem;
+}

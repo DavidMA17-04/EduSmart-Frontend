@@ -1,0 +1,36 @@
+.edusmart-app-enter-curtain {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  width: 100dvw;
+  height: 100vh;
+  height: 100dvh;
+  min-width: 100vw;
+  min-width: 100dvw;
+  min-height: 100vh;
+  min-height: 100dvh;
+  box-sizing: border-box;
+  z-index: 2147483000;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  background: transparent;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.edusmart-app-enter-curtain.is-covered {
+  background: var(--brand-primary);
+}
+
+.edusmart-app-enter-curtain__iris {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--brand-primary);
+  transform: scale(0);
+  transform-origin: center center;
+  will-change: transform;
+  pointer-events: none;
+}

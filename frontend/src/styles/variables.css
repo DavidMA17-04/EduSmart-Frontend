@@ -1,0 +1,47 @@
+:root {
+  /* Colores institucionales C.T.P. de Hojancha (alineados a brand-tokens) */
+  --color-primary-dark: var(--brand-navy);
+  --color-primary-blue: var(--brand-primary);
+  --color-primary-blue-hover: var(--brand-primary-hover);
+  --color-primary-blue-light: var(--brand-primary-light);
+  --color-primary-green: var(--brand-green);
+  --color-primary-green-hover: var(--brand-green-hover);
+  --color-primary-green-light: var(--brand-green-light);
+
+  /* Superficies y Fondos */
+  --color-bg-page: var(--brand-background);
+  --color-bg-card: var(--brand-surface);
+  --color-border-card: var(--brand-border);
+  --color-surface-hover: #eef1f4;
+
+  /* Tipografía */
+  --color-text-main: var(--brand-navy);
+  --color-text-muted: var(--brand-muted);
+  --color-text-white: #ffffff;
+  --font-family-sans: var(--brand-font-sans);
+  --font-family-heading: var(--brand-font-serif);
+
+  /* Estados Semánticos (Chips y Badges) */
+  --status-valid-bg: #ecfdf5;
+  --status-valid-text: #065f46;
+  --status-valid-border: #a7f3d0;
+
+  --status-warning-bg: #fffbeb;
+  --status-warning-text: #92400e;
+  --status-warning-border: #fde68a;
+
+  --status-error-bg: #fef2f2;
+  --status-error-text: #991b1b;
+  --status-error-border: #fecaca;
+
+  /* Bordes Redondeados */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  /* Sombras */
+  --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+}

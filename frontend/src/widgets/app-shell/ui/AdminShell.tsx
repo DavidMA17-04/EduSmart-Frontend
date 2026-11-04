@@ -1,48 +1,323 @@
-import { Bell, ChevronDown, GraduationCap, Layers, LayoutDashboard, Settings, ShieldCheck, Users } from 'lucide-react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { useState } from 'react';
+import { ChevronDown, LogOut, Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { authApi, useAuthStore } from '@/features/auth';
+import { NotificationBell } from '@/features/in-app-inbox';
+import { useGuardianUnreadCount } from '@/features/manage-discipline/model/useGuardianUnreadCount';
+import { sessionHasPermission } from '@/shared/auth';
+import { runAppEnterTransition } from '@/shared/motion/runAppEnterTransition';
+import { Button, Modal, PageSuspense } from '@/shared/ui';
+import {
+  adminNavigationItems,
+  filterAdminNavigation,
+  groupAdminNavigation,
+  type AdminNavItem,
+} from '../model/adminNavigation';
+import { resolveHouse, settingsPath } from '../model/territory';
+import { roleAudienceLabel, useRoleAudience } from './roleAudience';
 import styles from './AdminShell.module.css';
 
-const navigationItems = [
-  { label: 'Dashboard', icon: LayoutDashboard, to: '/administrative' },
-  { label: 'Usuarios', icon: Users, to: '/onboarding' },
-  { label: 'Roles y permisos', icon: ShieldCheck, to: '/administrative/roles-permissions' },
-  { label: 'Estructura académica', icon: GraduationCap, to: '/administrative/specialties' },
-  { label: 'Secciones y grupos', icon: Layers, to: '/administrative/sections-groups' },
-  { label: 'Configuración', icon: Settings, to: '/administrative/settings' },
-];
+const SIDEBAR_COLLAPSED_KEY = 'edusmart.sidebar.collapsed';
 
-export const AdminShell = () => (
-  <div className={`admin-shell ${styles.shell}`}>
-    <aside className={styles.sidebar}>
-      <div className={styles.brand}>
-        <GraduationCap aria-hidden="true" size={34} strokeWidth={1.8} />
-        <span>EduSmart</span>
-        <small>Gestión Académica Integral</small>
-      </div>
-      <p className={styles.institution}>CTP HOJANCHA</p>
-      <nav className={styles.navigation} aria-label="Navegación principal">
-        {navigationItems.map(({ label, icon: Icon, to }) => (
-          <NavLink
-            className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
-            key={to}
-            to={to}
+function readSidebarCollapsed() {
+  try {
+    return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function navClass(isActive: boolean, nested = false) {
+  return `${styles.navItem} ${nested ? styles.navChild : ''} ${isActive ? styles.active : ''}`;
+}
+
+function routeMatches(pathname: string, to: string, exact: boolean) {
+  if (pathname === to) return true;
+  if (exact) return false;
+  return pathname.startsWith(`${to}/`);
+}
+
+function SidebarLink({
+  item,
+  nested = false,
+  exact = false,
+  onNavigate,
+}: {
+  item: AdminNavItem;
+  nested?: boolean;
+  exact?: boolean;
+  onNavigate?: () => void;
+}) {
+  const Icon = item.icon;
+  const unread = useGuardianUnreadCount(
+    item.to.endsWith('/discipline/notifications'),
+  );
+  return (
+    <NavLink
+      className={({ isActive }) => navClass(isActive, nested)}
+      end={
+        item.to === '/admin' ||
+        item.to === '/teacher' ||
+        item.to === '/counselor' ||
+        item.to === '/director' ||
+        item.to === '/student' ||
+        item.to === '/guardian' ||
+        exact
+      }
+      onClick={onNavigate}
+      title={item.label}
+      to={item.to}
+    >
+      <Icon aria-hidden="true" size={nested ? 16 : 18} />
+      <span className={styles.navLabel}>{item.label}</span>
+      {unread > 0 ? <span className={styles.navBadge}>{unread}</span> : null}
+    </NavLink>
+  );
+}
+
+export const AdminShell = () => {
+  const navigate = useNavigate();
+  const sessionUser = useAuthStore((state) => state.user);
+  const email = sessionUser?.email ?? 'Sesión activa';
+  const displayName = sessionUser?.name
+    ? `${sessionUser.name}${sessionUser.first_lastname ? ` ${sessionUser.first_lastname}` : ''}`
+    : (sessionUser?.roles[0] ?? 'Usuario');
+  const avatarLetter = (email[0] ?? 'U').toUpperCase();
+  const location = useLocation();
+  const audience = useRoleAudience();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(readSidebarCollapsed);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [groupOpen, setGroupOpen] = useState<Record<string, boolean>>({});
+  const navigation = groupAdminNavigation(
+    filterAdminNavigation(
+      adminNavigationItems,
+      sessionHasPermission,
+      sessionUser?.roles ?? [],
+      audience,
+      Boolean(sessionUser?.mustChangePassword),
+    ),
+  );
+
+  const closeDrawer = () => setDrawerOpen(false);
+
+  const onLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      setLogoutOpen(false);
+      // Cover first while session is still active, then logout + navigate under the curtain.
+      await runAppEnterTransition(async () => {
+        await authApi.logout();
+        navigate('/login', { replace: true });
+      });
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
+  return (
+    <div className={`admin-shell ${styles.shell}`}>
+      {drawerOpen ? (
+        <button
+          aria-label="Cerrar menú"
+          className={styles.drawerBackdrop}
+          onClick={closeDrawer}
+          type="button"
+        />
+      ) : null}
+      <aside
+        className={`${styles.sidebar} ${sidebarCollapsed ? styles.sidebarCollapsed : ''} ${drawerOpen ? styles.sidebarOpen : ''}`}
+        id="app-sidebar"
+      >
+        <div className={styles.brand}>
+          <img
+            alt="Escudo C.T.P. de Hojancha"
+            className={styles.brandLogo}
+            src="/brand/ctp-hojancha-logo.jpeg"
+          />
+          <span className={styles.brandTitle}>C.T.P. de Hojancha</span>
+          <small className={styles.roleAudience}>
+            {roleAudienceLabel(audience, sessionUser?.roles)}
+          </small>
+          <small>Colegio Técnico Profesional</small>
+          <small className={styles.brandMotto}>Ciencia · Cultura · 1972</small>
+        </div>
+        <nav aria-label="Navegación principal" className={styles.navigation}>
+          {navigation.map((entry) => {
+            if (entry.type === 'link') {
+              return (
+                <SidebarLink
+                  item={entry.item}
+                  key={entry.item.to}
+                  onNavigate={closeDrawer}
+                />
+              );
+            }
+
+            const leadHasNestedChildren = entry.children.some((child) =>
+              child.to.startsWith(`${entry.lead.to}/`),
+            );
+            const routeOpen =
+              routeMatches(location.pathname, entry.lead.to, false) ||
+              entry.children.some((child) =>
+                routeMatches(location.pathname, child.to, false),
+              );
+            const expanded = groupOpen[entry.id] ?? routeOpen;
+            const panelId = `nav-group-${entry.id}`;
+
+            return (
+              <div className={styles.navGroup} key={entry.id}>
+                <div className={styles.navGroupRow}>
+                  <SidebarLink
+                    exact={leadHasNestedChildren}
+                    item={entry.lead}
+                    onNavigate={() => {
+                      setGroupOpen((current) => ({ ...current, [entry.id]: true }));
+                      closeDrawer();
+                    }}
+                  />
+                  {!sidebarCollapsed ? (
+                  <button
+                    aria-controls={panelId}
+                    aria-expanded={expanded}
+                    aria-label={
+                      expanded
+                        ? `Ocultar opciones de ${entry.lead.label}`
+                        : `Mostrar opciones de ${entry.lead.label}`
+                    }
+                    className={styles.navToggle}
+                    onClick={() =>
+                      setGroupOpen((current) => ({
+                        ...current,
+                        [entry.id]: !expanded,
+                      }))
+                    }
+                    type="button"
+                  >
+                    <ChevronDown
+                      aria-hidden="true"
+                      className={expanded ? styles.navToggleOpen : undefined}
+                      size={16}
+                    />
+                  </button>
+                  ) : null}
+                </div>
+                {expanded && !sidebarCollapsed ? (
+                  <div className={styles.navChildren} id={panelId}>
+                    {entry.children.map((child) => (
+                      <SidebarLink
+                        item={child}
+                        key={child.to}
+                        nested
+                        onNavigate={closeDrawer}
+                      />
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
+        </nav>
+        <button
+          aria-expanded={!sidebarCollapsed}
+          aria-label={sidebarCollapsed ? 'Mostrar menú' : 'Ocultar menú'}
+          className={styles.collapseButton}
+          onClick={() =>
+            setSidebarCollapsed((current) => {
+              const next = !current;
+              try {
+                localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? '1' : '0');
+              } catch {
+                /* ignore private mode */
+              }
+              return next;
+            })
+          }
+          type="button"
+        >
+          {sidebarCollapsed ? (
+            <PanelLeftOpen aria-hidden="true" size={18} />
+          ) : (
+            <PanelLeftClose aria-hidden="true" size={18} />
+          )}
+          <span>{sidebarCollapsed ? 'Mostrar' : 'Ocultar menú'}</span>
+        </button>
+        <div className={styles.account}>
+          <span className={styles.avatar}>{avatarLetter}</span>
+          <span>
+            <strong>{displayName}</strong>
+            <small>{email}</small>
+          </span>
+        </div>
+      </aside>
+      <section className={styles.main}>
+        <header className={styles.header}>
+          <button
+            aria-controls="app-sidebar"
+            aria-expanded={drawerOpen}
+            aria-label={drawerOpen ? 'Cerrar menú' : 'Abrir menú'}
+            className={styles.menuButton}
+            onClick={() => setDrawerOpen((open) => !open)}
+            type="button"
           >
-            <Icon aria-hidden="true" size={18} />
-            {label}
-          </NavLink>
-        ))}
-      </nav>
-      <div className={styles.account}>
-        <span className={styles.avatar}>A</span>
-        <span><strong>Administrador</strong><small>admin@ctphojancha.ed.cr</small></span>
-      </div>
-    </aside>
-    <section className={styles.main}>
-      <header className={styles.header}>
-        <button aria-label="Notificaciones" className={styles.iconButton} type="button"><Bell size={20} /></button>
-        <button className={styles.profile} type="button"><span className={styles.headerAvatar}>A</span><span><strong>Administrador</strong><small>Administrador</small></span><ChevronDown size={16} /></button>
-      </header>
-      <main className={styles.content}><Outlet /></main>
-    </section>
-  </div>
-);
+            {drawerOpen ? <X aria-hidden size={20} /> : <Menu aria-hidden size={20} />}
+            <span>Menú</span>
+          </button>
+          <NotificationBell />
+          <button
+            className={styles.profile}
+            onClick={() => {
+              const house = resolveHouse(sessionUser?.roles);
+              navigate(house ? settingsPath(house) : '/login');
+            }}
+            type="button"
+          >
+            <span className={styles.headerAvatar}>{avatarLetter}</span>
+            <span>
+              <strong>{displayName}</strong>
+              <small>{email}</small>
+            </span>
+            <ChevronDown size={16} />
+          </button>
+          <button className={styles.logout} onClick={() => setLogoutOpen(true)} type="button">
+            <LogOut aria-hidden="true" size={16} />
+            Cerrar sesión
+          </button>
+        </header>
+        <main className={styles.content}>
+          <PageSuspense resetKey={location.pathname}>
+            <Outlet />
+          </PageSuspense>
+        </main>
+      </section>
+
+      <Modal
+        isOpen={logoutOpen}
+        onClose={() => {
+          if (!isLoggingOut) setLogoutOpen(false);
+        }}
+        title="Cerrar sesión"
+      >
+        <div className={styles.logoutModal}>
+          <p className={styles.logoutMessage}>¿Seguro que desea salir del sistema?</p>
+          <p className={styles.logoutSecondary}>Se cerrará la sesión de EduSmart.</p>
+          <div className={styles.logoutActions}>
+            <Button disabled={isLoggingOut} onClick={onLogout} type="button" variant="danger">
+              {isLoggingOut ? 'Saliendo…' : 'Salir'}
+            </Button>
+            <Button
+              disabled={isLoggingOut}
+              onClick={() => setLogoutOpen(false)}
+              type="button"
+              variant="secondary"
+            >
+              Cancelar
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </div>
+  );
+};

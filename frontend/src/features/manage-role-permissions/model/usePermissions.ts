@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Permission } from '@/entities/permission';
 import { permissionApi } from '../api/permissionApi';
+import { syncPermissionCatalog } from './syncPermissionCatalog';
 
 export function usePermissions() {
   const [permissions, setPermissions] = useState<Permission[]>([]);
@@ -11,7 +12,8 @@ export function usePermissions() {
     setIsLoading(true);
     setError(null);
     try {
-      setPermissions(await permissionApi.list());
+      const catalog = await syncPermissionCatalog(await permissionApi.list());
+      setPermissions(catalog);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'No se pudieron cargar los permisos.');
     } finally {

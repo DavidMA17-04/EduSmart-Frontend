@@ -1,5 +1,7 @@
+@import '../../styles/variables.css';
+
 :root {
-  /* Color Palette - EduSmart CTP Hojancha Modern Theme */
+  /* Color Palette - C.T.P. de Hojancha */
   --primary-hue: 222;
   --primary-50: hsl(var(--primary-hue), 100%, 97%);
   --primary-100: hsl(var(--primary-hue), 90%, 93%);
@@ -8,13 +10,14 @@
   --primary-600: hsl(var(--primary-hue), 85%, 48%);
   --primary-700: hsl(var(--primary-hue), 90%, 38%);
 
-  --accent-emerald: #10b981;
-  --accent-emerald-light: #d1fae5;
-  --accent-amber: #f59e0b;
-  --accent-amber-light: #fef3c7;
-  --accent-rose: #f43f5e;
-  --accent-rose-light: #ffe4e6;
-  --accent-indigo: #6366f1;
+  /* Mapped to CTP brand — do not reintroduce Tailwind emerald/indigo as product brand */
+  --accent-emerald: var(--brand-green);
+  --accent-emerald-light: var(--brand-green-light);
+  --accent-amber: var(--brand-warning);
+  --accent-amber-light: #fff2d6;
+  --accent-rose: var(--brand-danger);
+  --accent-rose-light: #ffebeb;
+  --accent-indigo: var(--brand-primary);
 
   /* Surfaces & Backgrounds */
   --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
@@ -29,8 +32,8 @@
   --text-inverse: #0f172a;
 
   /* Fonts */
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-heading: 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-sans: var(--brand-font-sans);
+  --font-heading: var(--brand-font-serif);
 
   /* Radius */
   --radius-sm: 8px;
@@ -53,10 +56,17 @@
   padding: 0;
 }
 
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
 body {
   font-family: var(--font-sans);
-  background: var(--bg-gradient);
-  color: var(--text-primary);
+  /* Institutional admin surfaces win; glass theme kept for onboarding utilities only */
+  background: var(--brand-background, #f5f6f8);
+  color: var(--brand-navy, #021a53);
   min-height: 100vh;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -83,3 +93,7 @@ button {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
 }
+
+@tailwind components;
+@tailwind utilities;
+

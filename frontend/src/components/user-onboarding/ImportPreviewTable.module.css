@@ -183,9 +183,14 @@
 
 .actionBar {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
+  gap: 0.75rem;
   margin-top: 1rem;
+}
+
+.actionBar .filterBtn {
+  margin-left: auto;
 }
 
 .saveBtn {

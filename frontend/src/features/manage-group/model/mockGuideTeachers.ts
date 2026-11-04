@@ -1,8 +1,7 @@
 import type { GuideTeacher } from '@/entities/group';
 
-/** Fuente temporal: reemplazar por GET /users cuando el backend de usuarios esté disponible. */
 export const MOCK_GUIDE_TEACHERS: GuideTeacher[] = [
-  { id: '3fa85f64-5717-4562-b3fc-2c963f66afa6', name: 'Lic. Ana María López' },
-  { id: '7c2e9e6a-902f-4b91-9c62-381d72ba0e43', name: 'Lic. Carlos Jiménez' },
-  { id: '0ec6f48d-6dd3-4f7c-8a9b-d8d4a2c3f155', name: 'Lic. Laura Méndez' },
+  { id: 1, name: 'Lic. Ana María López', nationalId: '101110111', firstName: 'Ana María', lastName: 'López', email: 'ana.lopez@ctphojancha.ed.cr', phone: null },
+  { id: 2, name: 'Lic. Carlos Jiménez', nationalId: '202220222', firstName: 'Carlos', lastName: 'Jiménez', email: 'carlos.jimenez@ctphojancha.ed.cr', phone: null },
+  { id: 3, name: 'Lic. Laura Méndez', nationalId: '303330333', firstName: 'Laura', lastName: 'Méndez', email: 'laura.mendez@ctphojancha.ed.cr', phone: null },
 ];

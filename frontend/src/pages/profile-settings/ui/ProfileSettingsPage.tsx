@@ -1,0 +1,282 @@
+import { useEffect, useState, type FormEvent } from 'react';
+import { KeyRound, MonitorSmartphone, UserRound } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { authApi } from '@/features/auth';
+import { OwnGeneralInfoPanel, userApi } from '@/features/manage-user';
+import { isValidInitialPassword } from '@/features/manage-user/model/userFormRules';
+import type { AdministrativeUser } from '@/entities/user';
+import type { AuthSessionView } from '@/features/auth/api/authApi';
+import { clearAccessToken, getSessionUser } from '@/shared/auth';
+import { runAppEnterTransition } from '@/shared/motion/runAppEnterTransition';
+import { Alert, Button, Card, Input, PageHeader, Table } from '@/shared/ui';
+import styles from './ProfileSettingsPage.module.css';
+
+export const ProfileSettingsPage = () => {
+  const navigate = useNavigate();
+  const passwordPending = Boolean(getSessionUser()?.mustChangePassword);
+  const [profile, setProfile] = useState<AdministrativeUser | null>(null);
+  const [name, setName] = useState('');
+  const [firstLastName, setFirstLastName] = useState('');
+  const [secondLastName, setSecondLastName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [profileInfo, setProfileInfo] = useState<string | null>(null);
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [savingPassword, setSavingPassword] = useState(false);
+
+  const [sessions, setSessions] = useState<AuthSessionView[]>([]);
+  const [sessionsError, setSessionsError] = useState<string | null>(null);
+  const [closingAll, setClosingAll] = useState(false);
+
+  const load = async () => {
+    const [me, activeSessions] = await Promise.all([userApi.getMe(), authApi.listSessions()]);
+    setProfile(me);
+    setName(me.firstName ?? me.name ?? '');
+    setFirstLastName(me.first_lastname ?? me.lastName?.split(/\s+/)[0] ?? '');
+    setSecondLastName(me.second_lastname ?? me.lastName?.split(/\s+/).slice(1).join(' ') ?? '');
+    setPhone(me.phone ?? '');
+    setSessions(activeSessions);
+  };
+
+  useEffect(() => {
+    void load().catch((error: unknown) => {
+      setProfileError(error instanceof Error ? error.message : 'No se pudo cargar el perfil.');
+    });
+  }, []);
+
+  const onSaveProfile = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setProfileError(null);
+    setProfileInfo(null);
+    if (!name.trim() || !firstLastName.trim()) {
+      setProfileError('El nombre y el primer apellido son obligatorios.');
+      return;
+    }
+    setSavingProfile(true);
+    try {
+      const updated = await userApi.updateMe({
+        name: name.trim(),
+        first_lastname: firstLastName.trim(),
+        second_lastname: secondLastName.trim() || undefined,
+        phone: phone.trim() || undefined,
+      });
+      setProfile(updated);
+      setProfileInfo('Perfil actualizado.');
+    } catch (error) {
+      setProfileError(error instanceof Error ? error.message : 'No se pudo guardar el perfil.');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const onChangePassword = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setPasswordError(null);
+    if (!isValidInitialPassword(newPassword)) {
+      setPasswordError(
+        'La nueva contraseña debe tener 8–72 caracteres, mayúscula, minúscula, número y un carácter especial.',
+      );
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('La confirmación no coincide.');
+      return;
+    }
+    setSavingPassword(true);
+    try {
+      await authApi.changePassword(currentPassword, newPassword);
+      await runAppEnterTransition(async () => {
+        await authApi.logout();
+        navigate('/login', {
+          replace: true,
+          state: { notice: 'Contraseña actualizada. Inicia sesión de nuevo con tu nueva contraseña.' },
+        });
+      });
+    } catch (error) {
+      setPasswordError(error instanceof Error ? error.message : 'No se pudo cambiar la contraseña.');
+      setSavingPassword(false);
+    }
+  };
+
+  const onRevoke = async (id: number) => {
+    setSessionsError(null);
+    try {
+      await authApi.revokeSession(id);
+      const remaining = await authApi.listSessions();
+      setSessions(remaining);
+    } catch (error) {
+      setSessionsError(error instanceof Error ? error.message : 'No se pudo cerrar la sesión.');
+    }
+  };
+
+  const onLogoutAll = async () => {
+    setSessionsError(null);
+    setClosingAll(true);
+    try {
+      await runAppEnterTransition(async () => {
+        await authApi.logoutAll();
+        clearAccessToken();
+        navigate('/login', { replace: true });
+      });
+    } catch (error) {
+      setSessionsError(error instanceof Error ? error.message : 'No se pudieron cerrar las sesiones.');
+      setClosingAll(false);
+    }
+  };
+
+  return (
+    <section className={styles.page}>
+      <PageHeader
+        icon={UserRound}
+        subtitle="Consulte y actualice su información, contraseña y sesiones activas."
+        title="Mi perfil y seguridad"
+      />
+
+      {passwordPending ? (
+        <Alert>
+          Debes cambiar tu contraseña para continuar. Mientras tanto solo puedes
+          usar esta pantalla; al terminar tendrás que iniciar sesión de nuevo y
+          verás el menú completo de tu rol.
+        </Alert>
+      ) : null}
+
+      <OwnGeneralInfoPanel user={profile ?? undefined} />
+
+      <div className={styles.formsRow}>
+        <Card>
+          <form className={`${styles.section} ${styles.form}`} onSubmit={onSaveProfile}>
+            <div className={styles.sectionHead}>
+              <UserRound size={16} aria-hidden="true" />
+              <h2 className={styles.sectionTitle}>Información básica</h2>
+            </div>
+            {profileError ? <Alert>{profileError}</Alert> : null}
+            {profileInfo ? <p className={styles.info}>{profileInfo}</p> : null}
+            <div className={styles.formFields}>
+              <label className={styles.formFieldsFull}>
+                Correo institucional
+                <Input disabled value={profile?.email ?? ''} />
+              </label>
+              <label>
+                Nombre
+                <Input onChange={(event) => setName(event.target.value)} required value={name} />
+              </label>
+              <label>
+                Primer apellido
+                <Input onChange={(event) => setFirstLastName(event.target.value)} required value={firstLastName} />
+              </label>
+              <label>
+                Segundo apellido
+                <Input onChange={(event) => setSecondLastName(event.target.value)} value={secondLastName} />
+              </label>
+              <label>
+                Teléfono
+                <Input onChange={(event) => setPhone(event.target.value)} value={phone} />
+              </label>
+            </div>
+            <Button disabled={savingProfile} type="submit">
+              {savingProfile ? 'Guardando…' : 'Guardar perfil'}
+            </Button>
+          </form>
+        </Card>
+
+        <Card>
+          <form className={`${styles.section} ${styles.form}`} onSubmit={onChangePassword}>
+            <div className={styles.sectionHead}>
+              <KeyRound size={16} aria-hidden="true" />
+              <h2 className={styles.sectionTitle}>Cambiar contraseña</h2>
+            </div>
+            {passwordError ? <Alert>{passwordError}</Alert> : null}
+            <label>
+              Contraseña actual
+              <Input
+                autoComplete="current-password"
+                onChange={(event) => setCurrentPassword(event.target.value)}
+                required
+                type="password"
+                value={currentPassword}
+              />
+            </label>
+            <label>
+              Nueva contraseña
+              <Input
+                autoComplete="new-password"
+                minLength={8}
+                onChange={(event) => setNewPassword(event.target.value)}
+                required
+                type="password"
+                value={newPassword}
+              />
+            </label>
+            <label>
+              Confirmar nueva contraseña
+              <Input
+                autoComplete="new-password"
+                minLength={8}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                required
+                type="password"
+                value={confirmPassword}
+              />
+            </label>
+            <Button disabled={savingPassword} type="submit">
+              {savingPassword ? 'Actualizando…' : 'Actualizar contraseña'}
+            </Button>
+          </form>
+        </Card>
+      </div>
+
+      <Card>
+        <div className={styles.section}>
+          <div className={styles.sectionHead}>
+            <MonitorSmartphone size={16} aria-hidden="true" />
+            <h2 className={styles.sectionTitle}>Sesiones activas</h2>
+          </div>
+          {sessionsError ? <Alert>{sessionsError}</Alert> : null}
+          <Table>
+            <thead>
+              <tr>
+                <th>Dispositivo</th>
+                <th>IP</th>
+                <th>Inicio</th>
+                <th>Último uso</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {sessions.map((session) => (
+                <tr key={session.id}>
+                  <td>{session.current ? 'Esta sesión' : (session.userAgent || 'Dispositivo desconocido')}</td>
+                  <td>{session.ipAddress || '—'}</td>
+                  <td>{new Date(session.createdAt).toLocaleString('es-CR')}</td>
+                  <td>{session.lastUsedAt ? new Date(session.lastUsedAt).toLocaleString('es-CR') : '—'}</td>
+                  <td>
+                    {session.current ? null : (
+                      <Button onClick={() => void onRevoke(session.id)} type="button" variant="danger">
+                        Cerrar
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {sessions.length === 0 ? (
+                <tr>
+                  <td colSpan={5}>No hay sesiones activas.</td>
+                </tr>
+              ) : null}
+            </tbody>
+          </Table>
+          <div className={styles.actions}>
+            <Button disabled={closingAll || sessions.length === 0} onClick={() => void onLogoutAll()} type="button" variant="danger">
+              {closingAll ? 'Cerrando…' : 'Cerrar todas las sesiones'}
+            </Button>
+          </div>
+        </div>
+      </Card>
+    </section>
+  );
+};

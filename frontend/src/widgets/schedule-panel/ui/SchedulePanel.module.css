@@ -1,0 +1,376 @@
+.layout {
+  display: grid;
+  gap: 20px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--brand-border, #c1c5c8) 70%, transparent);
+  background: var(--admin-surface, #fff);
+  box-shadow: 0 1px 2px rgb(2 26 83 / 4%);
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 12px;
+  flex: 1;
+}
+
+.filters > * {
+  min-width: 0;
+}
+
+.cycleLabel {
+  margin: 0;
+  padding: 0 4px;
+  color: var(--admin-muted, #6b7280);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.toolbarActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.status {
+  margin: 0;
+  color: var(--admin-muted, #6b7280);
+  font-size: 0.875rem;
+}
+
+.emptyHint {
+  margin: 0;
+  color: var(--admin-muted, #6b7280);
+  font-size: 0.875rem;
+}
+
+.desktopMatrixWrap {
+  display: none;
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid color-mix(in srgb, var(--brand-border, #c1c5c8) 65%, transparent);
+  border-radius: 14px;
+  background: var(--admin-surface, #fff);
+  box-shadow: 0 1px 2px rgb(2 26 83 / 4%);
+}
+
+.mobileDayBar {
+  display: block;
+  padding: 4px;
+  border-radius: 12px;
+  background: #f1f5f9;
+}
+
+.mobileDayList {
+  display: block;
+}
+
+@media (min-width: 1100px) {
+  .desktopMatrixWrap {
+    display: block;
+  }
+
+  .mobileDayBar,
+  .mobileDayList {
+    display: none;
+  }
+}
+
+.matrix {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  min-width: 780px;
+  font-size: 0.75rem;
+}
+
+.matrix th,
+.matrix td {
+  border-bottom: 1px solid #e2e8f0;
+  border-right: 1px solid #e2e8f0;
+  vertical-align: top;
+  padding: 10px;
+}
+
+.matrix th:last-child,
+.matrix td:last-child {
+  border-right: 0;
+}
+
+.matrix tbody tr:last-child th,
+.matrix tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.timeCol {
+  width: 132px;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: #f8fafc;
+  text-align: left;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.slotHead,
+.slotHeadNeutral {
+  text-align: center;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.timeHead {
+  z-index: 2;
+  background: linear-gradient(160deg, #021a53 0%, #002e7a 100%);
+  color: #fff;
+  border-bottom: 3px solid #cfac65;
+}
+
+.day1,
+.day3,
+.day5 {
+  background: linear-gradient(180deg, #1a4a9c 0%, #002e7a 100%);
+  color: #fff;
+  border-bottom: 3px solid #cfac65;
+}
+
+.day2,
+.day4 {
+  background: linear-gradient(180deg, #0a2f6e 0%, #021a53 100%);
+  color: #fff;
+  border-bottom: 3px solid #cfac65;
+}
+
+.slotHeadNeutral {
+  color: #64748b;
+  background: #f1f5f9;
+}
+
+.slotHeadPrimary {
+  display: block;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, 'Cascadia Code', 'Segoe UI Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.slotHeadSecondary {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.classCell {
+  min-width: 128px;
+  background: #fff;
+}
+
+.neutralCell {
+  text-align: center;
+  vertical-align: middle;
+  color: #64748b;
+  background: #f8fafc;
+  font-weight: 500;
+  user-select: none;
+  pointer-events: none;
+}
+
+.entryStack {
+  display: grid;
+  gap: 8px;
+}
+
+.entryCard {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: linear-gradient(180deg, #fff 0%, #f8fafc 140%);
+  box-shadow: 0 1px 1px rgb(15 23 42 / 3%);
+}
+
+.entryMain {
+  display: grid;
+  gap: 6px;
+}
+
+.offeringName {
+  font-size: 0.8rem;
+  line-height: 1.35;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  color: #64748b;
+}
+
+.metaIcon {
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.entryActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.iconBtn,
+.iconBtnDanger,
+.assignBtn {
+  appearance: none;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  border-radius: 8px;
+  padding: 5px 8px;
+  font: inherit;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #334155;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.iconBtn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: var(--brand-primary, #002e7a);
+}
+
+.iconBtnDanger {
+  color: #b42318;
+}
+
+.iconBtnDanger:hover {
+  background: #fff1f2;
+  border-color: #fecdd3;
+}
+
+.assignBtn {
+  width: 100%;
+  justify-content: center;
+  min-height: 42px;
+  border: 2px dashed #e2e8f0;
+  background: transparent;
+  color: #64748b;
+  border-radius: 10px;
+}
+
+.assignBtn:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+  color: #334155;
+}
+
+.linkBtn,
+.linkBtnDanger {
+  appearance: none;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  border-radius: 8px;
+  padding: 5px 8px;
+  font: inherit;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #334155;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.linkBtn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: var(--brand-primary, #002e7a);
+}
+
+.linkBtnDanger {
+  color: #b42318;
+}
+
+.linkBtnDanger:hover {
+  background: #fff1f2;
+  border-color: #fecdd3;
+}
+
+.emptyCell {
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+.slotList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.slotListItem,
+.slotListNeutral {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(2 26 83 / 3%);
+}
+
+.slotListNeutral {
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.slotListTime {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #eff4fb;
+  border: 1px solid #dbe8ff;
+  color: var(--brand-primary, #002e7a);
+  font-family: ui-monospace, 'Cascadia Code', 'Segoe UI Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+}

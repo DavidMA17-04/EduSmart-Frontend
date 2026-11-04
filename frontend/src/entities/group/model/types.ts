@@ -1,26 +1,57 @@
 export interface GuideTeacher {
-  id: string;
+  id: number;
   name: string;
+  nationalId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string | null;
+  departmentId?: number | null;
+  department?: { id: number; code: string; name: string } | null;
 }
 
+export interface CreateGuideTeacherPayload {
+  nationalId: string;
+  /** Nombres de pila (campo backend: name) */
+  name: string;
+  /** Primer apellido */
+  first_lastname: string;
+  /** Segundo apellido (opcional) */
+  second_lastname?: string;
+  email: string;
+  phone?: string;
+  departmentId: number;
+}
+
+export type UpdateGuideTeacherPayload = Partial<CreateGuideTeacherPayload>;
+
 export interface AcademicGroup {
-  id: string;
+  id: number;
   name: string;
   studentCount: number;
-  sectionId: string;
-  guideTeacherId: string | null;
+  /** Required on create; may be missing on legacy list rows until backend migrates. */
+  maxCapacity?: number;
+  sectionId: number;
+  academicPeriodId?: number;
+  status?: 'ACTIVE' | 'INACTIVE';
+  guideTeacherId: number | null;
   guideTeacher?: GuideTeacher | null;
-  section?: { id: string; code: string; name: string };
+  specialtyId: number | null;
+  specialty?: { id: number; name: string } | null;
+  section?: { id: number; name: string; gradeLevel?: number };
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreateGroupPayload {
   name: string;
+  maxCapacity: number;
   studentCount?: number;
-  sectionId: string;
-  guideTeacherId?: string | null;
+  sectionId: number;
+  specialtyId?: number | null;
+  academicPeriodId?: number;
+  guideTeacherId?: number | null;
 }
 
 export type UpdateGroupPayload = Partial<CreateGroupPayload>;
-export interface AssignGuideTeacherPayload { guideTeacherId: string | null; }
+export interface AssignGuideTeacherPayload { guideTeacherId: number | null; }

@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { UploadCloud, ArrowLeft, Play, Loader2 } from 'lucide-react';
 import { useUserImport } from '@/hooks/useUserImport';
+import { Alert } from '@/shared/ui';
 import styles from './FileDropzone.module.css';
 
 export const FileDropzone: React.FC = () => {
@@ -11,7 +12,9 @@ export const FileDropzone: React.FC = () => {
     handleFileUpload, 
     loadMockData, 
     setStep, 
-    isProcessingFile 
+    isProcessingFile,
+    fileError,
+    clearFileError,
   } = useUserImport();
 
   const onDragOver = (e: React.DragEvent) => {
@@ -44,6 +47,15 @@ export const FileDropzone: React.FC = () => {
           <ArrowLeft size={18} /> Volver a selección de método
         </button>
       </div>
+
+      {fileError ? (
+        <Alert tone="error">
+          <span>{fileError}</span>
+          <button type="button" onClick={clearFileError} style={{ marginLeft: 8, textDecoration: 'underline' }}>
+            Cerrar
+          </button>
+        </Alert>
+      ) : null}
 
       <div
         className={`${styles.dropzone} ${isDragOver ? styles.dragActive : ''}`}
@@ -89,7 +101,7 @@ export const FileDropzone: React.FC = () => {
           </span>
         </div>
         <button type="button" className={styles.mockBtn} onClick={loadMockData}>
-          <Play size={16} /> Cargar Datos Mock
+          <Play size={16} /> Cargar datos mock
         </button>
       </div>
     </div>

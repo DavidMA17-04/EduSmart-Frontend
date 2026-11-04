@@ -1,0 +1,39 @@
+.page {
+  display: grid;
+  gap: 20px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  border-radius: 10px;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  color: inherit;
+  text-decoration: none;
+  box-shadow: 0 1px 4px rgba(2, 26, 83, 0.05);
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px rgba(2, 26, 83, 0.1);
+}
+
+.label {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.hint {
+  font-size: 12px;
+  opacity: 0.75;
+}

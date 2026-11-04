@@ -1,25 +1,27 @@
 export type SpecialtyStatus = 'ACTIVE' | 'INACTIVE' | 'UNDER_REVIEW';
 
+export type SpecialtyKind = 'EXPLORATORY_WORKSHOP' | 'TECHNICAL_SPECIALTY';
+
 export interface Specialty {
-  id: string;
-  code: string;
+  id: number;
   name: string;
-  area: string;
   description: string | null;
-  /** Duración almacenada por backend como número de períodos académicos. */
-  duration: number;
   status: SpecialtyStatus;
+  kind: SpecialtyKind;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreateSpecialtyPayload {
-  code: string;
   name: string;
-  area: string;
   description?: string;
-  duration: number;
   status?: SpecialtyStatus;
+  kind?: SpecialtyKind;
 }
 
 export type UpdateSpecialtyPayload = Partial<CreateSpecialtyPayload>;
+
+export interface SpecialtyHubCover {
+  kind: SpecialtyKind;
+  imageUrl: string | null;
+}

@@ -1,9 +1,21 @@
 import { GraduationCap } from 'lucide-react';
-import { SpecialtiesPanel } from '@/widgets/specialties-panel';
+import { AcademicOfferHub } from '@/widgets/academic-offer-hub';
+import { PageHeader } from '@/shared/ui';
 import styles from './SpecialtiesPage.module.css';
 
-export const SpecialtiesPage = () => <section className={styles.page}>
-  <p className={styles.breadcrumb}>Administrativo <span>›</span> Estructura académica <span>›</span> Especialidades académicas</p>
-  <header className={styles.header}><span className={styles.icon}><GraduationCap size={22} /></span><div><h1>Gestión de especialidades académicas</h1><p>Configuración de la oferta académica institucional.</p></div></header>
-  <SpecialtiesPanel />
-</section>;
+export const SpecialtiesPage = () => (
+  <section className={styles.page}>
+    <PageHeader
+      back={{ label: 'Volver al panel', to: '/admin' }}
+      breadcrumbs={[
+        { label: 'Administrativo' },
+        { label: 'Estructura académica' },
+        { label: 'Oferta académica' },
+      ]}
+      icon={GraduationCap}
+      subtitle="Materias regulares, talleres exploratorios y carreras técnicas del CTP Hojancha."
+      title="Oferta académica"
+    />
+    <AcademicOfferHub />
+  </section>
+);

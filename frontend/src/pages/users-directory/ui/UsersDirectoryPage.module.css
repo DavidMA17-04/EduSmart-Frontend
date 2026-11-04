@@ -1,0 +1,80 @@
+.page {
+  display: grid;
+  gap: 18px;
+}
+
+.resultMeta {
+  font-size: 13px;
+  color: var(--admin-muted);
+}
+
+.resultMeta strong {
+  color: var(--admin-text);
+  font-size: 16px;
+}
+
+.colUser {
+  width: 22%;
+}
+
+.colId {
+  width: 12%;
+}
+
+.colEmail {
+  width: 26%;
+}
+
+.colStatus {
+  width: 12%;
+}
+
+.colRoles {
+  width: 18%;
+}
+
+.colActions {
+  width: 10%;
+  text-align: center;
+}
+
+.userName {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--admin-text);
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.email {
+  display: block;
+  font-size: 14px;
+  color: var(--admin-text);
+  word-break: break-all;
+}
+
+.roles {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--admin-text);
+}
+
+.muted {
+  padding: 16px 20px;
+  color: var(--admin-muted);
+  font-size: 13px;
+}
+
+.alertWrap {
+  padding: 0 16px 16px;
+}
+
+@media (max-width: 720px) {
+  :global(table) {
+    table-layout: auto;
+  }
+}

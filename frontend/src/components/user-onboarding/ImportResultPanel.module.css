@@ -107,7 +107,7 @@
 .tableWrap td {
   text-align: left;
   padding: 0.7rem 0.6rem;
-  border-top: 1px solid var(--surface-card-border, #e4e9f2);
+  border-top: 1px solid var(--surface-card-border, #C1C5C8);
 }
 
 .tableWrap th {

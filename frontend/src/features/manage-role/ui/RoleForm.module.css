@@ -1,1 +1,1 @@
-.form { display: grid; gap: 14px; }.form label { display: grid; gap: 6px; color: var(--admin-text); font-size: 12px; font-weight: 600; }.actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+.form { display: grid; gap: 14px; }.form label { display: grid; gap: 6px; color: var(--admin-text); font-size: 12px; font-weight: 600; }

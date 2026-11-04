@@ -1,0 +1,33 @@
+.root {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.tab {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.875rem;
+  font-weight: 550;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tab:hover {
+  color: #1e293b;
+}
+
+.active {
+  background: #fff;
+  color: var(--brand-navy, #021a53);
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(2, 26, 83, 0.08);
+}

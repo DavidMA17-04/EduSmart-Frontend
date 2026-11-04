@@ -1,0 +1,61 @@
+.panel {
+  display: grid;
+  gap: 16px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.header h3 {
+  font-size: 15px;
+  margin: 0;
+}
+
+.header p {
+  margin-top: 4px;
+  color: var(--admin-muted);
+  font-size: 13px;
+}
+
+.muted {
+  color: var(--admin-muted);
+  font-size: 13px;
+}
+
+.error {
+  color: var(--admin-danger, #b42318);
+  font-size: 12px;
+}
+
+.form {
+  display: grid;
+  gap: 12px;
+  max-width: 420px;
+}
+
+.form label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dateInput {
+  height: 38px;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  padding: 0 10px;
+  font: inherit;
+  background: var(--admin-surface, #fff);
+}
+
+.formActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}

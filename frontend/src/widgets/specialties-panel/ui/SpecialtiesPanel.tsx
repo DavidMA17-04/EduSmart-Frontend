@@ -1,33 +1,175 @@
-import { Download, Edit3, Plus, Trash2 } from 'lucide-react';
-import { Alert, Button, Card, Pagination, Table } from '@/shared/ui';
+import { Edit3, Layers, Plus, Trash2, Wrench } from 'lucide-react';
+import type { SpecialtyKind } from '@/entities/specialty';
 import { SpecialtyTableRow } from '@/entities/specialty';
 import { SpecialtyFilters, SpecialtyFormPanel } from '@/features/manage-specialty';
+import {
+  Alert,
+  Button,
+  ConfirmDialog,
+  DataTableShell,
+  EmptyState,
+  ModalCrud,
+  Pagination,
+  RowActionButton,
+  RowActions,
+  Table,
+} from '@/shared/ui';
+import { sessionHasPermission } from '@/shared/auth';
 import { useSpecialtiesPanel } from '../model/useSpecialtiesPanel';
 import styles from './SpecialtiesPanel.module.css';
 
-export const SpecialtiesPanel = () => {
-  const model = useSpecialtiesPanel();
-  const formTitle = model.formMode === 'create' ? 'Nueva especialidad' : 'Detalle de la especialidad';
+interface SpecialtiesPanelProps {
+  kind: SpecialtyKind;
+}
 
-  return <section className={styles.layout}>
-    <div className={styles.mainColumn}>
-      <Card className={styles.tableCard}>
-        <div className={styles.toolbar}>
-          <SpecialtyFilters area={model.area} areas={model.areas} onAreaChange={model.setArea} onSearchChange={model.setSearch} onStatusChange={model.setStatus} search={model.search} status={model.status} />
-          <div className={styles.toolbarActions}>
-            <Button disabled type="button" variant="secondary"><Download size={15} /> Exportar</Button>
-            <Button onClick={model.createSpecialty} type="button"><Plus size={15} /> Nueva especialidad</Button>
-          </div>
+export const SpecialtiesPanel = ({ kind }: SpecialtiesPanelProps) => {
+  const model = useSpecialtiesPanel(kind);
+  const canCreate = sessionHasPermission('specialties.create');
+  const canEdit = sessionHasPermission('specialties.edit');
+  const nameColumn = kind === 'EXPLORATORY_WORKSHOP' ? 'Taller' : 'Carrera Técnica';
+  const EmptyIcon = kind === 'EXPLORATORY_WORKSHOP' ? Layers : Wrench;
+  const dialogTitle =
+    model.dialogMode === 'create' ? model.copy.createTitle : model.copy.editTitle;
+  const submitLabel = model.dialogMode === 'create' ? model.copy.createCta : 'Guardar cambios';
+  const hasFilters = Boolean(model.search.trim()) || model.status !== 'ALL';
+
+  return (
+    <section className={styles.layout}>
+      <div className={styles.mainColumn}>
+        <DataTableShell
+          footer={
+            model.totalPages > 1 ? (
+              <Pagination
+                currentPage={model.currentPage}
+                onPageChange={model.setCurrentPage}
+                totalPages={model.totalPages}
+              />
+            ) : null
+          }
+          toolbar={
+            <div className={styles.toolbar}>
+              <div className={styles.filtersWrap}>
+                <SpecialtyFilters
+                  onSearchChange={model.setSearch}
+                  onStatusChange={model.setStatus}
+                  search={model.search}
+                  searchPlaceholder={model.copy.searchPlaceholder}
+                  status={model.status}
+                />
+              </div>
+              {canCreate ? (
+                <div className={styles.toolbarActions}>
+                  <Button onClick={model.openCreateModal} type="button">
+                    <Plus size={16} />
+                    {model.copy.createCta}
+                  </Button>
+                </div>
+              ) : null}
+            </div>
+          }
+        >
+          {model.error ? <Alert>{model.error}</Alert> : null}
+
+          {model.isLoading ? <p className={styles.muted}>{model.copy.loading}</p> : null}
+
+          {!model.isLoading && model.specialties.length === 0 ? (
+            <EmptyState
+              action={
+                hasFilters || !canCreate
+                  ? undefined
+                  : { label: model.copy.createCta, onClick: model.openCreateModal, icon: Plus }
+              }
+              description={
+                hasFilters
+                  ? 'No hay resultados que coincidan con la búsqueda o el filtro de estado.'
+                  : model.copy.empty
+              }
+              icon={EmptyIcon}
+              title="Sin resultados"
+            />
+          ) : null}
+
+          {!model.isLoading && model.specialties.length > 0 ? (
+            <Table>
+              <thead>
+                <tr>
+                  <th>{nameColumn}</th>
+                  <th>Descripción</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {model.specialties.map((specialty) => (
+                  <SpecialtyTableRow
+                    actions={
+                      canEdit ? (
+                      <RowActions>
+                        <RowActionButton
+                          aria-label={`Editar ${specialty.name}`}
+                          onClick={() => model.openEditDialog(specialty.id)}
+                          title="Editar"
+                          tone="primary"
+                        >
+                          <Edit3 size={16} />
+                        </RowActionButton>
+                        <RowActionButton
+                          aria-label={`Inactivar ${specialty.name}`}
+                          onClick={() => model.requestDeactivate(specialty)}
+                          title="Inactivar"
+                          tone="danger"
+                        >
+                          <Trash2 size={16} />
+                        </RowActionButton>
+                      </RowActions>
+                      ) : undefined
+                    }
+                    isSelected={specialty.id === model.selectedSpecialtyId}
+                    key={specialty.id}
+                    onSelect={model.selectSpecialty}
+                    specialty={specialty}
+                  />
+                ))}
+              </tbody>
+            </Table>
+          ) : null}
+        </DataTableShell>
+        <Alert>{model.copy.alert}</Alert>
+      </div>
+
+      <ModalCrud
+        isOpen={model.dialogMode !== null}
+        onClose={model.closeDialog}
+        title={dialogTitle}
+      >
+        <div className={styles.modalBody}>
+          {model.mutationError ? <Alert>{model.mutationError}</Alert> : null}
+          <SpecialtyFormPanel
+            embedded
+            isSubmitting={model.isSubmitting}
+            nameFieldLabel={`Nombre del ${model.copy.noun}`}
+            nameInputRef={model.specialtyForm.nameInputRef}
+            onCancel={model.closeDialog}
+            onChange={model.specialtyForm.setField}
+            onSubmit={model.specialtyForm.submit}
+            submitLabel={submitLabel}
+            values={model.specialtyForm.values}
+          />
         </div>
-        {model.error && <Alert>{model.error}</Alert>}
-        {model.mutationError && <Alert>{model.mutationError}</Alert>}
-        {model.isLoading ? <p className={styles.muted}>Cargando especialidades…</p> : <Table><thead><tr><th>Código</th><th>Especialidad</th><th>Área</th><th>Descripción</th><th>Duración</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>{model.specialties.map((specialty) => <SpecialtyTableRow actions={<span className={styles.rowActions}><Button aria-label={`Editar ${specialty.name}`} onClick={() => model.selectSpecialty(specialty.id)} type="button" variant="secondary"><Edit3 size={14} /></Button><Button aria-label={`Inactivar ${specialty.name}`} onClick={() => void model.deactivateSpecialty(specialty)} type="button" variant="danger"><Trash2 size={14} /></Button></span>} isSelected={specialty.id === model.selectedSpecialtyId} key={specialty.id} onSelect={model.selectSpecialty} specialty={specialty} />)}{model.specialties.length === 0 && <tr><td className={styles.empty} colSpan={7}>No se encontraron especialidades.</td></tr>}</tbody></Table>}
-        <Pagination currentPage={model.currentPage} onPageChange={model.setCurrentPage} totalPages={model.totalPages} />
-      </Card>
-      <Alert>Las especialidades inactivas no estarán disponibles para la asignación en períodos académicos.</Alert>
-    </div>
-    <div className={styles.sidePanel}>
-      <SpecialtyFormPanel areaOptions={model.areaOptions} isSubmitting={model.isSubmitting} onCancel={model.createSpecialty} onChange={model.specialtyForm.setField} onSubmit={model.specialtyForm.submit} title={formTitle} values={model.specialtyForm.values} />
-    </div>
-  </section>;
+      </ModalCrud>
+
+      <ConfirmDialog
+        confirmLabel="Inactivar"
+        icon={Trash2}
+        isOpen={model.pendingDeactivate !== null}
+        isSubmitting={model.isSubmitting}
+        message={`¿Inactivar ${model.copy.noun} ${model.pendingDeactivate?.name ?? ''}?`}
+        onCancel={model.cancelDeactivate}
+        onConfirm={() => void model.confirmDeactivate()}
+        secondary="Dejará de estar disponible para asignación en cursos lectivos."
+        title={`Inactivar ${model.copy.noun}`}
+        tone="danger"
+      />
+    </section>
+  );
 };

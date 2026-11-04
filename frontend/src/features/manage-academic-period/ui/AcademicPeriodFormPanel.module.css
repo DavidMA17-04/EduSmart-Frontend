@@ -1,0 +1,25 @@
+.form {
+  display: grid;
+  gap: 14px;
+}
+
+.form label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--admin-text);
+}
+
+.statusField {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.hint {
+  color: var(--admin-muted);
+  font-size: 12px;
+  font-weight: 400;
+}

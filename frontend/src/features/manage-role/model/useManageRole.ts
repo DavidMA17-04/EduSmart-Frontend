@@ -4,7 +4,7 @@ import { roleApi } from '../api/roleApi';
 
 type RoleMutation = <T>(operation: () => Promise<T>) => Promise<T>;
 
-export function useManageRole(onSuccess?: () => void) {
+export function useManageRole(onSuccess?: () => void | Promise<void>) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -13,7 +13,7 @@ export function useManageRole(onSuccess?: () => void) {
     setError(null);
     try {
       const result = await operation();
-      onSuccess?.();
+      await onSuccess?.();
       return result;
     } catch (reason) {
       const message = reason instanceof Error ? reason.message : 'No se pudo completar la operación.';
@@ -25,8 +25,8 @@ export function useManageRole(onSuccess?: () => void) {
   }, [onSuccess]);
 
   const create = useCallback((payload: CreateRolePayload) => execute(() => roleApi.create(payload)), [execute]);
-  const update = useCallback((id: string, payload: UpdateRolePayload) => execute(() => roleApi.update(id, payload)), [execute]);
-  const deactivate = useCallback((id: string) => execute(() => roleApi.deactivate(id)), [execute]);
+  const update = useCallback((id: number, payload: UpdateRolePayload) => execute(() => roleApi.update(id, payload)), [execute]);
+  const deactivate = useCallback((id: number) => execute(() => roleApi.deactivate(id)), [execute]);
   const duplicate = useCallback((role: Role, payload: CreateRolePayload) => execute(() => roleApi.create({
     ...payload,
     permissionIds: role.permissions.map((permission) => permission.id),

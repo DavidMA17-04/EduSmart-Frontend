@@ -1,26 +1,45 @@
-import { useCallback, useEffect, useState } from 'react';
-import type { CreateSpecialtyPayload, Specialty, SpecialtyStatus } from '@/entities/specialty';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { CreateSpecialtyPayload, Specialty, SpecialtyKind, SpecialtyStatus } from '@/entities/specialty';
 
 export interface SpecialtyFormValues {
-  code: string;
   name: string;
-  area: string;
   description: string;
-  duration: number;
   status: SpecialtyStatus;
 }
 
-const defaultValues: SpecialtyFormValues = { code: '', name: '', area: '', description: '', duration: 1, status: 'ACTIVE' };
+const defaultValues: SpecialtyFormValues = { name: '', description: '', status: 'ACTIVE' };
 
-export function useSpecialtyForm(specialty?: Specialty) {
+export function useSpecialtyForm(specialty: Specialty | undefined, kind: SpecialtyKind, resetToken = 0) {
   const [values, setValues] = useState<SpecialtyFormValues>(defaultValues);
+  const nameInputRef = useRef<HTMLInputElement>(null!);
 
   useEffect(() => {
-    setValues(specialty ? { code: specialty.code, name: specialty.name, area: specialty.area, description: specialty.description ?? '', duration: specialty.duration, status: specialty.status } : defaultValues);
-  }, [specialty]);
+    setValues(
+      specialty
+        ? { name: specialty.name, description: specialty.description ?? '', status: specialty.status }
+        : defaultValues,
+    );
+  }, [specialty, resetToken]);
 
-  const setField = useCallback(<K extends keyof SpecialtyFormValues>(field: K, value: SpecialtyFormValues[K]) => setValues((current) => ({ ...current, [field]: value })), []);
-  const toPayload = useCallback((): CreateSpecialtyPayload => ({ code: values.code.trim().toUpperCase(), name: values.name.trim(), area: values.area.trim(), description: values.description.trim() || undefined, duration: values.duration, status: values.status }), [values]);
+  const setField = useCallback(
+    <K extends keyof SpecialtyFormValues>(field: K, value: SpecialtyFormValues[K]) =>
+      setValues((current) => ({ ...current, [field]: value })),
+    [],
+  );
 
-  return { values, setField, toPayload };
+  const reset = useCallback(() => {
+    setValues(defaultValues);
+  }, []);
+
+  const toPayload = useCallback(
+    (): CreateSpecialtyPayload => ({
+      name: values.name.trim(),
+      description: values.description.trim() || undefined,
+      status: values.status,
+      kind,
+    }),
+    [kind, values],
+  );
+
+  return { values, setField, toPayload, reset, nameInputRef };
 }

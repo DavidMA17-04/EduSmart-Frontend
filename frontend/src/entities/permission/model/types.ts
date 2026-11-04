@@ -1,4 +1,22 @@
-export const PERMISSION_ACTIONS = ['VIEW', 'CREATE', 'EDIT', 'DELETE', 'EXPORT', 'CONFIGURE'] as const;
+﻿export const PERMISSION_ACTIONS = [
+  'VIEW',
+  'CREATE',
+  'EDIT',
+  'DELETE',
+  'EXPORT',
+  'CONFIGURE',
+  'VIEW_OWN',
+  'JUSTIFY',
+  'REVIEW',
+  'RESOLVE',
+  'APPEAL',
+  'PRECAUTIONARY',
+  'RESPOND',
+  'PUBLISH',
+  'MANAGE',
+  'STATS',
+  'VALIDATE',
+] as const;
 export type PermissionAction = (typeof PERMISSION_ACTIONS)[number];
 
 export const PERMISSION_MODULES = [
@@ -13,19 +31,49 @@ export const PERMISSION_MODULES = [
   'ROLES_PERMISSIONS',
   'SPECIALTIES',
   'SECTIONS',
+  'SCHEDULES',
+  'DEPARTURES',
 ] as const;
 export type PermissionModule = (typeof PERMISSION_MODULES)[number];
 
 export const PERMISSION_ACTION_LABELS: Record<PermissionAction, string> = {
-  VIEW: 'Ver', CREATE: 'Crear', EDIT: 'Editar', DELETE: 'Eliminar', EXPORT: 'Exportar', CONFIGURE: 'Configurar',
+  VIEW: 'Ver',
+  CREATE: 'Crear',
+  EDIT: 'Editar',
+  DELETE: 'Eliminar',
+  EXPORT: 'Exportar',
+  CONFIGURE: 'Configurar',
+  VIEW_OWN: 'Ver propio',
+  JUSTIFY: 'Justificar',
+  REVIEW: 'Revisar',
+  RESOLVE: 'Resolver',
+  APPEAL: 'Resolver apelación',
+  PRECAUTIONARY: 'Medidas cautelares',
+  RESPOND: 'Responder',
+  PUBLISH: 'Publicar',
+  MANAGE: 'Gestionar',
+  STATS: 'Métricas',
+  VALIDATE: 'Validar',
 };
 
 export const PERMISSION_MODULE_LABELS: Record<PermissionModule, string> = {
-  ADMINISTRATOR: 'Administrativo', ACADEMIC_STRUCTURE: 'Estructura académica', PERIODS: 'Períodos', ATTENDANCE: 'Asistencias', STUDENTS: 'Estudiantes', DISCIPLINARY: 'Amonestaciones', COMMUNICATIONS: 'Avisos', APPEALS: 'Apelaciones', ROLES_PERMISSIONS: 'Roles y permisos', SPECIALTIES: 'Especialidades', SECTIONS: 'Secciones',
+  ADMINISTRATOR: 'Administrativo',
+  ACADEMIC_STRUCTURE: 'Estructura académica',
+  PERIODS: 'Cursos lectivos',
+  ATTENDANCE: 'Asistencias',
+  STUDENTS: 'Estudiantes',
+  DISCIPLINARY: 'Amonestaciones',
+  COMMUNICATIONS: 'Avisos',
+  APPEALS: 'Apelaciones',
+  ROLES_PERMISSIONS: 'Roles y permisos',
+  SPECIALTIES: 'Especialidades',
+  SECTIONS: 'Secciones',
+  SCHEDULES: 'Horarios',
+  DEPARTURES: 'Salidas',
 };
 
 export interface Permission {
-  id: string;
+  id: number;
   code: string;
   module: PermissionModule;
   action: PermissionAction;
