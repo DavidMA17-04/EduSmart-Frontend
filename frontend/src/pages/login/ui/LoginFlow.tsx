@@ -20,6 +20,7 @@ import {
   digitsOnly,
   isValidNationalId,
 } from '@/features/manage-user/model/userFormRules';
+import { loginInitialFocusTarget } from '@/pages/login/model/loginInitialFocus';
 import { VERIFICATION_UI } from '@/pages/verify-account/model/verificationUi.constants';
 import { OtpCodeInput } from '@/pages/verify-account/ui/OtpCodeInput';
 import {
@@ -37,7 +38,6 @@ import loginStyles from './LoginPage.module.css';
 import styles from './LoginFlow.module.css';
 
 type FlowStep =
-  | 'email'
   | 'password'
   | 'recoverPassword'
   | 'recoverSent'
@@ -59,12 +59,15 @@ export const LoginFlow = ({ resetDone = false }: LoginFlowProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const otpErrorId = useId();
+  const identifierRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const emailForVerifyRef = useRef<HTMLInputElement>(null);
   const recoverEmailRef = useRef<HTMLInputElement>(null);
 
-  const [step, setStep] = useState<FlowStep>('email');
+  const [step, setStep] = useState<FlowStep>('password');
   const [identifier, setIdentifier] = useState('');
+  const identifierLiveRef = useRef(identifier);
+  identifierLiveRef.current = identifier;
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -113,7 +116,14 @@ export const LoginFlow = ({ resetDone = false }: LoginFlowProps) => {
 
   useEffect(() => {
     if (step === 'password') {
-      const id = window.setTimeout(() => passwordRef.current?.focus(), 50);
+      const id = window.setTimeout(() => {
+        const target = loginInitialFocusTarget(identifierLiveRef.current);
+        if (target === 'password') {
+          passwordRef.current?.focus();
+        } else {
+          identifierRef.current?.focus();
+        }
+      }, 120);
       return () => window.clearTimeout(id);
     }
     if (step === 'verifyPrompt' && !isValidEmail(identifier)) {
@@ -178,25 +188,18 @@ export const LoginFlow = ({ resetDone = false }: LoginFlowProps) => {
     goToPassword();
   };
 
-  const onContinueFromEmail = (event: FormEvent) => {
-    event.preventDefault();
-    setFormError(null);
+  const validateIdentifier = (): string | null => {
     const trimmed = identifier.trim();
     if (!trimmed) {
-      setIdentifierError('Este campo es obligatorio.');
-      return;
+      return 'Este campo es obligatorio.';
     }
     if (isValidEmail(trimmed) || trimmed.includes('@')) {
-      setIdentifierError('Ingrese su número de cédula. El acceso por correo ya no está permitido.');
-      return;
+      return 'Ingrese su número de cédula. El acceso por correo ya no está permitido.';
     }
     if (!isValidNationalId(trimmed)) {
-      setIdentifierError('La cédula debe tener entre 9 y 12 dígitos.');
-      return;
+      return 'La cédula debe tener entre 9 y 12 dígitos.';
     }
-    setIdentifier(digitsOnly(trimmed));
-    setIdentifierError(null);
-    goToPassword();
+    return null;
   };
 
   const onLogin = async (event: FormEvent) => {
@@ -204,13 +207,20 @@ export const LoginFlow = ({ resetDone = false }: LoginFlowProps) => {
     if (isSubmitting) return;
 
     setFormError(null);
+    const nextIdentifierError = validateIdentifier();
+    setIdentifierError(nextIdentifierError);
+    if (nextIdentifierError) return;
+
+    const normalizedId = digitsOnly(identifier.trim());
+    setIdentifier(normalizedId);
+
     const nextPasswordError = password ? null : 'La contraseña es obligatoria.';
     setPasswordError(nextPasswordError);
     if (nextPasswordError) return;
 
     setIsSubmitting(true);
     try {
-      const result = await authApi.login(identifier, password, rememberMe);
+      const result = await authApi.login(normalizedId, password, rememberMe);
       setPassword('');
       const fromPath =
         (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ??
@@ -389,22 +399,22 @@ export const LoginFlow = ({ resetDone = false }: LoginFlowProps) => {
         <p>Cuenta institucional CTP Hojancha</p>
       </div>
 
-      {(step === 'email' || step === 'password') && !formError && relogNotice ? (
+      {step === 'password' && !formError && relogNotice ? (
         <p className={loginStyles.notice} role="status">
           {relogNotice}
         </p>
       ) : null}
 
       <AnimatedStep stepKey={step}>
-        {step === 'email' ? (
-          <form className={styles.stepForm} onSubmit={onContinueFromEmail} noValidate>
+        {step === 'password' ? (
+          <form className={styles.stepForm} onSubmit={onLogin} noValidate>
             <label className={loginStyles.field}>
               Cédula
               <span className={`${loginStyles.inputWrap} ${identifierError ? loginStyles.inputInvalid : ''}`}>
                 <User aria-hidden="true" className={loginStyles.inputIcon} size={16} />
                 <Input
+                  ref={identifierRef}
                   autoComplete="username"
-                  autoFocus
                   className={loginStyles.input}
                   inputMode="numeric"
                   maxLength={12}
@@ -425,30 +435,6 @@ export const LoginFlow = ({ resetDone = false }: LoginFlowProps) => {
                 Contraseña restablecida. Continúe e inicie sesión con la nueva clave.
               </p>
             ) : null}
-
-            <Button className={loginStyles.submit} type="submit">
-              Continuar
-            </Button>
-          </form>
-        ) : null}
-
-        {step === 'password' ? (
-          <form className={styles.stepForm} onSubmit={onLogin} noValidate>
-            <div className={styles.chipRow}>
-              <span className={styles.chipText}>{identifier.trim()}</span>
-              <button
-                className={styles.chipAction}
-                onClick={() => {
-                  setStep('email');
-                  setPassword('');
-                  setFormError(null);
-                  setPasswordError(null);
-                }}
-                type="button"
-              >
-                Cambiar
-              </button>
-            </div>
 
             <label className={loginStyles.field}>
               Contraseña
@@ -536,7 +522,7 @@ export const LoginFlow = ({ resetDone = false }: LoginFlowProps) => {
                   <button
                     className={styles.chipAction}
                     onClick={() => {
-                      setStep('email');
+                      setStep('password');
                       setFormError(null);
                       setRecoverEmailError(null);
                     }}
@@ -674,7 +660,7 @@ export const LoginFlow = ({ resetDone = false }: LoginFlowProps) => {
               <button
                 className={styles.chipAction}
                 onClick={() => {
-                  setStep('email');
+                  setStep('password');
                   setFormError(null);
                 }}
                 type="button"
@@ -870,23 +856,6 @@ export const LoginFlow = ({ resetDone = false }: LoginFlowProps) => {
           </div>
         ) : null}
       </AnimatedStep>
-
-      {step === 'email' || step === 'password' ? (
-        <>
-          <div className={loginStyles.divider}>
-            <span>o continúa con</span>
-          </div>
-
-          <div className={loginStyles.sso}>
-            <button disabled title="Próximamente" type="button">
-              Microsoft 365
-            </button>
-            <button disabled title="Próximamente" type="button">
-              Google
-            </button>
-          </div>
-        </>
-      ) : null}
     </div>
   );
 };
