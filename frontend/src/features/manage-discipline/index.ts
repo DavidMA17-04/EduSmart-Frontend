@@ -9,7 +9,11 @@ export { DisciplineCalendarPanel } from './ui/DisciplineCalendarPanel';
 export { CaseDetailPanel } from './ui/CaseDetailPanel';
 export { CaseInboxPanel } from './ui/CaseInboxPanel';
 export { ConductHistoryPanel } from './ui/ConductHistoryPanel';
+export { DisciplineAdminDashboard } from './ui/DisciplineAdminDashboard';
 export { DisciplineDashboardPanel } from './ui/DisciplineDashboardPanel';
+export { DisciplineHomeHub } from './ui/DisciplineHomeHub';
+export { DisciplineModuleNav } from './ui/DisciplineModuleNav';
+export { DisciplineSettingsHub } from './ui/DisciplineSettingsHub';
 export { GuardianInboxPanel } from './ui/GuardianInboxPanel';
 export { InfractionCatalogPanel } from './ui/InfractionCatalogPanel';
 export { RegisterCasePanel } from './ui/RegisterCasePanel';
@@ -25,12 +29,14 @@ export {
   DISCIPLINE_CASES_PATH,
   DISCIPLINE_CATALOG_PATH,
   DISCIPLINE_DASHBOARD_PATH,
+  DISCIPLINE_HOME_PATH,
   DISCIPLINE_HISTORY_PATH,
   disciplineHistoryPath,
   DISCIPLINE_NOTIFICATIONS_PATH,
   DISCIPLINE_PERMISSIONS,
   DISCIPLINE_PROCESS_PATH,
   DISCIPLINE_REGISTER_PATH,
+  DISCIPLINE_SETTINGS_PATH,
 } from './model/disciplineRouting';
 export { APPEAL_CENTER_COPY } from './model/appealCenter';
 export { APPEAL_REVIEW_COPY } from './model/appealReview';

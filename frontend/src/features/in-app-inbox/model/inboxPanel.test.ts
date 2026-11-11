@@ -4,6 +4,7 @@ import {
   badgeLabel,
   canMarkRead,
   formatInboxTime,
+  hasMarkableItems,
   inboxBelongsToActor,
   togglePanel,
 } from './inboxPanel';
@@ -33,6 +34,16 @@ describe('campana de notificaciones', () => {
     expect(canMarkRead('disciplinary')).toBe(true);
     expect(canMarkRead('absenteeism')).toBe(true);
     expect(canMarkRead('justification_pending')).toBe(false);
+  });
+
+  it('detecta si hay ítems marcables en la bandeja', () => {
+    expect(
+      hasMarkableItems([
+        item({ id: 1, source: 'justification_pending' }),
+        item({ id: 2, source: 'absenteeism' }),
+      ]),
+    ).toBe(true);
+    expect(hasMarkableItems([item({ id: 3, source: 'justification_pending' })])).toBe(false);
   });
 
   it('no mezcla ítems de otro usuario', () => {

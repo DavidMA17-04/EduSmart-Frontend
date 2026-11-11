@@ -75,6 +75,27 @@ export const EVENT_LABELS: Record<string, string> = {
   SUBSIDIARY_ELEVATED: 'Apelación elevada',
 };
 
+/** Jerarquía visual de la cronología: hitos vs notas vs riesgo. */
+export type EventTone = 'milestone' | 'counsel' | 'risk' | 'note';
+
+export function eventTone(type: string): EventTone {
+  if (
+    type === 'CASE_OPENED' ||
+    type === 'STATUS_CHANGE' ||
+    type === 'DEFENSE_FILED' ||
+    type === 'REVOCATION_FILED' ||
+    type === 'APPEAL_FILED' ||
+    type === 'REVOCATION_RESOLVED' ||
+    type === 'SUBSIDIARY_ELEVATED' ||
+    type === 'PHYSICAL_DELIVERY'
+  ) {
+    return 'milestone';
+  }
+  if (type === 'COUNSEL_REQUEST' || type === 'COUNSEL_OPINION') return 'counsel';
+  if (type === 'PRECAUTIONARY_ORDERED') return 'risk';
+  return 'note';
+}
+
 export function appealHeading(item: { kind: string; isSubsidiary: boolean }): string {
   if (item.kind === 'APPEAL') return item.isSubsidiary ? 'Apelación en subsidio' : 'Apelación';
   return item.isSubsidiary ? 'Revocatoria con apelación en subsidio' : 'Revocatoria';

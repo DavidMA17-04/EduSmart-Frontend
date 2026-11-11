@@ -9,9 +9,15 @@
   flex-direction: column;
   gap: 0.75rem;
   padding: 1rem 1.1rem;
-  border: 1px solid #e7ebf0;
+  border: 1px solid color-mix(in srgb, var(--brand-border, #c1c5c8) 55%, transparent);
   border-radius: 20px;
-  background: #fff;
+  background:
+    radial-gradient(
+      ellipse 70% 80% at 0% 0%,
+      color-mix(in srgb, var(--brand-primary, #002e7a) 7%, transparent),
+      transparent 55%
+    ),
+    var(--admin-surface, #fff);
   box-shadow: 0 12px 28px rgb(2 26 83 / 5%);
 }
 

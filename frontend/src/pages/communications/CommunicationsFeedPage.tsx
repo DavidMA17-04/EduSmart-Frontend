@@ -24,8 +24,10 @@ import {
   CommunicationTabs,
   FetchingBar,
 } from '@/components/communications/CommunicationControls';
+import { CommunicationsModuleNav } from '@/features/manage-communications/ui/CommunicationsModuleNav';
 import { sessionHasPermission } from '@/shared/auth';
 import { useToast } from '@/shared/ui';
+import { resolveRoleAudience } from '@/widgets/app-shell/model/adminNavigation';
 import '@/components/communications/communications.css';
 
 type FeedTab = 'all' | 'unread' | 'urgent';
@@ -120,9 +122,12 @@ export const CommunicationsFeedPage: React.FC = () => {
     };
   })();
 
+  const isStaff = ['admin', 'teacher', 'staff'].includes(resolveRoleAudience());
+
   return (
     <div className="edu-comms bg-slate-50 min-h-full p-4 sm:p-6 md:p-8">
       <div className="max-w-5xl mx-auto space-y-5">
+        {isStaff ? <CommunicationsModuleNav /> : null}
         {/* Encabezado institucional */}
         <motion.section
           initial={{ opacity: 0, y: -8 }}

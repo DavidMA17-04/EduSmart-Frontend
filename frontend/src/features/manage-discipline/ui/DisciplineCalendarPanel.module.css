@@ -14,9 +14,15 @@
 
 .card {
   padding: 1.1rem;
-  border: 1px solid #e7ebf0;
+  border: 1px solid color-mix(in srgb, var(--brand-border, #c1c5c8) 55%, transparent);
   border-radius: 14px;
-  background: #fff;
+  background:
+    radial-gradient(
+      ellipse 70% 70% at 100% 0%,
+      color-mix(in srgb, var(--brand-primary, #002e7a) 6%, transparent),
+      transparent 55%
+    ),
+    var(--admin-surface, #fff);
   box-shadow: 0 12px 30px rgb(2 26 83 / 6%);
   height: 100%;
 }

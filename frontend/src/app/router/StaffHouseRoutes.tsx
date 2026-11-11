@@ -1,5 +1,6 @@
 import {
   AbsenteeismAlertsPage,
+  AcademicHomePage,
   AcademicPeriodsPage,
   AcademicStructureWizardPage,
   AdministrativeReportsPage,
@@ -15,10 +16,12 @@ import {
   DisciplineCasesPage,
   DisciplineCatalogPage,
   DisciplineDashboardPage,
+  DisciplineHomePage,
   DisciplineHistoryPage,
   DisciplineNotificationsPage,
   DisciplineProcessPage,
   DisciplineRegisterPage,
+  DisciplineSettingsPage,
   ImportResultPage,
   MySchedulePage,
   ProfileSettingsPage,
@@ -39,6 +42,7 @@ import {
   UserImportPreviewPage,
   UserMethodSelectionPage,
   UsersDirectoryPage,
+  UsersHomePage,
 } from './pages';
 import { roleModuleRoutes } from './RoleModuleRoutes';
 import { Route } from 'react-router-dom';
@@ -64,7 +68,8 @@ export const staffHouseRoutes = (
     <Route element={<RoleHome />} path="dashboard" />
 
     <Route element={<RequirePermission permission="administrator.view" />}>
-      <Route element={<UserMethodSelectionPage />} path="users" />
+      <Route element={<UsersHomePage />} path="users" />
+      <Route element={<UserMethodSelectionPage />} path="users/incorporate" />
       <Route element={<UserBulkImportPage />} path="users/import/bulk" />
       <Route element={<UserImportPreviewPage />} path="users/import/preview" />
       <Route element={<UsersDirectoryPage />} path="users/directory" />
@@ -76,6 +81,24 @@ export const staffHouseRoutes = (
 
     <Route element={<RequirePermission permission="roles_permissions.view" />}>
       <Route element={<RolesPermissionsPage />} path="roles-permissions" />
+    </Route>
+
+    <Route
+      element={
+        <RequirePermission
+          anyOf={[
+            ...ACADEMIC_SPECIALTIES_MANAGE,
+            ...ACADEMIC_SUBJECTS_MANAGE,
+            ...ACADEMIC_PERIODS_MANAGE,
+            ...ACADEMIC_SECTIONS_MANAGE,
+            'academic_structure.configure',
+            SCHEDULE_PERMISSIONS.view,
+            SCHEDULE_PERMISSIONS.viewOwn,
+          ]}
+        />
+      }
+    >
+      <Route element={<AcademicHomePage />} path="academic" />
     </Route>
 
     <Route element={<RequirePermission anyOf={ACADEMIC_SPECIALTIES_MANAGE} />}>
@@ -205,6 +228,15 @@ export const staffHouseRoutes = (
         <Route element={<DisciplineCalendarPage />} path="discipline/calendar" />
       </Route>
       <Route
+        element={
+          <RequirePermission
+            anyOf={[DISCIPLINE_PERMISSIONS.view, DISCIPLINE_PERMISSIONS.configure]}
+          />
+        }
+      >
+        <Route element={<DisciplineSettingsPage />} path="discipline/settings" />
+      </Route>
+      <Route
         element={<RequirePermission permission={DISCIPLINE_PERMISSIONS.create} />}
       >
         <Route element={<DisciplineRegisterPage />} path="discipline/register" />
@@ -212,11 +244,15 @@ export const staffHouseRoutes = (
       <Route
         element={
           <RequirePermission
-            anyOf={[DISCIPLINE_PERMISSIONS.view, DISCIPLINE_PERMISSIONS.viewOwn]}
+            anyOf={[
+              DISCIPLINE_PERMISSIONS.view,
+              DISCIPLINE_PERMISSIONS.viewOwn,
+              DISCIPLINE_PERMISSIONS.create,
+            ]}
           />
         }
       >
-        <Route element={<DisciplineDashboardPage />} path="discipline" />
+        <Route element={<DisciplineHomePage />} path="discipline" />
         <Route element={<DisciplineDashboardPage />} path="discipline/dashboard" />
       </Route>
       <Route

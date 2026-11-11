@@ -1,0 +1,39 @@
+.card {
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--admin-surface, #fff);
+  border: 1px solid var(--admin-border, #e7ebf0);
+  box-shadow: 0 1px 4px rgba(2, 26, 83, 0.05);
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--brand-gold, #c4a35a);
+}
+
+.cardHead svg {
+  color: var(--admin-primary, #002e7a);
+  flex-shrink: 0;
+}
+
+.cardHead h2 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--admin-text, #021a53);
+  margin: 0;
+}
+
+.muted {
+  margin: 0;
+  color: var(--admin-muted, #667085);
+  font-size: 0.9rem;
+}
+
+.chart {
+  width: 100%;
+  min-height: 200px;
+}

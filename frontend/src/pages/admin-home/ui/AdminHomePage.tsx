@@ -3,21 +3,23 @@ import { Link } from 'react-router-dom';
 import {
   BookOpen,
   CalendarRange,
-  FileSpreadsheet,
-  FolderOpen,
+  DoorOpen,
+  FileBarChart,
   GraduationCap,
   Layers,
   LayoutDashboard,
+  Megaphone,
+  ShieldAlert,
   ShieldCheck,
   UserCheck,
   Users,
   Zap,
 } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { dashboardApi } from '@/features/dashboard';
 import type { DashboardSummary } from '@/features/dashboard';
 import { useAuthStore } from '@/features/auth';
 import { getSessionUser, sessionHasPermission } from '@/shared/auth';
+import { DonutCard, type DonutSlice } from '@/shared/ui';
 import { profileDisplayName } from '../model/profileDisplayName';
 import { brandColors } from '@/styles/brandColors';
 import { chartTheme } from '@/styles/chartTheme';
@@ -41,113 +43,19 @@ function colorForRole(role: string, index: number): string {
   return ROLE_COLORS[role] ?? chartTheme.series[index % chartTheme.series.length];
 }
 
-type DonutSlice = { name: string; shortName: string; count: number; color: string };
-
-function DonutCard({
-  title,
-  icon: Icon,
-  slices,
-  emptyText,
-}: {
-  title: string;
-  icon: typeof LayoutDashboard;
-  slices: DonutSlice[];
-  emptyText: string;
-}) {
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const total = slices.reduce((sum, slice) => sum + slice.count, 0);
-  const hasData = slices.some((slice) => slice.count > 0);
-  const activeSlice = activeIndex != null ? slices[activeIndex] : null;
-  const centerValue = activeSlice ? activeSlice.count : total;
-  const centerLabel = activeSlice ? activeSlice.shortName : 'Total';
-
-  return (
-    <div className={styles.card}>
-      <div className={styles.cardHead}>
-        <Icon size={18} />
-        <h2>{title}</h2>
-      </div>
-      {hasData ? (
-        <div className={styles.donutRow}>
-          <div className={styles.donutWrap}>
-            <ResponsiveContainer width="100%" height={168}>
-              <PieChart>
-                <Pie
-                  animationBegin={0}
-                  animationDuration={700}
-                  animationEasing="ease-out"
-                  cx="50%"
-                  cy="50%"
-                  data={slices}
-                  dataKey="count"
-                  innerRadius={50}
-                  isAnimationActive
-                  nameKey="name"
-                  onMouseEnter={(_, index) => setActiveIndex(index)}
-                  onMouseLeave={() => setActiveIndex(null)}
-                  outerRadius={72}
-                  paddingAngle={2}
-                  stroke="none"
-                >
-                  {slices.map((slice, index) => {
-                    const isActive = activeIndex === index;
-                    const isDimmed = activeIndex != null && !isActive;
-                    return (
-                      <Cell
-                        fill={slice.color}
-                        key={slice.name}
-                        style={{
-                          cursor: 'pointer',
-                          filter: isActive ? 'brightness(1.08)' : 'none',
-                          opacity: isDimmed ? 0.4 : 1,
-                          outline: 'none',
-                          transition: 'opacity 0.4s ease, filter 0.4s ease',
-                        }}
-                      />
-                    );
-                  })}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-            <div className={styles.donutCenter}>
-              <div className={styles.donutCenterContent} key={`${centerValue}-${centerLabel}`}>
-                <span className={styles.donutTotal}>{centerValue}</span>
-                <span className={styles.donutTotalLabel}>{centerLabel}</span>
-              </div>
-            </div>
-          </div>
-          <ul className={styles.legend}>
-            {slices.map((slice, index) => (
-              <li
-                className={activeIndex === index ? styles.legendActive : undefined}
-                key={slice.name}
-                onMouseEnter={() => setActiveIndex(index)}
-                onMouseLeave={() => setActiveIndex(null)}
-              >
-                <span className={styles.legendDot} style={{ background: slice.color }} />
-                <span className={styles.legendLabel}>{slice.name}</span>
-                <span className={styles.legendCount}>
-                  {slice.count} ({total > 0 ? Math.round((slice.count / total) * 100) : 0}%)
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : (
-        <p className={styles.muted}>{emptyText}</p>
-      )}
-    </div>
-  );
-}
-
-const quickAccess = [
+const quickAccess: Array<{
+  label: string;
+  to: string;
+  icon: typeof Users;
+  permission?: string;
+}> = [
   { label: 'Usuarios', to: '/admin/users', icon: Users },
-  { label: 'Directorio', to: '/admin/users/directory', icon: FolderOpen },
-  { label: 'Roles y permisos', to: '/admin/roles-permissions', icon: ShieldCheck },
-  { label: 'Oferta académica', to: '/admin/specialties', icon: GraduationCap },
-  { label: 'Cursos lectivos', to: '/admin/academic-periods', icon: CalendarRange },
-  { label: 'Secciones', to: '/admin/sections-groups', icon: Layers },
-  { label: 'Importar', to: '/admin/users', icon: FileSpreadsheet },
+  { label: 'Estructura académica', to: '/admin/academic', icon: GraduationCap },
+  { label: 'Asistencias', to: '/admin/attendance', icon: UserCheck },
+  { label: 'Disciplina', to: '/admin/discipline', icon: ShieldAlert },
+  { label: 'Control de salidas', to: '/admin/security/dashboard', icon: DoorOpen },
+  { label: 'Avisos y comunicados', to: '/admin/communications', icon: Megaphone },
+  { label: 'Reportes', to: '/admin/reports', icon: FileBarChart, permission: 'administrator.view' },
 ];
 
 export const AdminHomePage = () => {
@@ -373,12 +281,14 @@ export const AdminHomePage = () => {
               <h2>Accesos rápidos</h2>
             </div>
             <div className={styles.qaGrid}>
-              {quickAccess.map(({ label, to, icon: Icon }) => (
-                <Link key={to + label} to={to} className={styles.qaItem}>
-                  <div className={styles.qaIcon}><Icon size={20} /></div>
-                  <span className={styles.qaLabel}>{label}</span>
-                </Link>
-              ))}
+              {quickAccess
+                .filter((item) => !item.permission || sessionHasPermission(item.permission))
+                .map(({ label, to, icon: Icon }) => (
+                  <Link key={to + label} to={to} className={styles.qaItem}>
+                    <div className={styles.qaIcon}><Icon size={20} /></div>
+                    <span className={styles.qaLabel}>{label}</span>
+                  </Link>
+                ))}
             </div>
           </div>
         </>

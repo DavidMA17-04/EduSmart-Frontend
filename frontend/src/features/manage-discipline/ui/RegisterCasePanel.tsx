@@ -10,8 +10,10 @@ import type { CreatedDisciplinaryCase, DisciplinaryStudentHit, InfractionType } 
 import styles from './RegisterCasePanel.module.css';
 
 const EMPTY_ERRORS: Record<string, string> = {};
+type Step = 1 | 2 | 3;
 
 export const RegisterCasePanel = () => {
+  const [step, setStep] = useState<Step>(1);
   const [types, setTypes] = useState<InfractionType[]>([]);
   const [subjects, setSubjects] = useState<Array<{ id: number; name: string }>>([]);
   const [query, setQuery] = useState('');
@@ -33,9 +35,12 @@ export const RegisterCasePanel = () => {
 
   useEffect(() => {
     void disciplineApi.listInfractionOptions().then(setTypes).catch(() => setFormError('No se pudo cargar el catálogo de faltas.'));
-    void disciplineApi.listSubjects().then((rows) => {
-      setSubjects(rows.filter((row) => row.status === 'ACTIVE').map((row) => ({ id: row.id, name: row.name })));
-    }).catch(() => setSubjects([]));
+    void disciplineApi
+      .listSubjects()
+      .then((rows) => {
+        setSubjects(rows.filter((row) => row.status === 'ACTIVE').map((row) => ({ id: row.id, name: row.name })));
+      })
+      .catch(() => setSubjects([]));
   }, []);
 
   useEffect(() => {
@@ -56,6 +61,24 @@ export const RegisterCasePanel = () => {
   );
   const late = isLateReport(occurredAt, selectedType?.track ?? null);
 
+  const goStep2 = () => {
+    if (!student) {
+      setErrors({ studentUserId: 'Seleccione un estudiante.' });
+      return;
+    }
+    setErrors(EMPTY_ERRORS);
+    setStep(2);
+  };
+
+  const goStep3 = () => {
+    if (!selectedType) {
+      setErrors({ infractionTypeId: 'Seleccione el tipo de falta.' });
+      return;
+    }
+    setErrors(EMPTY_ERRORS);
+    setStep(3);
+  };
+
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
     const nextErrors = validateCaseForm(
@@ -74,7 +97,12 @@ export const RegisterCasePanel = () => {
     );
     setErrors(nextErrors);
     setFormError(null);
-    if (Object.keys(nextErrors).length || !student || !selectedType) return;
+    if (Object.keys(nextErrors).length || !student || !selectedType) {
+      if (nextErrors.studentUserId) setStep(1);
+      else if (nextErrors.infractionTypeId) setStep(2);
+      else setStep(3);
+      return;
+    }
 
     setSaving(true);
     try {
@@ -120,7 +148,9 @@ export const RegisterCasePanel = () => {
           <Alert>La sección no tiene docente guía. Dirección puede conducir el expediente.</Alert>
         ) : null}
         {created.isLateReport ? <Alert>El reporte quedó marcado como extemporáneo.</Alert> : null}
-        {fileWarning ? <Alert>{`El expediente se guardó, pero alguna evidencia no se adjuntó. ${fileWarning}`}</Alert> : null}
+        {fileWarning ? (
+          <Alert>{`El expediente se guardó, pero alguna evidencia no se adjuntó. ${fileWarning}`}</Alert>
+        ) : null}
         <div className={styles.actions}>
           <Link className={styles.openCase} to={portalPathForSession(disciplineCasePath(created.id))}>
             Abrir el expediente
@@ -135,85 +165,136 @@ export const RegisterCasePanel = () => {
 
   return (
     <form className={styles.form} onSubmit={onSubmit}>
+      <ol className={styles.stepRail} aria-label="Pasos del registro">
+        {(
+          [
+            [1, 'Estudiante'],
+            [2, 'Falta'],
+            [3, 'Hechos'],
+          ] as const
+        ).map(([number, label]) => (
+          <li
+            className={
+              number < step ? styles.stepDone : number === step ? styles.stepCurrent : styles.stepSoon
+            }
+            key={number}
+          >
+            <span aria-hidden="true">{number < step ? '✓' : number}</span>
+            {label}
+          </li>
+        ))}
+      </ol>
+
       {formError ? <Alert>{formError}</Alert> : null}
-      <div className={styles.columns}>
-        <div className={styles.column}>
-          <fieldset className={styles.section}>
-            <legend>1. A quién se amonesta</legend>
-            <label className={styles.field}>
-              <span>Estudiante</span>
-              <Input
-                value={query}
-                placeholder="Nombre, apellido o cédula"
-                onChange={(event) => {
-                  setQuery(event.target.value);
-                  setStudent(null);
-                }}
-              />
-              {student ? (
-                <strong>
-                  {student.fullName} · {student.sectionLabel ?? 'Sin sección'} · {student.nationalId}
-                </strong>
-              ) : null}
-              {errors.studentUserId ? <small>{errors.studentUserId}</small> : null}
-              {students.length > 0 && !student ? (
-                <ul className={styles.results}>
-                  {students.map((hit) => (
-                    <li key={hit.id}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setStudent(hit);
-                          setQuery(hit.fullName);
-                          setStudents([]);
-                        }}
-                      >
-                        {hit.fullName}
-                        <span>{hit.sectionLabel ?? 'Sin sección'}</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </label>
-          </fieldset>
 
-          <fieldset className={styles.section}>
-            <legend>2. Qué falta y qué sigue</legend>
-            <div className={styles.grid}>
-              <label className={styles.field}>
-                <span>Tipo de falta</span>
-                <Select value={infractionTypeId} onChange={(event) => setInfractionTypeId(event.target.value)}>
-                  <option value="">Seleccione</option>
-                  {types.map((type) => (
-                    <option key={type.id} value={type.id}>
-                      {type.name}
-                    </option>
-                  ))}
-                </Select>
-                {errors.infractionTypeId ? <small>{errors.infractionTypeId}</small> : null}
-              </label>
-              <div className={styles.readonly}>
-                <span>Gravedad y rebajo</span>
-                <strong>
-                  {selectedType
-                    ? `${SEVERITY_LABELS[selectedType.severity]} · ${selectedType.deduction} puntos · ${TRACK_LABELS[selectedType.track]}`
-                    : 'Se calcula al elegir la falta'}
-                </strong>
-              </div>
-            </div>
-            {selectedType ? (
-              <p className={styles.preview}>
-                {selectedType.track === 'DIRECT'
-                  ? 'Esta falta no se investiga. Al registrarla se notifica al encargado y corre la revocatoria.'
-                  : 'Esta falta abre debido proceso. Primero queda reportada; el guía debe iniciar la investigación.'}
-              </p>
+      {step === 1 ? (
+        <fieldset className={styles.section}>
+          <legend>1. ¿A quién se amonesta?</legend>
+          <p className={styles.stepHelp}>Busque por nombre, apellido o cédula y elija al estudiante en la lista.</p>
+          <label className={styles.field}>
+            <span>Estudiante</span>
+            <Input
+              value={query}
+              placeholder="Nombre, apellido o cédula"
+              onChange={(event) => {
+                setQuery(event.target.value);
+                setStudent(null);
+              }}
+            />
+            {student ? (
+              <strong className={styles.picked}>
+                {student.fullName} · {student.sectionLabel ?? 'Sin sección'} · {student.nationalId}
+              </strong>
             ) : null}
-          </fieldset>
-        </div>
+            {errors.studentUserId ? <small>{errors.studentUserId}</small> : null}
+            {students.length > 0 && !student ? (
+              <ul className={styles.results}>
+                {students.map((hit) => (
+                  <li key={hit.id}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStudent(hit);
+                        setQuery(hit.fullName);
+                        setStudents([]);
+                      }}
+                    >
+                      {hit.fullName}
+                      <span>{hit.sectionLabel ?? 'Sin sección'}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </label>
+          <div className={styles.actions}>
+            <Button type="button" onClick={goStep2} disabled={!student}>
+              Continuar a la falta
+            </Button>
+          </div>
+        </fieldset>
+      ) : null}
 
-        <fieldset className={`${styles.section} ${styles.factsColumn}`}>
-          <legend>3. Los hechos</legend>
+      {step === 2 ? (
+        <fieldset className={styles.section}>
+          <legend>2. ¿Qué falta ocurrió?</legend>
+          <p className={styles.stepHelp}>
+            Al elegir el tipo, el sistema indica si es amonestación directa o debido proceso.
+          </p>
+          <div className={styles.grid}>
+            <label className={styles.field}>
+              <span>Tipo de falta</span>
+              <Select value={infractionTypeId} onChange={(event) => setInfractionTypeId(event.target.value)}>
+                <option value="">Seleccione</option>
+                {types.map((type) => (
+                  <option key={type.id} value={type.id}>
+                    {type.name}
+                  </option>
+                ))}
+              </Select>
+              {errors.infractionTypeId ? <small>{errors.infractionTypeId}</small> : null}
+            </label>
+            <div className={styles.readonly}>
+              <span>Gravedad y rebajo</span>
+              <strong>
+                {selectedType
+                  ? `${SEVERITY_LABELS[selectedType.severity]} · ${selectedType.deduction} puntos · ${TRACK_LABELS[selectedType.track]}`
+                  : 'Se calcula al elegir la falta'}
+              </strong>
+            </div>
+          </div>
+          {selectedType ? (
+            <p className={styles.preview}>
+              {selectedType.track === 'DIRECT'
+                ? 'Esta falta no se investiga. Al registrarla se notifica al encargado y corre la revocatoria.'
+                : 'Esta falta abre debido proceso. Primero queda reportada; el guía debe iniciar la investigación.'}
+            </p>
+          ) : null}
+          <div className={styles.actions}>
+            <Button type="button" variant="secondary" onClick={() => setStep(1)}>
+              Atrás
+            </Button>
+            <Button type="button" onClick={goStep3} disabled={!selectedType}>
+              Continuar a los hechos
+            </Button>
+          </div>
+        </fieldset>
+      ) : null}
+
+      {step === 3 ? (
+        <fieldset className={styles.section}>
+          <legend>3. ¿Qué pasó?</legend>
+          <p className={styles.stepHelp}>
+            Describa modo, tiempo y lugar. Puede adjuntar evidencias al final.
+          </p>
+          {student && selectedType ? (
+            <p className={styles.summaryStrip}>
+              <strong>{student.fullName}</strong>
+              <span>
+                {selectedType.name} · {SEVERITY_LABELS[selectedType.severity]} · {TRACK_LABELS[selectedType.track]}
+              </span>
+            </p>
+          ) : null}
           <div className={styles.grid}>
             <label className={styles.field}>
               <span>Fecha y hora del hecho</span>
@@ -254,7 +335,11 @@ export const RegisterCasePanel = () => {
           {late ? (
             <label className={styles.field}>
               <span>Justificación del reporte extemporáneo</span>
-              <Textarea rows={3} value={lateReportReason} onChange={(event) => setLateReportReason(event.target.value)} />
+              <Textarea
+                rows={3}
+                value={lateReportReason}
+                onChange={(event) => setLateReportReason(event.target.value)}
+              />
               {errors.lateReportReason ? <small>{errors.lateReportReason}</small> : null}
             </label>
           ) : null}
@@ -269,14 +354,17 @@ export const RegisterCasePanel = () => {
             />
             {errors.files ? <small>{errors.files}</small> : null}
           </label>
-        </fieldset>
-      </div>
 
-      <div className={styles.actions}>
-        <Button type="submit" disabled={saving}>
-          {saving ? 'Guardando…' : 'Registrar amonestación'}
-        </Button>
-      </div>
+          <div className={styles.actions}>
+            <Button type="button" variant="secondary" onClick={() => setStep(2)}>
+              Atrás
+            </Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? 'Guardando…' : 'Registrar amonestación'}
+            </Button>
+          </div>
+        </fieldset>
+      ) : null}
     </form>
   );
 };

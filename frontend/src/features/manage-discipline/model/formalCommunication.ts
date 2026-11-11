@@ -1,6 +1,6 @@
 import { formatShortDate, todayIso } from './businessDays';
 import { SEVERITY_DEDUCTIONS, SEVERITY_LABELS } from './severity';
-import type { InfractionSeverity } from './types';
+import type { DisciplinaryCaseDetail, InfractionSeverity } from './types';
 
 export type FormalCommunicationFields = {
   studentName: string;
@@ -30,6 +30,40 @@ export const EMPTY_FORMAL_COMMUNICATION: FormalCommunicationFields = {
   proposedAction: '',
 };
 
+function asText(value: string | null | undefined): string {
+  return value?.trim() ?? '';
+}
+
+/** Prefills the formal letter from the open expediente (paso 3 operativo). */
+export function fieldsFromCaseDetail(
+  detail: DisciplinaryCaseDetail,
+  extras?: { reportingTeacher?: string; guideTeacher?: string },
+): FormalCommunicationFields {
+  const events = detail.events ?? [];
+  const actorName = (userId: number | null | undefined) => {
+    if (userId == null) return '';
+    return asText(events.find((event) => event.actorUserId === userId)?.actorName);
+  };
+  const infractionName =
+    detail.infractionName ??
+    (detail as DisciplinaryCaseDetail & { infractionType?: { name?: string } }).infractionType?.name ??
+    '';
+
+  return {
+    studentName: asText(detail.student?.fullName),
+    studentId: asText(detail.student?.nationalId),
+    section: asText(detail.sectionLabel ?? detail.sectionName),
+    reportingTeacher: asText(extras?.reportingTeacher) || actorName(detail.reporterUserId),
+    guideTeacher: asText(extras?.guideTeacher) || actorName(detail.responsibleUserId),
+    infraction: asText(infractionName),
+    severity: detail.severity,
+    incidentDate: detail.occurredAt?.slice(0, 10) ?? '',
+    place: asText(detail.place),
+    facts: asText(detail.description),
+    proposedAction: '',
+  };
+}
+
 /** Su omisión hace nulo el proceso (guía de debido proceso, paso 3): no son editables. */
 export const MANDATORY_CLAUSES: readonly string[] = [
   'Tiene derecho a conocer y acceder al expediente disciplinario en cualquier momento del proceso.',
@@ -48,8 +82,8 @@ function escapeHtml(value: string): string {
     .replace(/'/g, '&#39;');
 }
 
-function value(text: string, label: string): string {
-  const trimmed = text.trim();
+function value(text: string | null | undefined, label: string): string {
+  const trimmed = text?.trim() ?? '';
   return trimmed
     ? escapeHtml(trimmed)
     : `<span class="blank">${escapeHtml(label)}</span>`;
@@ -57,11 +91,14 @@ function value(text: string, label: string): string {
 
 export function buildFormalCommunicationHtml(
   fields: FormalCommunicationFields,
-  options: { logoUrl: string; issuedOn?: string },
+  options: { logoUrl: string; issuedOn?: string; caseNumber?: string },
 ): string {
   const issuedOn = formatShortDate(options.issuedOn ?? todayIso());
   const incident = fields.incidentDate ? formatShortDate(fields.incidentDate) : '';
   const severity = `${SEVERITY_LABELS[fields.severity]} · rebajo propuesto de ${SEVERITY_DEDUCTIONS[fields.severity]} puntos`;
+  const fileNumber = options.caseNumber?.trim()
+    ? escapeHtml(options.caseNumber.trim())
+    : 'AM-______';
   const pair = (labelA: string, contentA: string, labelB: string, contentB: string) =>
     `<tr><th>${labelA}</th><td>${contentA}</td><th>${labelB}</th><td>${contentB}</td></tr>`;
   const wide = (label: string, content: string) =>
@@ -71,7 +108,7 @@ export function buildFormalCommunicationHtml(
 <html lang="es">
 <head>
 <meta charset="utf-8" />
-<title>Comunicación formal · ${escapeHtml(fields.studentName.trim() || 'Expediente disciplinario')}</title>
+<title>Comunicación formal · ${escapeHtml(asText(fields.studentName) || 'Expediente disciplinario')}</title>
 <style>
   @page { size: letter; margin: 11mm 14mm; }
   * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -117,7 +154,7 @@ export function buildFormalCommunicationHtml(
       <span>Tel. (+506) 2659-9045 · ctp.dehojancha@mep.go.cr</span>
     </div>
     <div class="file">
-      <div><span>Expediente N.º</span><strong>AM-______</strong></div>
+      <div><span>Expediente N.º</span><strong>${fileNumber}</strong></div>
       <div><span>Emitido</span><strong>${issuedOn}</strong></div>
     </div>
   </header>

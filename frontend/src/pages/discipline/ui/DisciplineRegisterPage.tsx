@@ -1,5 +1,5 @@
 import { ClipboardPen } from 'lucide-react';
-import { RegisterCasePanel } from '@/features/manage-discipline';
+import { DisciplineModuleNav, RegisterCasePanel } from '@/features/manage-discipline';
 import { PageHeader } from '@/shared/ui';
 import styles from './DisciplineCatalogPage.module.css';
 
@@ -8,9 +8,10 @@ export const DisciplineRegisterPage = () => (
     <PageHeader
       breadcrumbs={[{ label: 'Disciplina' }, { label: 'Registrar amonestación' }]}
       icon={ClipboardPen}
-      subtitle="Elija la falta y el formulario le dice si sigue por amonestación directa o por debido proceso."
+      subtitle="Empiece por el estudiante y la falta. El resto del formulario se adapta solo."
       title="Registrar amonestación"
     />
+    <DisciplineModuleNav />
     <RegisterCasePanel />
   </section>
 );
