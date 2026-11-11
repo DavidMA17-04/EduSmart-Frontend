@@ -6,10 +6,21 @@ type ApiEnvelope<T> = { success: boolean; data: T };
 const request = async <T>(path: string, init?: RequestInit): Promise<T> =>
   (await httpClient<ApiEnvelope<T>>(path, init)).data;
 
+export type MarkAllReadResult = {
+  marked: number;
+  skipped: number;
+  failed: number;
+  unreadCount: number;
+};
+
 export const inboxApi = {
   mine: () => request<InboxMine>('/notifications/mine'),
   markRead: (source: InboxSource, id: number) =>
     request<{ id: number; readAt?: string }>(`/notifications/${source}/${id}/read`, {
+      method: 'POST',
+    }),
+  markAllRead: () =>
+    request<MarkAllReadResult>('/notifications/read-all', {
       method: 'POST',
     }),
 };

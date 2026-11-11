@@ -1,12 +1,20 @@
 import { portalPathForSession } from '@/shared/auth/portalPaths';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Inbox } from 'lucide-react';
+import { ArrowRight, ClipboardPen, Inbox } from 'lucide-react';
 import { Alert, Badge, Button, EmptyState, Select } from '@/shared/ui';
+import { sessionHasPermission } from '@/shared/auth';
+import { staffPathForSession } from '@/widgets/app-shell/model/adminNavigation';
 import { disciplineApi } from '../api/disciplineApi';
 import { formatShortDate } from '../model/businessDays';
-import { disciplineCasePath, disciplineHistoryPath } from '../model/disciplineRouting';
+import {
+  DISCIPLINE_PERMISSIONS,
+  DISCIPLINE_REGISTER_PATH,
+  disciplineCasePath,
+  disciplineHistoryPath,
+} from '../model/disciplineRouting';
 import { DEADLINE_LABELS, DEADLINE_TONES, STATUS_LABELS, STATUS_TONES } from '../model/caseInbox';
+import { inboxNextStep } from '../model/caseStage';
 import { SEVERITY_LABELS, SEVERITY_ORDER, SEVERITY_TONES } from '../model/severity';
 import type { DeadlineIndicator, DisciplinaryCasePage, DisciplinaryCaseStatus, InfractionSeverity } from '../model/types';
 import styles from './CaseInboxPanel.module.css';
@@ -50,9 +58,25 @@ export const CaseInboxPanel = () => {
   const total = result?.total ?? 0;
   const pageSize = result?.pageSize ?? 20;
   const pages = Math.max(1, Math.ceil(total / pageSize));
+  const canCreate = sessionHasPermission(DISCIPLINE_PERMISSIONS.create);
 
   return (
     <section className={styles.panel}>
+      <div className={styles.toolbar}>
+        <div className={styles.toolbarCopy}>
+          <h2>Bandeja de trabajo</h2>
+          <p>
+            Cada fila dice <strong>qué toca ahora</strong>. Abra el expediente para continuar el paso.
+          </p>
+        </div>
+        {canCreate ? (
+          <Link className={styles.registerLink} to={staffPathForSession(DISCIPLINE_REGISTER_PATH)}>
+            <ClipboardPen aria-hidden="true" size={16} />
+            Registrar amonestación
+          </Link>
+        ) : null}
+      </div>
+
       <div className={styles.filters}>
         <label>
           Estado
@@ -110,58 +134,65 @@ export const CaseInboxPanel = () => {
       {error ? <Alert>{error}</Alert> : null}
       {loading ? <p className={styles.muted}>Cargando expedientes…</p> : null}
       {!loading && result && result.data.length === 0 ? (
-        <EmptyState description="Pruebe con otros filtros o registre una amonestación." icon={Inbox} title="No hay expedientes" />
+        <EmptyState
+          description={
+            canCreate
+              ? 'Pruebe con otros filtros o registre una amonestación para abrir el primer expediente.'
+              : 'Pruebe con otros filtros o espere nuevos casos a su cargo.'
+          }
+          icon={Inbox}
+          title="No hay expedientes"
+        />
       ) : null}
       {!loading && result && result.data.length > 0 ? (
-        <div className={`${styles.tableWrap} table-scroll`}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Expediente</th>
-                <th>Estudiante</th>
-                <th>Falta</th>
-                <th>Estado</th>
-                <th>Gravedad</th>
-                <th>Plazo</th>
-              </tr>
-            </thead>
-            <tbody>
-              {result.data.map((row) => (
-                <tr key={row.id}>
-                  <td>
-                    <strong>
-                      <Link to={portalPathForSession(disciplineCasePath(row.id))}>
-                        {row.caseNumber}
-                      </Link>
-                    </strong>
-                    <span>{row.occurredAt ? formatShortDate(row.occurredAt.slice(0, 10)) : 'Sin fecha'}</span>
-                  </td>
-                  <td>
+        <ul className={styles.caseList}>
+          {result.data.map((row) => {
+            const next = inboxNextStep({ status: row.status, track: row.track });
+            return (
+              <li className={styles.caseCard} key={row.id}>
+                <div className={styles.caseMain}>
+                  <div className={styles.caseId}>
+                    <Link to={portalPathForSession(disciplineCasePath(row.id))}>{row.caseNumber}</Link>
+                    <span>
+                      {row.occurredAt ? formatShortDate(row.occurredAt.slice(0, 10)) : 'Sin fecha'}
+                    </span>
+                  </div>
+                  <div className={styles.caseStudent}>
                     <Link to={portalPathForSession(disciplineHistoryPath(row.studentUserId))}>
                       {row.studentFullName}
                     </Link>
-                    <span>{row.sectionLabel ?? 'Sin sección'}</span>
-                    {row.missingGuideTeacher ? <Badge tone="warning">Sin docente guía</Badge> : null}
-                    {row.isLateReport ? <Badge tone="warning">Reporte extemporáneo</Badge> : null}
-                  </td>
-                  <td>{row.infractionName}</td>
-                  <td>
-                    <Badge tone={STATUS_TONES[row.status]}>{STATUS_LABELS[row.status]}</Badge>
-                  </td>
-                  <td>
-                    <Badge tone={SEVERITY_TONES[row.severity]}>
-                      {row.severityLabel} · {row.deduction}
-                    </Badge>
-                  </td>
-                  <td>
-                    <Badge tone={DEADLINE_TONES[row.deadline]}>{DEADLINE_LABELS[row.deadline]}</Badge>
-                    {row.dueOn ? <span>{formatShortDate(row.dueOn)}</span> : null}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    <span>
+                      {row.sectionLabel ?? 'Sin sección'} · {row.infractionName}
+                    </span>
+                    <div className={styles.caseFlags}>
+                      {row.missingGuideTeacher ? <Badge tone="warning">Sin docente guía</Badge> : null}
+                      {row.isLateReport ? <Badge tone="warning">Reporte extemporáneo</Badge> : null}
+                    </div>
+                  </div>
+                </div>
+                <div className={styles.caseMeta}>
+                  <Badge tone={STATUS_TONES[row.status]}>{STATUS_LABELS[row.status]}</Badge>
+                  <Badge tone={SEVERITY_TONES[row.severity]}>
+                    {row.severityLabel} · {row.deduction}
+                  </Badge>
+                  <Badge tone={DEADLINE_TONES[row.deadline]}>
+                    {DEADLINE_LABELS[row.deadline]}
+                    {row.dueOn ? ` · ${formatShortDate(row.dueOn)}` : ''}
+                  </Badge>
+                </div>
+                <div className={styles.caseNext}>
+                  <p className={styles.caseNextLabel}>Qué toca</p>
+                  <p className={styles.caseNextTitle}>{next.label}</p>
+                  {next.detail ? <p className={styles.caseNextDetail}>{next.detail}</p> : null}
+                  <Link className={styles.caseOpen} to={portalPathForSession(disciplineCasePath(row.id))}>
+                    Abrir
+                    <ArrowRight aria-hidden="true" size={16} />
+                  </Link>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
       ) : null}
 
       {total > pageSize ? (

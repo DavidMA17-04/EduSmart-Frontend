@@ -1,4 +1,5 @@
 import { httpClient } from '@/shared/api/httpClient';
+import type { CommunicationsDashboard } from '@/features/manage-communications/model/types';
 import {
   AudienceEstimate,
   Communication,
@@ -41,6 +42,9 @@ export const communicationApi = {
 
   getAdminList: (filter?: CommunicationFilter): Promise<CommunicationAdminResponse> =>
     request<CommunicationAdminResponse>(`/communications/admin${buildQueryString(filter)}`),
+
+  getDashboard: (): Promise<CommunicationsDashboard> =>
+    request<CommunicationsDashboard>('/communications/dashboard'),
 
   getTargetOptions: (): Promise<TargetOptions> =>
     request<TargetOptions>('/communications/target-options'),

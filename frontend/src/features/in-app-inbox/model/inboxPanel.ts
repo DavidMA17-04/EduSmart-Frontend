@@ -18,6 +18,10 @@ export function canMarkRead(source: InboxSource): boolean {
   return source === 'disciplinary' || source === 'absenteeism';
 }
 
+export function hasMarkableItems(items: readonly InboxItem[]): boolean {
+  return items.some((item) => canMarkRead(item.source));
+}
+
 export function togglePanel(open: boolean): boolean {
   return !open;
 }

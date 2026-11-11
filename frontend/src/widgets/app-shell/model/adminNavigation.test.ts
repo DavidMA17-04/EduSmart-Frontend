@@ -83,32 +83,15 @@ describe('roleAudienceLabel', () => {
 });
 
 describe('groupAdminNavigation', () => {
-  it('agrupa asistencias bajo el enlace principal cuando el lead está visible', () => {
-    const entries = groupAdminNavigation(
-      adminNavigationItems.filter((item) => item.group === 'attendance'),
-    );
-    expect(entries).toHaveLength(1);
-    expect(entries[0]).toMatchObject({
-      type: 'group',
-      id: 'attendance',
-      lead: { label: 'Asistencias', to: '/admin/attendance' },
-    });
-    if (entries[0]?.type !== 'group') return;
-    expect(entries[0].children.map((child) => child.label)).toEqual([
-      'Historial de asistencia',
-      'Alertas de ausentismo',
-      'Indicadores',
-      'Justificaciones',
-    ]);
-  });
-
-  it('deja sueltos los hijos si el lead no está visible', () => {
-    const entries = groupAdminNavigation(
-      adminNavigationItems.filter(
-        (item) => item.group === 'attendance' && !item.groupLead,
-      ),
-    );
+  it('emite módulos staff como links planos (sin hijos en el sidebar)', () => {
+    const staff = adminNavigationItems.filter((item) => item.audience === 'staff');
+    const entries = groupAdminNavigation(staff);
     expect(entries.every((entry) => entry.type === 'link')).toBe(true);
+    expect(staff.some((item) => item.group)).toBe(false);
+    expect(staff.some((item) => item.to === '/admin/communications/manage')).toBe(false);
+    expect(staff.some((item) => item.to === '/admin/roles-permissions')).toBe(false);
+    expect(staff.some((item) => item.to === '/admin/academic')).toBe(true);
+    expect(staff.some((item) => item.to === '/admin/communications')).toBe(true);
   });
 });
 
@@ -200,21 +183,29 @@ describe('adminNavigation — Asistencias', () => {
   });
 });
 
-describe('adminNavigation — Asignaciones académicas', () => {
+describe('adminNavigation — Estructura académica (hub plano)', () => {
   afterEach(() => {
     clearAccessToken();
   });
 
-  it('nav de asignaciones exige mutación, no solo view', () => {
-    const item = adminNavigationItems.find(
-      (nav) => nav.to === '/admin/teaching-assignments',
-    );
-    expect(item?.anyOfPermissions).toEqual(
-      expect.arrayContaining(['academic_structure.edit', 'academic_structure.configure']),
-    );
+  it('sidebar solo expone el hub /admin/academic', () => {
+    const item = adminNavigationItems.find((nav) => nav.to === '/admin/academic');
+    expect(item).toMatchObject({
+      label: 'Estructura académica',
+      audience: 'staff',
+    });
+    expect(
+      adminNavigationItems.some(
+        (nav) =>
+          nav.audience === 'staff' &&
+          (nav.to === '/admin/subjects' ||
+            nav.to === '/admin/teaching-assignments' ||
+            nav.to === '/admin/schedule'),
+      ),
+    ).toBe(false);
   });
 
-  it('oculta sin academic_structure.edit', () => {
+  it('oculta el hub sin permisos de mutación/horario', () => {
     setSessionTokens(
       encodeJwt({
         sub: 2,
@@ -224,12 +215,10 @@ describe('adminNavigation — Asignaciones académicas', () => {
       }),
     );
     const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
-    expect(visible.some((nav) => nav.to === '/admin/teaching-assignments')).toBe(
-      false,
-    );
+    expect(visible.some((nav) => nav.to === '/admin/academic')).toBe(false);
   });
 
-  it('muestra con academic_structure.edit', () => {
+  it('muestra el hub con academic_structure.edit', () => {
     setSessionTokens(
       encodeJwt({
         sub: 1,
@@ -239,33 +228,10 @@ describe('adminNavigation — Asignaciones académicas', () => {
       }),
     );
     const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
-    expect(visible.some((nav) => nav.to === '/admin/teaching-assignments')).toBe(
-      true,
-    );
+    expect(visible.some((nav) => nav.to === '/admin/academic')).toBe(true);
   });
 
-  it('nav Materias apunta a /admin/subjects con mutación de estructura', () => {
-    const item = adminNavigationItems.find((nav) => nav.to === '/admin/subjects');
-    expect(item).toMatchObject({
-      label: 'Materias',
-      to: '/admin/subjects',
-    });
-    expect(item?.anyOfPermissions).toEqual(
-      expect.arrayContaining(['academic_structure.edit']),
-    );
-  });
-
-  it('Configurar ciclo exige academic_structure.configure, no periods.view', () => {
-    const item = adminNavigationItems.find(
-      (nav) => nav.to === '/admin/academic-structure-wizard',
-    );
-    expect(item).toMatchObject({
-      label: 'Configurar ciclo',
-      permission: 'academic_structure.configure',
-    });
-  });
-
-  it('Docente con solo view académico no ve oferta ni Configurar ciclo', () => {
+  it('Docente con view_own de horario ve el hub académico (Mi horario vive dentro)', () => {
     setSessionTokens(
       encodeJwt({
         sub: 9,
@@ -287,16 +253,9 @@ describe('adminNavigation — Asignaciones académicas', () => {
       sessionHasPermission,
       ['Docente'],
     );
-    expect(visible.some((nav) => nav.to === '/teacher/academic-structure-wizard')).toBe(
-      false,
-    );
-    expect(visible.some((nav) => nav.to === '/teacher/academic-periods')).toBe(false);
-    expect(visible.some((nav) => nav.to === '/teacher/specialties')).toBe(false);
-    expect(visible.some((nav) => nav.to === '/teacher/subjects')).toBe(false);
-    expect(visible.some((nav) => nav.to === '/teacher/sections-groups')).toBe(false);
-    expect(visible.some((nav) => nav.to === '/teacher/teaching-assignments')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/teacher/academic')).toBe(true);
     expect(visible.some((nav) => nav.to === '/teacher/attendance')).toBe(true);
-    expect(visible.some((nav) => nav.to === '/teacher/my-schedule')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/teacher/subjects')).toBe(false);
   });
 });
 
@@ -305,26 +264,12 @@ describe('adminNavigation — Horario / Mi horario (D2)', () => {
     clearAccessToken();
   });
 
-  it('nav requiere schedules.view', () => {
-    const item = adminNavigationItems.find((nav) => nav.to === '/admin/schedule');
-    expect(item).toMatchObject({
-      label: 'Horario',
-      permission: 'schedules.view',
-    });
+  it('horario institucional ya no es ítem suelto del sidebar', () => {
+    expect(adminNavigationItems.some((nav) => nav.to === '/admin/schedule')).toBe(false);
+    expect(adminNavigationItems.some((nav) => nav.to === '/admin/my-schedule')).toBe(false);
   });
 
-  it('nav Mi horario requiere view_own y hideWhen view', () => {
-    const item = adminNavigationItems.find(
-      (nav) => nav.to === '/admin/my-schedule',
-    );
-    expect(item).toMatchObject({
-      label: 'Mi horario',
-      permission: 'schedules.view_own',
-      hideWhenPermission: 'schedules.view',
-    });
-  });
-
-  it('6. Docente view_own sin view → ve Mi horario', () => {
+  it('6. Docente view_own sin view → ve hub académico vía schedules.view_own', () => {
     setSessionTokens(
       encodeJwt({
         sub: 520,
@@ -337,10 +282,11 @@ describe('adminNavigation — Horario / Mi horario (D2)', () => {
       adminNavigationItems,
       sessionHasPermission,
     );
-    expect(visible.some((nav) => nav.to === '/teacher/my-schedule')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/teacher/academic')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/teacher/my-schedule')).toBe(false);
   });
 
-  it('7. Docente NO ve Horario admin', () => {
+  it('7. Docente NO ve rutas de horario sueltas en el sidebar', () => {
     setSessionTokens(
       encodeJwt({
         sub: 520,
@@ -353,32 +299,33 @@ describe('adminNavigation — Horario / Mi horario (D2)', () => {
       adminNavigationItems,
       sessionHasPermission,
     );
+    expect(visible.some((nav) => nav.to === '/teacher/schedule')).toBe(false);
+  });
+
+  it('8. Admin ve el hub académico (horario vive dentro)', () => {
+    setSessionTokens(
+      encodeJwt({
+        sub: 1,
+        email: 'admin@ctphojancha.ed.cr',
+        roles: ['Administrador'],
+        permissions: ['schedules.view', 'academic_structure.edit'],
+      }),
+    );
+    const visible = filterAdminNavigation(
+      adminNavigationItems,
+      sessionHasPermission,
+    );
+    expect(visible.some((nav) => nav.to === '/admin/academic')).toBe(true);
     expect(visible.some((nav) => nav.to === '/admin/schedule')).toBe(false);
   });
 
-  it('8. Admin con bypass/view → ve Horario', () => {
+  it('9. Admin no ve Mi horario en el sidebar', () => {
     setSessionTokens(
       encodeJwt({
         sub: 1,
         email: 'admin@ctphojancha.ed.cr',
-        roles: ['ADMIN'],
-        permissions: [],
-      }),
-    );
-    const visible = filterAdminNavigation(
-      adminNavigationItems,
-      sessionHasPermission,
-    );
-    expect(visible.some((nav) => nav.to === '/admin/schedule')).toBe(true);
-  });
-
-  it('9. Admin NO ve Mi horario en navegación', () => {
-    setSessionTokens(
-      encodeJwt({
-        sub: 1,
-        email: 'admin@ctphojancha.ed.cr',
-        roles: ['ADMIN'],
-        permissions: [],
+        roles: ['Administrador'],
+        permissions: ['schedules.view'],
       }),
     );
     const visible = filterAdminNavigation(
@@ -388,7 +335,7 @@ describe('adminNavigation — Horario / Mi horario (D2)', () => {
     expect(visible.some((nav) => nav.to === '/admin/my-schedule')).toBe(false);
   });
 
-  it('10. usuario sin view_own → no ve Mi horario', () => {
+  it('10. usuario sin view_own ni mutación académica → no ve hub académico', () => {
     setSessionTokens(
       encodeJwt({
         sub: 4,
@@ -401,7 +348,7 @@ describe('adminNavigation — Horario / Mi horario (D2)', () => {
       adminNavigationItems,
       sessionHasPermission,
     );
-    expect(visible.some((nav) => nav.to === '/admin/my-schedule')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/teacher/academic')).toBe(false);
   });
 
   it('Estudiante ve Mi horario aunque el JWT no traiga view_own', () => {
@@ -616,7 +563,7 @@ describe('adminNavigation — Horario / Mi horario (D2)', () => {
     expect(visible.some((nav) => nav.to === '/admin/schedule')).toBe(false);
   });
 
-  it('oculta Horario sin schedules.view', () => {
+  it('oculta hub académico sin schedules.view ni mutación', () => {
     setSessionTokens(
       encodeJwt({
         sub: 4,
@@ -626,10 +573,10 @@ describe('adminNavigation — Horario / Mi horario (D2)', () => {
       }),
     );
     const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
-    expect(visible.some((nav) => nav.to === '/admin/schedule')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/teacher/academic')).toBe(false);
   });
 
-  it('muestra Horario con schedules.view', () => {
+  it('muestra hub académico con schedules.view', () => {
     setSessionTokens(
       encodeJwt({
         sub: 1,
@@ -639,7 +586,8 @@ describe('adminNavigation — Horario / Mi horario (D2)', () => {
       }),
     );
     const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
-    expect(visible.some((nav) => nav.to === '/admin/schedule')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/admin/academic')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/admin/schedule')).toBe(false);
   });
 });
 
@@ -648,30 +596,40 @@ describe('adminNavigation — Disciplina', () => {
     clearAccessToken();
   });
 
-  it('Catálogo de faltas requiere disciplinary.view y es solo para personal', () => {
-    const item = adminNavigationItems.find((nav) => nav.to === '/admin/discipline/catalog');
+  it('staff solo ve Disciplina como puerta única al módulo', () => {
+    const item = adminNavigationItems.find((nav) => nav.to === '/admin/discipline');
     expect(item).toMatchObject({
-      label: 'Catálogo de faltas',
-      permission: 'disciplinary.view',
+      label: 'Disciplina',
       audience: 'staff',
+      anyOfPermissions: [
+        'disciplinary.view',
+        'disciplinary.view_own',
+        'disciplinary.create',
+      ],
     });
     expect(item?.groupLead).toBeFalsy();
-  });
-
-  it('el lead del grupo se titula Disciplina y apunta al tablero', () => {
-    const entries = groupAdminNavigation(
-      adminNavigationItems.filter((item) => item.group === 'discipline'),
+    const staffChildren = adminNavigationItems.filter(
+      (nav) =>
+        nav.audience === 'staff' &&
+        nav.to.startsWith('/admin/discipline/') &&
+        nav.to !== '/admin/discipline',
     );
-    expect(entries[0]).toMatchObject({
-      type: 'group',
-      lead: { label: 'Disciplina', to: '/admin/discipline/dashboard', groupLead: true },
-    });
-    if (entries[0]?.type === 'group') {
-      expect(entries[0].children.some((item) => item.label === 'Catálogo de faltas')).toBe(true);
-    }
+    expect(staffChildren).toHaveLength(0);
   });
 
-  it('oculta el catálogo sin disciplinary.view', () => {
+  it('sin hijos staff, Disciplina se emite como link plano', () => {
+    const entries = groupAdminNavigation(
+      adminNavigationItems.filter((item) => item.audience === 'staff' && item.to.includes('/discipline')),
+    );
+    expect(entries).toEqual([
+      expect.objectContaining({
+        type: 'link',
+        item: expect.objectContaining({ label: 'Disciplina', to: '/admin/discipline' }),
+      }),
+    ]);
+  });
+
+  it('oculta Disciplina sin permisos disciplinarios', () => {
     setSessionTokens(
       encodeJwt({
         sub: 4,
@@ -681,10 +639,10 @@ describe('adminNavigation — Disciplina', () => {
       }),
     );
     const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/catalog')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/teacher/discipline')).toBe(false);
   });
 
-  it('muestra el registro a un docente con disciplinary.create y oculta el catálogo', () => {
+  it('muestra Disciplina a un docente solo con create', () => {
     setSessionTokens(
       encodeJwt({
         sub: 4,
@@ -694,12 +652,11 @@ describe('adminNavigation — Disciplina', () => {
       }),
     );
     const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
-    expect(visible.some((nav) => nav.to === '/teacher/discipline/register')).toBe(true);
-    expect(visible.some((nav) => nav.to === '/teacher/discipline/cases')).toBe(false);
-    expect(visible.some((nav) => nav.to === '/teacher/discipline/catalog')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/teacher/discipline')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/teacher/discipline/register')).toBe(false);
   });
 
-  it('muestra la bandeja a un docente con disciplinary.view_own y oculta el catálogo', () => {
+  it('muestra Disciplina a un docente con view_own y no expone hijas en el menú', () => {
     setSessionTokens(
       encodeJwt({
         sub: 4,
@@ -709,48 +666,12 @@ describe('adminNavigation — Disciplina', () => {
       }),
     );
     const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
-    expect(visible.some((nav) => nav.to === '/teacher/discipline/cases')).toBe(true);
-    expect(visible.some((nav) => nav.to === '/teacher/discipline/catalog')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/teacher/discipline')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/teacher/discipline/cases')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/teacher/discipline/settings')).toBe(false);
   });
 
-  it('muestra el calendario a quien configura y lo oculta al docente', () => {
-    setSessionTokens(
-      encodeJwt({
-        sub: 1,
-        email: 'admin@ctphojancha.ed.cr',
-        roles: ['Administrador'],
-        permissions: ['disciplinary.configure'],
-      }),
-    );
-    const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/calendar')).toBe(true);
-
-    setSessionTokens(
-      encodeJwt({
-        sub: 4,
-        email: 'docente@ctphojancha.ed.cr',
-        roles: ['Docente'],
-        permissions: ['disciplinary.view_own', 'disciplinary.create'],
-      }),
-    );
-    const teacher = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
-    expect(teacher.some((nav) => nav.to === '/admin/discipline/calendar')).toBe(false);
-  });
-
-  it('muestra el catálogo a un docente con disciplinary.view', () => {
-    setSessionTokens(
-      encodeJwt({
-        sub: 4,
-        email: 'docente@ctphojancha.ed.cr',
-        roles: ['Docente'],
-        permissions: ['disciplinary.view'],
-      }),
-    );
-    const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
-    expect(visible.some((nav) => nav.to === '/teacher/discipline/catalog')).toBe(true);
-  });
-
-  it('muestra las notificaciones al encargado y oculta el catálogo y la bandeja de personal', () => {
+  it('muestra las notificaciones al encargado y oculta el menú de personal', () => {
     setSessionTokens(
       encodeJwt({
         sub: 9,
@@ -760,16 +681,11 @@ describe('adminNavigation — Disciplina', () => {
       }),
     );
     const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
-    expect(visible.some((nav) => nav.label === 'Inicio' && nav.to === '/guardian')).toBe(
-      true,
-    );
-    expect(
-      visible.some((nav) => nav.to === '/guardian/discipline/notifications'),
-    ).toBe(true);
+    expect(visible.some((nav) => nav.label === 'Inicio' && nav.to === '/guardian')).toBe(true);
+    expect(visible.some((nav) => nav.to === '/guardian/discipline/notifications')).toBe(true);
     expect(visible.some((nav) => nav.label === 'Historial' && nav.to === '/guardian/discipline')).toBe(true);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/dashboard')).toBe(false);
+    expect(visible.some((nav) => nav.to === '/admin/discipline')).toBe(false);
     expect(visible.some((nav) => nav.to === '/admin/discipline/cases')).toBe(false);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/catalog')).toBe(false);
 
     setSessionTokens(
       encodeJwt({
@@ -781,13 +697,8 @@ describe('adminNavigation — Disciplina', () => {
     );
     const teacher = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
     expect(teacher.some((nav) => nav.to === '/guardian')).toBe(false);
-    expect(teacher.some((nav) => nav.to === '/teacher/discipline/notifications')).toBe(
-      false,
-    );
-    expect(teacher.some((nav) => nav.label === 'Historial de conducta')).toBe(true);
-    expect(teacher.some((nav) => nav.to === '/teacher/discipline/dashboard')).toBe(
-      true,
-    );
+    expect(teacher.some((nav) => nav.to === '/teacher/discipline/notifications')).toBe(false);
+    expect(teacher.some((nav) => nav.to === '/teacher/discipline')).toBe(true);
     expect(teacher.some((nav) => nav.label === 'Historial')).toBe(false);
   });
 
@@ -804,13 +715,11 @@ describe('adminNavigation — Disciplina', () => {
     expect(visible.some((nav) => nav.label === 'Mi conducta')).toBe(true);
     expect(visible.some((nav) => nav.to === '/student/discipline/appeals')).toBe(true);
     expect(visible.some((nav) => nav.to === '/student/discipline/cases')).toBe(false);
-    expect(visible.some((nav) => nav.to === '/student/discipline/notifications')).toBe(false);
     expect(studentHomePath(sessionHasPermission)).toBe('/student');
-    expect(studentHomePath(sessionHasPermission)).not.toBe('/student/discipline/cases');
     expect(visible.some((nav) => nav.to === '/student/discipline')).toBe(true);
   });
 
-  it('Orientador y Director ven la bandeja de personal y no el registro', () => {
+  it('Orientador y Director ven Disciplina y no hijas en el menú', () => {
     const prefixByRole: Record<string, string> = {
       Orientador: '/counselor',
       Director: '/director',
@@ -826,74 +735,14 @@ describe('adminNavigation — Disciplina', () => {
       );
       const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
       const prefix = prefixByRole[role];
-      expect(visible.some((nav) => nav.label === 'Dashboard' && nav.to === prefix)).toBe(
-        true,
-      );
-      expect(visible.some((nav) => nav.to === `${prefix}/discipline/cases`)).toBe(
-        true,
-      );
-      expect(
-        visible.some((nav) => nav.to === `${prefix}/discipline/dashboard`),
-      ).toBe(true);
-      expect(
-        visible.some((nav) => nav.to === `${prefix}/discipline/register`),
-      ).toBe(false);
-      expect(
-        visible.some((nav) => nav.to === `${prefix}/discipline/notifications`),
-      ).toBe(false);
+      expect(visible.some((nav) => nav.label === 'Dashboard' && nav.to === prefix)).toBe(true);
+      expect(visible.some((nav) => nav.to === `${prefix}/discipline`)).toBe(true);
+      expect(visible.some((nav) => nav.to === `${prefix}/discipline/cases`)).toBe(false);
+      expect(visible.some((nav) => nav.to === `${prefix}/discipline/register`)).toBe(false);
     }
   });
 
-  it('Dirección ve la revisión de recursos y no el registro de amonestación', () => {
-    setSessionTokens(
-      encodeJwt({
-        sub: 8,
-        email: 'director@ctphojancha.ed.cr',
-        roles: ['Director'],
-        permissions: ['disciplinary.view', 'disciplinary.appeal', 'disciplinary.export'],
-      }),
-    );
-    const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
-    expect(visible.some((nav) => nav.to === '/director/discipline/appeals/review')).toBe(true);
-    expect(visible.some((nav) => nav.to === '/director/discipline/appeals/reports')).toBe(true);
-    expect(visible.some((nav) => nav.to === '/director/discipline/register')).toBe(false);
-    expect(visible.filter((nav) => nav.to === '/director/discipline/appeals/review').every((nav) => nav.group === 'discipline')).toBe(true);
-  });
-
-  it('Administrador con view y export ve el Centro, reportes y no un grupo Apelaciones', () => {
-    setSessionTokens(
-      encodeJwt({
-        sub: 1,
-        email: 'admin@ctphojancha.ed.cr',
-        roles: ['Administrador'],
-        permissions: ['disciplinary.view', 'disciplinary.export', 'disciplinary.create', 'disciplinary.resolve', 'disciplinary.appeal'],
-      }),
-    );
-    const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/appeals')).toBe(true);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/appeals/reports')).toBe(true);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/appeals/review')).toBe(true);
-    expect(visible.some((nav) => nav.to === '/admin/discipline/register')).toBe(true);
-    expect(visible.filter((nav) => nav.to.startsWith('/admin/discipline/appeals')).every((nav) => nav.group === 'discipline')).toBe(true);
-  });
-
-  it('el guía con resolve ve la revisión y no el dashboard institucional de recursos', () => {
-    setSessionTokens(
-      encodeJwt({
-        sub: 4,
-        email: 'docente@ctphojancha.ed.cr',
-        roles: ['Docente'],
-        permissions: ['disciplinary.view_own', 'disciplinary.create', 'disciplinary.resolve'],
-      }),
-    );
-    const visible = filterAdminNavigation(adminNavigationItems, sessionHasPermission);
-    expect(visible.some((nav) => nav.to === '/teacher/discipline/appeals')).toBe(true);
-    expect(visible.some((nav) => nav.to === '/teacher/discipline/appeals/review')).toBe(true);
-    expect(visible.some((nav) => nav.to === '/teacher/discipline/appeals/reports')).toBe(false);
-    expect(visible.some((nav) => nav.to === '/teacher/discipline/register')).toBe(true);
-  });
-
-  it('el encargado no ve la bandeja de revisión', () => {
+  it('el encargado no ve revisión ni reportes en el menú', () => {
     setSessionTokens(
       encodeJwt({
         sub: 9,

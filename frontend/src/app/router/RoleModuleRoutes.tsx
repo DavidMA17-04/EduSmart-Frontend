@@ -1,6 +1,7 @@
 import {
   CommunicationsAdminPage,
   CommunicationsFeedPage,
+  CommunicationsHomePage,
   DisciplineAppealNewPage,
   DisciplineAppealReviewPage,
   DisciplineAppealTrackingPage,
@@ -16,9 +17,24 @@ import { RequirePermission } from './RequirePermission';
 /** Route elements, composed inside each house; the API also enforces actor scope. */
 export const roleModuleRoutes = (staff = false) => (
   <>
-    <Route element={<RequirePermission permission="communications.view" />}>
-      <Route element={<CommunicationsFeedPage />} path="communications" />
-    </Route>
+    {staff ? (
+      <>
+        <Route
+          element={
+            <RequirePermission anyOf={['communications.view', 'communications.create']} />
+          }
+        >
+          <Route element={<CommunicationsHomePage />} path="communications" />
+        </Route>
+        <Route element={<RequirePermission permission="communications.view" />}>
+          <Route element={<CommunicationsFeedPage />} path="communications/feed" />
+        </Route>
+      </>
+    ) : (
+      <Route element={<RequirePermission permission="communications.view" />}>
+        <Route element={<CommunicationsFeedPage />} path="communications" />
+      </Route>
+    )}
     <Route element={<RequirePermission anyOf={['disciplinary.view', 'disciplinary.view_own']} />}>
       <Route element={<DisciplineAppealsPage />} path="discipline/appeals" />
       <Route element={<DisciplineAppealNewPage />} path="discipline/appeals/new" />

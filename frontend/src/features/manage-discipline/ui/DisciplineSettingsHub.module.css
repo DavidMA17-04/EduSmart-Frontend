@@ -1,0 +1,118 @@
+.layout {
+  display: grid;
+  gap: 20px;
+}
+
+.intro {
+  padding: 22px 24px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--brand-border, #c1c5c8) 55%, transparent);
+  background:
+    radial-gradient(
+      ellipse 70% 60% at 0% 0%,
+      color-mix(in srgb, var(--brand-primary, #002e7a) 8%, transparent),
+      transparent 55%
+    ),
+    var(--admin-surface, #fff);
+}
+
+.intro h2 {
+  margin: 0 0 8px;
+  font-family: var(--font-heading, var(--brand-font-serif));
+  font-size: 1.2rem;
+  color: var(--brand-navy, var(--admin-text));
+}
+
+.intro p {
+  margin: 0;
+  color: var(--admin-muted, var(--brand-muted));
+  line-height: 1.5;
+  max-width: 56ch;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.card {
+  appearance: none;
+  text-align: left;
+  cursor: pointer;
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  min-height: 140px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--brand-border, #c1c5c8) 60%, transparent);
+  background: var(--admin-surface, #fff);
+  box-shadow: 0 8px 22px rgb(2 26 83 / 5%);
+  color: inherit;
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    border-color 0.22s ease;
+  animation: cardIn 0.4s ease both;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--brand-primary, #002e7a) 35%, transparent);
+  box-shadow: 0 14px 30px rgb(2 26 83 / 10%);
+}
+
+.card:nth-child(1) { animation-delay: 0.04s; }
+.card:nth-child(2) { animation-delay: 0.1s; }
+.card:nth-child(3) { animation-delay: 0.16s; }
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .card:hover {
+    animation: none;
+    transition: none;
+    transform: none;
+  }
+}
+
+.cardIcon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--brand-primary, #002e7a) 8%, transparent);
+  color: var(--brand-primary, #002e7a);
+}
+
+.card h3 {
+  margin: 0;
+  font-size: 1.02rem;
+  color: var(--brand-navy, var(--admin-text));
+}
+
+.card p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--admin-muted, var(--brand-muted));
+}
+
+.empty {
+  margin: 0;
+  padding: 18px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--brand-primary, #002e7a) 5%, transparent);
+  color: var(--admin-muted, var(--brand-muted));
+}

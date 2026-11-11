@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import type { AdministrativeUser, UserAccountStatus } from '@/entities/user';
 import type { Role } from '@/entities/role';
 import { userApi, type UsersPageResult } from '@/features/manage-user';
@@ -28,12 +29,22 @@ function emptyStatusCounts(total = 0): Record<StatusFilter, number> {
   return { ALL: total, ACTIVE: 0, INACTIVE: 0, BLOCKED: 0, PENDING: 0 };
 }
 
+function statusFromQuery(value: string | null): StatusFilter {
+  if (value === 'ACTIVE' || value === 'INACTIVE' || value === 'BLOCKED' || value === 'PENDING') {
+    return value;
+  }
+  return 'ALL';
+}
+
 export function useUsersDirectory() {
+  const [searchParams] = useSearchParams();
   const [roles, setRoles] = useState<Role[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(() =>
+    statusFromQuery(searchParams.get('status')),
+  );
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('ALL');
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');

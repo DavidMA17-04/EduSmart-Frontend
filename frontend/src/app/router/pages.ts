@@ -42,6 +42,8 @@ export const AttendanceExceptionsPage = lazyPage(() => import('@/pages/attendanc
 export const AttendanceReportsPage = lazyPage(() => import('@/pages/attendance/ui/AttendanceReportsPage'), 'AttendanceReportsPage');
 export const AbsenteeismAlertsPage = lazyPage(() => import('@/pages/attendance/ui/AbsenteeismAlertsPage'), 'AbsenteeismAlertsPage');
 export const DisciplineDashboardPage = lazyPage(() => import('@/pages/discipline/ui/DisciplineDashboardPage'), 'DisciplineDashboardPage');
+export const DisciplineHomePage = lazyPage(() => import('@/pages/discipline/ui/DisciplineHomePage'), 'DisciplineHomePage');
+export const DisciplineSettingsPage = lazyPage(() => import('@/pages/discipline/ui/DisciplineSettingsPage'), 'DisciplineSettingsPage');
 export const DisciplineHistoryPage = lazyPage(() => import('@/pages/discipline/ui/DisciplineHistoryPage'), 'DisciplineHistoryPage');
 export const DisciplineNotificationsPage = lazyPage(() => import('@/pages/discipline/ui/DisciplineNotificationsPage'), 'DisciplineNotificationsPage');
 export const DisciplineCasesPage = lazyPage(() => import('@/pages/discipline/ui/DisciplineCasesPage'), 'DisciplineCasesPage');
@@ -56,8 +58,11 @@ export const DisciplineAppealTrackingPage = lazyPage(() => import('@/pages/disci
 export const DisciplineAppealsReviewPage = lazyPage(() => import('@/pages/discipline/ui/DisciplineAppealsReviewPage'), 'DisciplineAppealsReviewPage');
 export const DisciplineAppealReviewPage = lazyPage(() => import('@/pages/discipline/ui/DisciplineAppealReviewPage'), 'DisciplineAppealReviewPage');
 export const DisciplineAppealsReportsPage = lazyPage(() => import('@/pages/discipline/ui/DisciplineAppealsReportsPage'), 'DisciplineAppealsReportsPage');
+export const CommunicationsHomePage = lazyPage(() => import('@/pages/communications/CommunicationsHomePage'), 'CommunicationsHomePage');
 export const CommunicationsFeedPage = lazyPage(() => import('@/pages/communications/CommunicationsFeedPage'), 'CommunicationsFeedPage');
 export const CommunicationsAdminPage = lazyPage(() => import('@/pages/communications/CommunicationsAdminPage'), 'CommunicationsAdminPage');
+export const AcademicHomePage = lazyPage(() => import('@/pages/academic/ui/AcademicHomePage'), 'AcademicHomePage');
+export const UsersHomePage = lazyPage(() => import('@/pages/users/ui/UsersHomePage'), 'UsersHomePage');
 export const SecurityDashboardPage = lazyPage(() => import('@/pages/security/SecurityDashboardPage'), 'SecurityDashboardPage');
 export const SecurityCheckOutPage = lazyPage(() => import('@/pages/security/SecurityCheckOutPage'), 'SecurityCheckOutPage');
 export const SecurityPermitsPage = lazyPage(() => import('@/pages/security/SecurityPermitsPage'), 'SecurityPermitsPage');

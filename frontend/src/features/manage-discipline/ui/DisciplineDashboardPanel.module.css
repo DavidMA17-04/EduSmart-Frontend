@@ -10,10 +10,16 @@
   gap: 1rem;
   align-items: end;
   flex-wrap: wrap;
-  padding: 0.9rem;
-  border: 1px solid #e7ebf0;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--brand-border, #c1c5c8) 55%, transparent);
   border-radius: 18px;
-  background: #fff;
+  background:
+    radial-gradient(
+      ellipse 70% 80% at 0% 0%,
+      color-mix(in srgb, var(--brand-primary, #002e7a) 8%, transparent),
+      transparent 55%
+    ),
+    var(--admin-surface, #fff);
   box-shadow: 0 10px 30px rgba(2, 26, 83, 0.05);
 }
 
@@ -40,6 +46,15 @@
   gap: 0.5rem;
 }
 
+.needsActionLabel {
+  margin: 0 0 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #667085;
+}
+
 .muted {
   margin: 0;
   color: var(--brand-muted);
@@ -56,12 +71,37 @@
   align-items: center;
   gap: 0.85rem;
   padding: 0.85rem 1rem;
-  border-radius: 10px;
+  border-radius: 12px;
   color: var(--brand-navy);
   background: var(--brand-surface);
   border: 1px solid var(--brand-border);
   border-top: 3px solid var(--brand-primary);
   box-shadow: 0 1px 4px rgba(2, 26, 83, 0.05);
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease;
+  animation: kpiIn 0.45s ease both;
+}
+
+.kpi:nth-child(1) { animation-delay: 0.05s; }
+.kpi:nth-child(2) { animation-delay: 0.1s; }
+.kpi:nth-child(3) { animation-delay: 0.15s; }
+.kpi:nth-child(4) { animation-delay: 0.2s; }
+
+.kpi:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(2, 26, 83, 0.1);
+}
+
+@keyframes kpiIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .kpiTotal { border-top-color: var(--brand-primary); }
@@ -131,22 +171,36 @@
 }
 
 .card {
-  border: 1px solid #e7ebf0;
+  border: 1px solid color-mix(in srgb, var(--brand-border, #c1c5c8) 55%, transparent);
   border-radius: 18px;
   padding: 1rem 1.05rem 1.1rem;
   background: #fff;
   min-width: 0;
   box-shadow: 0 10px 30px rgba(2, 26, 83, 0.05);
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px rgba(2, 26, 83, 0.09);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kpi,
+  .kpi:hover,
+  .card,
+  .card:hover {
+    animation: none;
+    transition: none;
+    transform: none;
+  }
 }
 
 .card h3 {
   margin: 0 0 0.85rem;
   font-size: 0.95rem;
-}
-
-.chart {
-  width: 100%;
-  min-height: 160px;
 }
 
 .list {

@@ -1,10 +1,13 @@
 import { Gavel, Scale, ShieldCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { portalPathForSession } from '@/shared/auth/portalPaths';
 import {
   DUE_PROCESS_GUARANTEES,
   DUE_PROCESS_STEPS,
   PROCESS_REMEDIES,
   totalDueProcessBusinessDays,
 } from '../model/dueProcess';
+import { DISCIPLINE_CASES_PATH } from '../model/disciplineRouting';
 import { DeadlineCalculator } from './DeadlineCalculator';
 import { FormalCommunicationPreview } from './FormalCommunicationPreview';
 import styles from './DueProcessFlowPanel.module.css';
@@ -58,7 +61,16 @@ export const DueProcessFlowPanel = () => (
 
     <DeadlineCalculator />
 
-    <FormalCommunicationPreview />
+    <FormalCommunicationPreview
+      mode="demo"
+      intro={
+        <p className={styles.demoNote}>
+          Simulador para practicar el documento del paso 3. La herramienta operativa —con datos del
+          estudiante, la falta y el envío al encargado— está en el expediente, pestaña Trámite.{' '}
+          <Link to={portalPathForSession(DISCIPLINE_CASES_PATH)}>Ir a la bandeja de casos</Link>
+        </p>
+      }
+    />
 
     <div className={styles.columns}>
       <section aria-labelledby="remedies-title" className={styles.card}>

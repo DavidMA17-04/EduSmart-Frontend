@@ -37,3 +37,7 @@ export { PageLoading, PageSuspense } from './PageSuspense';
 export { ConnectionStatus } from './ConnectionStatus';
 export { ErrorScreen, ErrorScreenAction } from './ErrorScreen';
 export type { ErrorScreenProps, ErrorScreenVariant } from './ErrorScreen';
+export { DonutCard } from './DonutCard';
+export type { DonutSlice } from './DonutCard';
+export { ModuleBarChart } from './ModuleBarChart';
+export type { ModuleBarPoint } from './ModuleBarChart';

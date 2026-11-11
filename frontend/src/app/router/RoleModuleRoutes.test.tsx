@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+// @vitest-environment happy-dom
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { createMemoryRouter, createRoutesFromElements, Outlet, Route, RouterProvider } from 'react-router-dom';
@@ -24,6 +24,7 @@ vi.mock('./pages', () => ({
   DisciplineAppealsReviewPage: () => <div>review-page</div>,
   DisciplineAppealsReportsPage: () => <div>report-page</div>,
   DisciplineCasePage: () => <div>case-page</div>,
+  CommunicationsHomePage: () => <div>comms-home-page</div>,
   CommunicationsFeedPage: () => <div>feed-page</div>,
   CommunicationsAdminPage: () => <div>manager-page</div>,
 }));
@@ -60,9 +61,16 @@ describe('rutas de módulos integradas', () => {
     expect(host.textContent).toContain('center-page');
     expect(router.state.location.pathname).toBe(`/${house}/discipline/appeals`);
   });
-  it.each(houses)('%s renderiza el feed solo con permiso', async (role, house) => {
+  it.each(houses)('%s renderiza home o feed según audiencia', async (role, house, staff) => {
     session.roles = [role]; session.permissions = ['communications.view'];
     await render(`/${house}/communications`);
+    expect(host.textContent).toContain(staff ? 'comms-home-page' : 'feed-page');
+  });
+
+  it('staff abre el muro en /communications/feed', async () => {
+    session.roles = ['Docente'];
+    session.permissions = ['communications.view'];
+    await render('/teacher/communications/feed');
     expect(host.textContent).toContain('feed-page');
   });
   it('redirige legacy a un recurso de representado conservando id, consulta y fragmento', async () => {
@@ -103,10 +111,11 @@ describe('rutas de módulos integradas', () => {
     session.roles = ['Orientador']; session.permissions = ['disciplinary.view'];
     const router = await render('/counselor/communications');
     expect(host.textContent).toContain('not-found-page');
+    expect(host.textContent).not.toContain('comms-home-page');
     expect(host.textContent).not.toContain('feed-page');
     expect(router.state.location.pathname).toBe('/counselor/communications');
   });
-  it('un rol desconocido no renderiza el feed', async () => {
+  it('un rol desconocido no renderiza el hub de comunicados', async () => {
     session.roles = ['Desconocido']; session.permissions = ['communications.view'];
     const router = await render('/admin/communications');
     expect(router.state.location.pathname).toBe('/login');

@@ -1,5 +1,5 @@
 import { FileSignature, Printer, RotateCcw } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { Button, Input, Select, Textarea } from '@/shared/ui';
 import {
   buildFormalCommunicationHtml,
@@ -25,26 +25,92 @@ const TEXT_FIELDS: Array<{ key: TextField; label: string; type?: string }> = [
   { key: 'place', label: 'Lugar' },
 ];
 
-export const FormalCommunicationPreview = () => {
-  const [fields, setFields] = useState<FormalCommunicationFields>(EMPTY_FORMAL_COMMUNICATION);
+/** Case-sourced fields stay locked; teachers stay editable when blank or always tweakable. */
+const CASE_LOCKED: ReadonlySet<keyof FormalCommunicationFields> = new Set([
+  'studentName',
+  'studentId',
+  'section',
+  'infraction',
+  'severity',
+  'incidentDate',
+  'place',
+  'facts',
+]);
+
+export type FormalCommunicationPreviewProps = {
+  mode?: 'demo' | 'case';
+  initialFields?: FormalCommunicationFields;
+  caseNumber?: string;
+  /** Controlled proposed action (case mode / send form). */
+  proposedAction?: string;
+  onProposedActionChange?: (value: string) => void;
+  /** Extra controls under print (send / entrega física). */
+  actions?: ReactNode;
+  intro?: ReactNode;
+};
+
+export const FormalCommunicationPreview = ({
+  mode = 'demo',
+  initialFields,
+  caseNumber,
+  proposedAction,
+  onProposedActionChange,
+  actions,
+  intro,
+}: FormalCommunicationPreviewProps) => {
+  const [fields, setFields] = useState<FormalCommunicationFields>(
+    () => initialFields ?? EMPTY_FORMAL_COMMUNICATION,
+  );
+
+  useEffect(() => {
+    if (initialFields) setFields(initialFields);
+  }, [initialFields]);
+
+  const actionText = proposedAction ?? fields.proposedAction;
+  const effectiveFields: FormalCommunicationFields = {
+    ...fields,
+    proposedAction: actionText,
+  };
+
   const html = useMemo(
     () =>
-      buildFormalCommunicationHtml(fields, {
-        logoUrl: `${window.location.origin}${LOGO_PATH}`,
-      }),
-    [fields],
+      buildFormalCommunicationHtml(
+        { ...fields, proposedAction: actionText },
+        {
+          logoUrl: `${window.location.origin}${LOGO_PATH}`,
+          caseNumber,
+        },
+      ),
+    [actionText, caseNumber, fields],
   );
+
   const set = <K extends keyof FormalCommunicationFields>(
     key: K,
     next: FormalCommunicationFields[K],
-  ) => setFields((current) => ({ ...current, [key]: next }));
+  ) => {
+    if (key === 'proposedAction' && onProposedActionChange) {
+      onProposedActionChange(String(next));
+      return;
+    }
+    setFields((current) => ({ ...current, [key]: next }));
+  };
+
+  const locked = (key: keyof FormalCommunicationFields) =>
+    mode === 'case' && CASE_LOCKED.has(key);
 
   return (
     <section aria-labelledby="formal-comm-title" className={styles.card}>
       <h2 className={styles.cardTitle} id="formal-comm-title">
         <FileSignature aria-hidden="true" size={18} /> Comunicación formal al encargado · paso 3
-        <span className={styles.total}>Documento para el expediente físico</span>
+        <span className={styles.total}>
+          {mode === 'case'
+            ? caseNumber
+              ? `Expediente ${caseNumber}`
+              : 'Documento del expediente'
+            : 'Simulador pedagógico'}
+        </span>
       </h2>
+      {intro}
       <div className={styles.letterLayout}>
         <div className={styles.letterFields}>
           {TEXT_FIELDS.map((field) => (
@@ -53,6 +119,7 @@ export const FormalCommunicationPreview = () => {
               <Input
                 id={`fc-${field.key}`}
                 onChange={(event) => set(field.key, event.target.value)}
+                readOnly={locked(field.key)}
                 type={field.type ?? 'text'}
                 value={fields[field.key]}
               />
@@ -61,6 +128,7 @@ export const FormalCommunicationPreview = () => {
           <label className={styles.calculatorField} htmlFor="fc-severity">
             <span>Gravedad</span>
             <Select
+              disabled={locked('severity')}
               id="fc-severity"
               onChange={(event) => set('severity', event.target.value as InfractionSeverity)}
               value={fields.severity}
@@ -77,6 +145,7 @@ export const FormalCommunicationPreview = () => {
             <Textarea
               id="fc-facts"
               onChange={(event) => set('facts', event.target.value)}
+              readOnly={locked('facts')}
               rows={3}
               value={fields.facts}
             />
@@ -87,7 +156,7 @@ export const FormalCommunicationPreview = () => {
               id="fc-action"
               onChange={(event) => set('proposedAction', event.target.value)}
               rows={2}
-              value={fields.proposedAction}
+              value={effectiveFields.proposedAction}
             />
           </label>
           <div className={styles.letterActions}>
@@ -95,14 +164,16 @@ export const FormalCommunicationPreview = () => {
               <Printer aria-hidden="true" size={16} />
               Imprimir documento
             </Button>
-            <Button
-              onClick={() => setFields(EMPTY_FORMAL_COMMUNICATION)}
-              type="button"
-              variant="secondary"
-            >
-              <RotateCcw aria-hidden="true" size={16} />
-              Limpiar
-            </Button>
+            {mode === 'demo' ? (
+              <Button
+                onClick={() => setFields(EMPTY_FORMAL_COMMUNICATION)}
+                type="button"
+                variant="secondary"
+              >
+                <RotateCcw aria-hidden="true" size={16} />
+                Limpiar
+              </Button>
+            ) : null}
           </div>
         </div>
         <iframe
@@ -112,6 +183,7 @@ export const FormalCommunicationPreview = () => {
           title="Vista previa de la comunicación formal"
         />
       </div>
+      {actions}
     </section>
   );
 };

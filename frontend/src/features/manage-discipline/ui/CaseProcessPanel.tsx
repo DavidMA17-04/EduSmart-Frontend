@@ -1,7 +1,8 @@
 import { portalPathForSession } from '@/shared/auth/portalPaths';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { sessionHasPermission } from '@/shared/auth';
+import { ChevronDown, ShieldAlert } from 'lucide-react';
+import { getStoredSessionUser, sessionHasPermission } from '@/shared/auth';
 import { Badge, Button, Input, Select, Textarea } from '@/shared/ui';
 import { disciplineApi, DisciplineApiError } from '../api/disciplineApi';
 import { appealHeading } from '../model/caseActions';
@@ -14,10 +15,11 @@ import {
   validatePrecautionarySpan,
 } from '../model/caseStaffActions';
 import { DISCIPLINE_PERMISSIONS, disciplineAppealTrackingPath } from '../model/disciplineRouting';
-import { MANDATORY_CLAUSES } from '../model/formalCommunication';
+import { fieldsFromCaseDetail, MANDATORY_CLAUSES } from '../model/formalCommunication';
 import { notificationKindLabel } from '../model/guardianInbox';
 import type { CaseCommunication, DisciplinaryCaseDetail } from '../model/types';
 import { AppealResolutionForm } from './AppealResolutionForm';
+import { FormalCommunicationPreview } from './FormalCommunicationPreview';
 import styles from './CaseDetailPanel.module.css';
 
 const APPEAL_OUTCOME_LABELS: Record<string, string> = {
@@ -37,12 +39,20 @@ export function CaseProcessPanel({
   canCommunicate,
   onChanged,
   onError,
+  /** En cockpit: el cargo va arriba; el resto se pliega. */
+  layout = 'stacked',
+  showCommunicate = true,
+  hideDefense = false,
 }: {
   detail: DisciplinaryCaseDetail;
   isConductor: boolean;
   canCommunicate: boolean;
   onChanged: () => void;
   onError: (message: string | null) => void;
+  layout?: 'stacked' | 'cockpit';
+  showCommunicate?: boolean;
+  /** El cockpit del paso 4 ya muestra el descargo. */
+  hideDefense?: boolean;
 }) {
   const communications = detail.communications ?? [];
   const defenses = detail.defenses ?? [];
@@ -67,19 +77,26 @@ export function CaseProcessPanel({
     severity: detail.severity,
   });
 
-  return (
-    <>
-      {canCommunicate ? (
-        <FormalChargeForm
-          detail={detail}
-          onChanged={onChanged}
-          onError={onError}
-        />
-      ) : null}
+  const [extrasOpen, setExtrasOpen] = useState(false);
+  const [showPrecautionaryForm, setShowPrecautionaryForm] = useState(false);
 
-      {communications.length > 0 ? (
+  const charge =
+    showCommunicate && canCommunicate ? (
+      <FormalChargeForm detail={detail} onChanged={onChanged} onError={onError} />
+    ) : null;
+
+  const hasComms = communications.length > 0;
+  const hasReading = hasComms || alerts.length > 0 || receipts.length > 0;
+  const hasDefense = !hideDefense && (defenses.length > 0 || writtenDefense);
+  const hasAppeals = appeals.length > 0;
+  const hasMeasures = measures.length > 0;
+  const hasExtras = hasComms || hasReading || hasDefense || hasAppeals || hasMeasures || precautionary;
+
+  const processBlocks = (
+    <>
+      {hasComms ? (
         <section className={styles.card}>
-          <h3>Comunicaciones</h3>
+          <h3>Comunicaciones ya enviadas</h3>
           {communications.map((item) => (
             <CommunicationRow
               key={item.id}
@@ -94,22 +111,24 @@ export function CaseProcessPanel({
         </section>
       ) : null}
 
-      {communications.length > 0 || alerts.length > 0 || receipts.length > 0 ? (
-      <section className={styles.card}>
-        <h3>Lectura del encargado</h3>
-        {alerts.map((item) => (
-          <p key={item.notificationId}>{item.message}</p>
-        ))}
-        {receipts.length === 0 ? <p className={styles.muted}>Ningún encargado ha confirmado la lectura.</p> : null}
-        <ul className={styles.list}>
-          {receipts.map((item) => (
-            <li key={item.id}>{item.label}</li>
+      {hasReading ? (
+        <section className={styles.card}>
+          <h3>Lectura del encargado</h3>
+          {alerts.map((item) => (
+            <p key={item.notificationId}>{item.message}</p>
           ))}
-        </ul>
-      </section>
+          {receipts.length === 0 ? (
+            <p className={styles.muted}>Ningún encargado ha confirmado la lectura.</p>
+          ) : null}
+          <ul className={styles.list}>
+            {receipts.map((item) => (
+              <li key={item.id}>{item.label}</li>
+            ))}
+          </ul>
+        </section>
       ) : null}
 
-      {defenses.length > 0 || writtenDefense ? (
+      {hasDefense ? (
         <section className={styles.card}>
           <h3>Descargo</h3>
           {defenses.map((item) => (
@@ -118,17 +137,21 @@ export function CaseProcessPanel({
               <p>{item.body}</p>
             </article>
           ))}
-          {writtenDefense ? <WrittenDefenseForm caseId={detail.id} onChanged={onChanged} onError={onError} /> : null}
+          {writtenDefense ? (
+            <WrittenDefenseForm caseId={detail.id} onChanged={onChanged} onError={onError} />
+          ) : null}
         </section>
       ) : null}
 
-      {appeals.length > 0 ? (
+      {hasAppeals ? (
         <section className={styles.card}>
           <h3>Recursos</h3>
           {appeals.map((item) => (
             <article key={item.id}>
               <strong>
-                <Link to={portalPathForSession(disciplineAppealTrackingPath(item.id))}>{appealHeading(item)}</Link>
+                <Link to={portalPathForSession(disciplineAppealTrackingPath(item.id))}>
+                  {appealHeading(item)}
+                </Link>
               </strong>
               <p>{item.body}</p>
               {item.outcome ? (
@@ -164,21 +187,86 @@ export function CaseProcessPanel({
         </section>
       ) : null}
 
-      {measures.length > 0 || precautionary ? (
-        <section className={styles.card}>
-          <h3>Retiro precautorio</h3>
+      {hasMeasures || precautionary ? (
+        <section className={`${styles.card} ${styles.exceptionCard}`}>
+          <div className={styles.exceptionHead}>
+            <ShieldAlert aria-hidden="true" size={18} />
+            <div>
+              <h3>Retiro precautorio</h3>
+              <p className={styles.muted}>
+                Medida excepcional de la Dirección. No es sanción: no cambia la gravedad ni la nota.
+                Máximo 10 días naturales.
+              </p>
+            </div>
+          </div>
           {measures.map((item) => (
-            <article key={item.id}>
+            <article className={styles.measureRow} key={item.id}>
               <p>
-                {formatShortDate(item.startsOn)} – {formatShortDate(item.endsOn)}
+                <strong>
+                  {formatShortDate(item.startsOn)} – {formatShortDate(item.endsOn)}
+                </strong>
                 {item.paniCoordination ? ' · Coordinado con el PANI' : ' · Sin coordinación con el PANI'}
               </p>
               <p>{item.reason}</p>
             </article>
           ))}
-          {precautionary ? <PrecautionaryForm caseId={detail.id} onChanged={onChanged} onError={onError} /> : null}
+          {precautionary && !showPrecautionaryForm ? (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setShowPrecautionaryForm(true)}
+            >
+              Ordenar un retiro precautorio…
+            </Button>
+          ) : null}
+          {precautionary && showPrecautionaryForm ? (
+            <PrecautionaryForm
+              caseId={detail.id}
+              onChanged={onChanged}
+              onError={onError}
+              onCancel={() => setShowPrecautionaryForm(false)}
+            />
+          ) : null}
         </section>
       ) : null}
+    </>
+  );
+
+  if (layout === 'cockpit') {
+    return (
+      <>
+        {charge}
+        {hasExtras ? (
+          <div className={styles.moreTools}>
+            <button
+              aria-expanded={extrasOpen}
+              className={styles.moreToolsToggle}
+              onClick={() => setExtrasOpen((open) => !open)}
+              type="button"
+            >
+              <span>
+                <strong>Herramientas poco frecuentes</strong>
+                <span className={styles.moreToolsHint}>
+                  Descargo, recursos o retiro precautorio — solo si hacen falta ahora
+                </span>
+              </span>
+              <ChevronDown
+                aria-hidden="true"
+                className={`${styles.moreToolsChevron}${extrasOpen ? ` ${styles.moreToolsChevronOpen}` : ''}`}
+                size={18}
+              />
+            </button>
+            {extrasOpen ? <div className={styles.moreToolsBody}>{processBlocks}</div> : null}
+          </div>
+        ) : null}
+      </>
+    );
+  }
+
+  return (
+    <>
+      {charge}
+      {processBlocks}
     </>
   );
 }
@@ -199,6 +287,23 @@ function FormalChargeForm({
   const [receivedByName, setReceivedByName] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [pending, setPending] = useState(false);
+
+  const session = getStoredSessionUser();
+  const guideFallback = session
+    ? [session.name, session.first_lastname].filter(Boolean).join(' ')
+    : '';
+  const initialFields = useMemo(
+    () =>
+      fieldsFromCaseDetail(detail, {
+        guideTeacher:
+          detail.responsibleUserId != null && session?.id === detail.responsibleUserId
+            ? guideFallback
+            : undefined,
+      }),
+    // Prefill once per expediente load; detail object identity changes on reload.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed by case snapshot
+    [detail.id, detail.caseNumber, detail.description, detail.severity, guideFallback],
+  );
 
   const send = async (event: FormEvent) => {
     event.preventDefault();
@@ -247,40 +352,49 @@ function FormalChargeForm({
   };
 
   return (
-    <section className={styles.card}>
-      <h3>Comunicar el cargo</h3>
-      <p className={styles.note}>Estas cláusulas se agregan siempre y no se pueden quitar:</p>
-      <ol className={styles.clauses}>
-        {MANDATORY_CLAUSES.map((clause) => (
-          <li key={clause}>{clause}</li>
-        ))}
-      </ol>
-      <form className={styles.form} onSubmit={physical ? deliver : send}>
-        <label>
-          Acción correctiva propuesta
-          <Textarea rows={3} value={proposedAction} onChange={(event) => setProposedAction(event.target.value)} />
-        </label>
-        {physical ? (
-          <DeliveryFields
-            medium={medium}
-            deliveredOn={deliveredOn}
-            receivedByName={receivedByName}
-            onMedium={setMedium}
-            onDate={setDeliveredOn}
-            onReceiver={setReceivedByName}
-            onFile={setFile}
-          />
-        ) : null}
-        <div className={styles.inline}>
-          <Button type="submit" disabled={pending}>
-            {physical ? 'Registrar entrega física' : 'Enviar al encargado'}
-          </Button>
-          <Button type="button" variant="secondary" onClick={() => setPhysical((current) => !current)}>
-            {physical ? 'Volver al envío digital' : 'Entrega física'}
-          </Button>
-        </div>
-      </form>
-    </section>
+    <FormalCommunicationPreview
+      mode="case"
+      caseNumber={detail.caseNumber}
+      initialFields={initialFields}
+      proposedAction={proposedAction}
+      onProposedActionChange={setProposedAction}
+      intro={
+        <>
+          <p className={styles.note}>
+            Datos tomados del expediente. Complete la acción propuesta, revise la vista previa e
+            imprima o envíe al encargado. Estas cláusulas se agregan siempre y no se pueden quitar:
+          </p>
+          <ol className={styles.clauses}>
+            {MANDATORY_CLAUSES.map((clause) => (
+              <li key={clause}>{clause}</li>
+            ))}
+          </ol>
+        </>
+      }
+      actions={
+        <form className={styles.form} onSubmit={physical ? deliver : send}>
+          {physical ? (
+            <DeliveryFields
+              medium={medium}
+              deliveredOn={deliveredOn}
+              receivedByName={receivedByName}
+              onMedium={setMedium}
+              onDate={setDeliveredOn}
+              onReceiver={setReceivedByName}
+              onFile={setFile}
+            />
+          ) : null}
+          <div className={styles.inline}>
+            <Button type="submit" disabled={pending}>
+              {physical ? 'Registrar entrega física' : 'Enviar al encargado'}
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => setPhysical((current) => !current)}>
+              {physical ? 'Volver al envío digital' : 'Entrega física'}
+            </Button>
+          </div>
+        </form>
+      }
+    />
   );
 }
 
@@ -482,10 +596,12 @@ function PrecautionaryForm({
   caseId,
   onChanged,
   onError,
+  onCancel,
 }: {
   caseId: number;
   onChanged: () => void;
   onError: (message: string | null) => void;
+  onCancel?: () => void;
 }) {
   const [startsOn, setStartsOn] = useState('');
   const [endsOn, setEndsOn] = useState('');
@@ -519,28 +635,39 @@ function PrecautionaryForm({
 
   return (
     <form className={styles.form} onSubmit={submit}>
-      <p className={styles.note}>No cambia la gravedad ni la nota de conducta. Máximo 10 días naturales.</p>
       <div className={styles.grid}>
         <label>
-          Inicio
+          Desde
           <Input type="date" value={startsOn} required onChange={(event) => setStartsOn(event.target.value)} />
         </label>
         <label>
-          Fin
+          Hasta
           <Input type="date" value={endsOn} required onChange={(event) => setEndsOn(event.target.value)} />
         </label>
       </div>
       <label>
-        Motivo
-        <Textarea rows={3} value={reason} onChange={(event) => setReason(event.target.value)} />
+        Motivo (mín. 10 caracteres)
+        <Textarea
+          rows={3}
+          value={reason}
+          onChange={(event) => setReason(event.target.value)}
+          placeholder="Explique por qué es necesario el retiro temporal…"
+        />
       </label>
       <label className={styles.check}>
         <input type="checkbox" checked={pani} onChange={(event) => setPani(event.target.checked)} />
         Se coordinó con el PANI
       </label>
-      <Button type="submit" disabled={pending}>
-        Ordenar retiro precautorio
-      </Button>
+      <div className={styles.inline}>
+        <Button type="submit" disabled={pending}>
+          Confirmar retiro precautorio
+        </Button>
+        {onCancel ? (
+          <Button type="button" variant="secondary" onClick={onCancel}>
+            Cancelar
+          </Button>
+        ) : null}
+      </div>
     </form>
   );
 }

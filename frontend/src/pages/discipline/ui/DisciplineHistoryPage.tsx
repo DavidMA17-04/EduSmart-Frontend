@@ -1,6 +1,10 @@
 import { GraduationCap } from 'lucide-react';
 import { useAuthStore } from '@/features/auth';
-import { ConductHistoryPanel, DISCIPLINE_PERMISSIONS } from '@/features/manage-discipline';
+import {
+  ConductHistoryPanel,
+  DISCIPLINE_PERMISSIONS,
+  DisciplineModuleNav,
+} from '@/features/manage-discipline';
 import { sessionHasPermission } from '@/shared/auth';
 import { PageHeader } from '@/shared/ui';
 import { useRoleAudience } from '@/widgets/app-shell';
@@ -16,12 +20,19 @@ export const DisciplineHistoryPage = () => {
       <PageHeader
         breadcrumbs={[{ label: 'Disciplina' }, { label: 'Historial' }]}
         icon={GraduationCap}
-        subtitle="Nota de conducta por período. El rebajo propuesto no descuenta hasta que el expediente queda firme."
-        title={historyAudience === 'student' ? 'Mi conducta' : 'Historial disciplinario'}
+        subtitle={
+          historyAudience === 'student'
+            ? 'Su nota de conducta por período y los expedientes relacionados.'
+            : 'Busque un estudiante para ver su nota de conducta. El rebajo propuesto no descuenta hasta que el expediente queda firme.'
+        }
+        title={historyAudience === 'student' ? 'Mi conducta' : 'Historial de conducta'}
       />
+      {historyAudience === 'staff' ? <DisciplineModuleNav /> : null}
       <ConductHistoryPanel
         audience={historyAudience}
-        canSearchStudents={historyAudience === 'staff' && sessionHasPermission(DISCIPLINE_PERMISSIONS.create)}
+        canSearchStudents={
+          historyAudience === 'staff' && sessionHasPermission(DISCIPLINE_PERMISSIONS.create)
+        }
         canExport={sessionHasPermission(DISCIPLINE_PERMISSIONS.export)}
         sessionUserId={userId}
       />

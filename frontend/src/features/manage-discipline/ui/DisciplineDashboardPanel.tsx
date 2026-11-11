@@ -1,21 +1,31 @@
 import { portalPathForSession } from '@/shared/auth/portalPaths';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, Clock3, FileSpreadsheet, FileText, Inbox } from 'lucide-react';
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+  AlertTriangle,
+  CalendarDays,
+  Clock3,
+  FileSpreadsheet,
+  FileText,
+  Gavel,
+  Inbox,
+  Layers,
+  ListChecks,
+} from 'lucide-react';
 import { academicPeriodApi } from '@/features/manage-academic-period/api/academicPeriodApi';
 import { groupApi } from '@/features/manage-group';
 import type { AcademicGroup } from '@/entities/group';
+import { brandColors } from '@/styles/brandColors';
 import { chartTheme } from '@/styles/chartTheme';
-import { Alert, Button, EmptyState, Select } from '@/shared/ui';
+import {
+  Alert,
+  Button,
+  DonutCard,
+  type DonutSlice,
+  EmptyState,
+  ModuleBarChart,
+  Select,
+} from '@/shared/ui';
 import { disciplineApi } from '../api/disciplineApi';
 import { disciplineCasePath, disciplineHistoryPath } from '../model/disciplineRouting';
 import {
@@ -25,6 +35,26 @@ import {
   type DisciplinaryDashboard,
 } from '../model/disciplineDashboard';
 import styles from './DisciplineDashboardPanel.module.css';
+
+const SEVERITY_COLORS: Record<string, string> = {
+  'Muy leve': brandColors.green,
+  Leve: brandColors.gold,
+  Grave: brandColors.warning,
+  'Muy grave': brandColors.danger,
+  Gravísima: brandColors.navy,
+};
+
+function toDonutSlices(
+  rows: Array<{ label: string; count: number }>,
+  colorFor?: (label: string, index: number) => string,
+): DonutSlice[] {
+  return rows.map((row, index) => ({
+    name: row.label,
+    shortName: row.label.length > 14 ? `${row.label.slice(0, 12)}…` : row.label,
+    count: row.count,
+    color: colorFor?.(row.label, index) ?? chartTheme.series[index % chartTheme.series.length],
+  }));
+}
 
 export function DisciplineDashboardPanel({ canExport }: { canExport: boolean }) {
   const [periodId, setPeriodId] = useState('');
@@ -161,12 +191,13 @@ export function DisciplineDashboardPanel({ canExport }: { canExport: boolean }) 
       {loading ? <p className={styles.muted}>Cargando tablero…</p> : null}
       {board && !loading ? (
         <>
+          <p className={styles.needsActionLabel}>Needs Action · plazos del debido proceso</p>
           <div className={styles.kpis}>
             <article className={`${styles.kpi} ${styles.kpiTotal}`}>
               <span className={styles.kpiIcon}><Inbox aria-hidden size={18} /></span>
               <div>
                 <strong>{board.total}</strong>
-                <span>Expedientes</span>
+                <span>Expedientes abiertos</span>
               </div>
             </article>
             <article className={`${styles.kpi} ${styles.kpiSoon}`}>
@@ -187,7 +218,7 @@ export function DisciplineDashboardPanel({ canExport }: { canExport: boolean }) 
               <span className={styles.kpiIcon}><AlertTriangle aria-hidden size={18} /></span>
               <div>
                 <strong>{board.alerts.length}</strong>
-                <span>Alertas</span>
+                <span>Alertas de proceso</span>
               </div>
             </article>
           </div>
@@ -198,13 +229,43 @@ export function DisciplineDashboardPanel({ canExport }: { canExport: boolean }) 
             </div>
           ) : (
             <div className={styles.charts}>
-              <ChartCard title="Por gravedad" data={board.bySeverity.map((item) => ({ name: item.label, count: item.count }))} />
-              <ChartCard title="Por estado" data={board.byStatus.map((item) => ({ name: item.label, count: item.count }))} />
-              <ChartCard
-                title="Por mes"
-                data={board.byMonth.map((item) => ({ name: formatDashboardMonth(item.month), count: item.count }))}
+              <DonutCard
+                emptyText="Sin datos de gravedad."
+                icon={Gavel}
+                slices={toDonutSlices(board.bySeverity, (label, index) =>
+                  SEVERITY_COLORS[label] ?? chartTheme.series[index % chartTheme.series.length],
+                )}
+                title="Por gravedad"
               />
-              <ChartCard title="Por sección" data={board.bySection.map((item) => ({ name: dedupeSectionLabel(item.sectionLabel), count: item.count }))} />
+              <DonutCard
+                emptyText="Sin datos de estado."
+                icon={ListChecks}
+                slices={toDonutSlices(board.byStatus)}
+                title="Por estado"
+              />
+              <ModuleBarChart
+                data={board.byMonth.map((item, index) => ({
+                  name: formatDashboardMonth(item.month),
+                  value: item.count,
+                  color: chartTheme.series[index % chartTheme.series.length],
+                }))}
+                emptyText="Sin serie mensual."
+                height={220}
+                icon={CalendarDays}
+                layout="vertical"
+                title="Por mes"
+              />
+              <ModuleBarChart
+                data={board.bySection.map((item, index) => ({
+                  name: dedupeSectionLabel(item.sectionLabel),
+                  value: item.count,
+                  color: chartTheme.series[index % chartTheme.series.length],
+                }))}
+                emptyText="Sin datos por sección."
+                height={220}
+                icon={Layers}
+                title="Por sección"
+              />
             </div>
           )}
 
@@ -252,38 +313,5 @@ export function DisciplineDashboardPanel({ canExport }: { canExport: boolean }) 
         </>
       ) : null}
     </section>
-  );
-}
-
-function ChartCard({ title, data }: { title: string; data: Array<{ name: string; count: number }> }) {
-  return (
-    <article className={styles.card}>
-      <h3>{title}</h3>
-      {data.length === 0 ? (
-        <p className={styles.muted}>Sin datos.</p>
-      ) : (
-        <div className={styles.chart}>
-          <ResponsiveContainer height={160} width="100%">
-            <BarChart
-              data={data}
-              margin={{ top: 8, right: 8, left: 0, bottom: 8 }}
-              barCategoryGap={data.length <= 2 ? '35%' : '18%'}
-            >
-              <CartesianGrid stroke={chartTheme.grid.stroke} strokeDasharray={chartTheme.grid.strokeDasharray} vertical={false} />
-              <XAxis dataKey="name" tick={chartTheme.axis.tick} />
-              <YAxis allowDecimals={false} tick={chartTheme.axis.tick} width={28} />
-              <Tooltip contentStyle={chartTheme.tooltip.contentStyle} />
-              <Bar
-                dataKey="count"
-                fill={chartTheme.bar.fill}
-                maxBarSize={data.length <= 2 ? 48 : 64}
-                name="Expedientes"
-                radius={[4, 4, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-    </article>
   );
 }

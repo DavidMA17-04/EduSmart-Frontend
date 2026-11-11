@@ -45,6 +45,7 @@ import {
   formatRelative,
   formatShortDate,
 } from '@/components/communications/communicationFormat';
+import { CommunicationsModuleNav } from '@/features/manage-communications/ui/CommunicationsModuleNav';
 import { getStoredSessionUser, sessionHasPermission } from '@/shared/auth';
 import { KpiCard, KpiGrid, useToast, type KpiTone } from '@/shared/ui';
 import type { LucideIcon } from 'lucide-react';
@@ -221,6 +222,7 @@ export const CommunicationsAdminPage: React.FC = () => {
   return (
     <div className="edu-comms bg-slate-50 min-h-full p-4 sm:p-6 md:p-8">
       <div className="max-w-6xl mx-auto space-y-5">
+        <CommunicationsModuleNav />
         {/* Encabezado */}
         <motion.div
           initial={{ opacity: 0, y: -8 }}
@@ -234,7 +236,7 @@ export const CommunicationsAdminPage: React.FC = () => {
               className="text-xs font-semibold text-slate-500 hover:text-brand-primary flex items-center gap-1 mb-2 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              Ir al muro de avisos
+              Inicio del módulo
             </button>
             <div className="flex items-center gap-2 mb-1">
               <span className="p-1.5 rounded-lg bg-brand-primary/10 text-brand-primary">

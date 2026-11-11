@@ -4,10 +4,12 @@ import {
   DISCIPLINE_CASES_PATH,
   DISCIPLINE_CATALOG_PATH,
   DISCIPLINE_DASHBOARD_PATH,
+  DISCIPLINE_HOME_PATH,
   DISCIPLINE_HISTORY_PATH,
   DISCIPLINE_NOTIFICATIONS_PATH,
   DISCIPLINE_PROCESS_PATH,
   DISCIPLINE_REGISTER_PATH,
+  DISCIPLINE_SETTINGS_PATH,
   DISCIPLINE_APPEALS_PATH,
   DISCIPLINE_APPEALS_NEW_PATH,
   DISCIPLINE_APPEALS_REVIEW_PATH,
@@ -20,6 +22,8 @@ import {
 
 describe('rutas de disciplina', () => {
   it('apunta al grupo /admin/discipline', () => {
+    expect(DISCIPLINE_HOME_PATH).toBe('/admin/discipline');
+    expect(DISCIPLINE_SETTINGS_PATH).toBe('/admin/discipline/settings');
     expect(DISCIPLINE_DASHBOARD_PATH).toBe('/admin/discipline/dashboard');
     expect(DISCIPLINE_CASES_PATH).toBe('/admin/discipline/cases');
     expect(disciplineCasePath(2)).toBe('/admin/discipline/cases/2');
@@ -37,6 +41,7 @@ describe('rutas de disciplina', () => {
     expect(disciplineAppealTrackingPath(3)).toBe('/admin/discipline/appeals/3');
     expect(DISCIPLINE_APPEALS_REPORTS_PATH).toBe('/admin/discipline/appeals/reports');
     const paths = [
+      DISCIPLINE_SETTINGS_PATH,
       DISCIPLINE_DASHBOARD_PATH,
       DISCIPLINE_CASES_PATH,
       DISCIPLINE_HISTORY_PATH,
